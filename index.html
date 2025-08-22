@@ -54,15 +54,15 @@
 
     .footer{padding:40px 0;color:#94a3b8;text-align:center;font-size:12px}
 
-    .input, select{width:100%;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+    .input, select{width:100%;background:#fff;color:#000;border:1px solid var(--border);border-radius:10px;padding:8px 10px}
     .input:focus, select:focus{outline:none;box-shadow:0 0 0 3px rgba(59,130,246,.2)}
     label{display:block;font-size:12px;color:var(--muted);margin:2px 2px 6px}
     .field{min-width:120px}
     .field.small{min-width:90px}
 
     /* Table */
-    .table-wrap{overflow:auto}
-    table{width:100%;border-collapse:separate;border-spacing:0}
+    .table-wrap{overflow:auto;-webkit-overflow-scrolling:touch}
+    table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px}
     thead th{position:sticky;top:0;background:#f1f5f9;text-align:left;font-weight:600;color:#475569;font-size:12px;border-bottom:1px solid var(--border);padding:10px}
     tbody td{border-bottom:1px solid var(--border);padding:10px;vertical-align:top;font-size:13px}
     tbody tr:hover{background:#f8fafc}
@@ -75,6 +75,32 @@
     .chart-body{position:relative;height:360px}
     .chart-body svg.chart{position:absolute;inset:0;width:100%;height:100%}
     .tooltip{position:absolute;background:#111827;color:#fff;border-radius:8px;padding:6px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none}
+
+    /* --------- Responsive tweaks --------- */
+    @media (max-width:900px){
+      .container{padding:0 16px}
+      .kpi-value{font-size:22px}
+      /* Export buttons wrap under the title */
+      .card-h .between{flex-wrap:wrap}
+      .card-h .between > .row:last-child{margin-left:auto}
+    }
+    @media (max-width:640px){
+      .container{padding:0 12px}
+      .kpi-value{font-size:20px}
+      .btn{padding:8px 12px;font-size:13px}
+      .card-h{padding:14px 14px 0}
+      .card-c{padding:10px 14px 14px}
+      /* Add Trade form wraps gracefully */
+      form.row{flex-wrap:wrap}
+      form.row .field{flex:1 1 160px}
+      .chart-body{height:260px}
+      /* Put export buttons on a new line with left alignment */
+      .card-h .between > .row:last-child{width:100%;margin-left:0;justify-content:flex-start;margin-top:8px}
+    }
+    @media (max-width:420px){
+      .chart-body{height:220px}
+      form.row .field{flex:1 1 140px}
+    }
   </style>
 </head>
 <body>
@@ -431,7 +457,6 @@
     }
 
     function varColor(name){
-      // read CSS var value for consistency
       return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#3b82f6';
     }
 
