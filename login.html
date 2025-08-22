@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trade Journal</title>
+  <link rel="icon" href="data:," />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    /* -------------------------------------------------------------
+       THEME (fallbacks; your existing :root will override via cascade)
+    -------------------------------------------------------------- */
+    :root {
+      --bg: #0b0d10;
+      --surface: #121417;
+      --surface-2: #0f1114;
+      --text: #eaecef;
+      --muted: #9aa4af;
+      --border: #1e232b;
+      --primary: #5b8cff;
+      --primary-600: #3f73ff;
+      --radius: 16px;
+      --shadow: 0 8px 24px rgba(0,0,0,.35);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 400 14px/1.5 Rubik, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+
+      /* Layout grid */
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      grid-template-rows: 64px 1fr;
+      grid-template-areas:
+        "sidebar topbar"
+        "sidebar main";
+    }
+
+    /* -------------------------------------------------------------
+       SHELL
+    -------------------------------------------------------------- */
+    nav.app-sidebar {
+      grid-area: sidebar;
+      position: sticky; top: 0; height: 100vh;
+      background: var(--surface-2);
+      border-right: 1px solid var(--border);
+      padding: 16px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px; margin-bottom: 6px; }
+    .brand .logo { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, var(--primary), var(--primary-600)); box-shadow: 0 6px 18px rgba(91,140,255,.35); }
+    .brand span { font-weight: 700; letter-spacing: 0.2px; }
+
+    .nav-group { margin-top: 8px; }
+    .nav-label { color: var(--muted); font-size: 12px; padding: 8px 10px; text-transform: uppercase; letter-spacing: .08em; }
+    .nav-list { display: grid; gap: 6px; }
+
+    a.nav-item {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text);
+      padding: 10px 12px; border-radius: 12px; transition: background .18s ease;
+    }
+    a.nav-item:hover { background: rgba(255,255,255,.04); }
+    a.nav-item.active { background: rgba(255,255,255,.08); }
+    .nav-item svg { width: 18px; height: 18px; opacity: .9; }
+
+    header.topbar {
+      grid-area: topbar;
+      position: sticky; top: 0; z-index: 10;
+      height: 64px; display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface);
+      padding: 0 16px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-title { font-weight: 600; }
+    .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+    main { grid-area: main; overflow-y: auto; padding: 20px; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .card.pad { padding: 16px; }
+
+    /* -------------------------------------------------------------
+       FORMS & CONTROLS
+    -------------------------------------------------------------- */
+    .stack { display: grid; gap: 12px; }
+    label { font-size: 12px; color: var(--muted); }
+    input.input { width: 100%; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; outline: none; }
+    input.input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(91,140,255,.15); }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); color: var(--text); cursor: pointer; font-weight: 500; }
+    .btn:hover { filter: brightness(1.05); }
+    .btn.primary { background: var(--primary); border-color: transparent; color: #0b1020; }
+
+    .auth-card { max-width: 420px; margin: 64px auto; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .chips { display: inline-flex; gap: 8px; background: var(--surface-2); padding: 6px; border-radius: 999px; border: 1px solid var(--border); }
+    .chip { border: 0; background: transparent; color: var(--muted); padding: 8px 12px; border-radius: 999px; cursor: pointer; }
+    .chip.active { background: var(--surface); color: var(--text); }
+
+    /* Responsive: collapse sidebar on small widths */
+    @media (max-width: 920px) {
+      body { grid-template-columns: 80px 1fr; }
+      .brand span { display: none; }
+      .nav-label { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hidden SVG icon set -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="i-home" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 2.1a3 3 0 0 1 3 0l7 3.889A3 3 0 0 1 22 8.61V19a3 3 0 0 1-3 3h-3.5a1.5 1.5 0 0 1-1.5-1.5V16a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v4.5A1.5 1.5 0 0 1 7 22H3a3 3 0 0 1-3-3V8.61a3 3 0 0 1 1.5-2.62l7-3.889Z"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24" fill="currentColor"><path d="M21 7.5 12 12 3 7.5m18 0L12 3 3 7.5m18 0V18a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7.5"/></symbol>
+    <symbol id="i-login" viewBox="0 0 24 24" fill="currentColor"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></symbol>
+    <symbol id="i-user-plus" viewBox="0 0 24 24" fill="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24" fill="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></symbol>
+  </svg>
+
+  <nav class="app-sidebar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <span>Trade Journal</span>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Main</div>
+      <div class="nav-list" id="nav-main">
+        <a class="nav-item" href="#/dashboard" data-route="#/dashboard"><svg><use href="#i-home" /></svg><span>Dashboard</span></a>
+        <a class="nav-item" href="#/products" data-route="#/products"><svg><use href="#i-box" /></svg><span>Products</span></a>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Account</div>
+      <div class="nav-list" id="nav-auth">
+        <a class="nav-item" href="#/login" data-route="#/login"><svg><use href="#i-login" /></svg><span>Login</span></a>
+        <a class="nav-item" href="#/signup" data-route="#/signup"><svg><use href="#i-user-plus" /></svg><span>Sign Up</span></a>
+        <!-- logout link toggled in JS when authed -->
+        <a class="nav-item" href="#/logout" data-route="#/logout" id="link-logout" style="display:none"><svg><use href="#i-logout" /></svg><span>Logout</span></a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-actions">
+      <button class="btn" id="btn-range" title="Range filters">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+        Filters
+      </button>
+      <button class="btn" id="btn-auth-toggle"></button>
+    </div>
+  </header>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="page-dashboard" class="page active">
+      <div class="card pad" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
+        <div style="font-weight:600">Overview</div>
+        <div class="chips" role="tablist" aria-label="Range">
+          <button class="chip active" data-range="ALL" role="tab" aria-selected="true">ALL</button>
+          <button class="chip" data-range="1M" role="tab">1M</button>
+          <button class="chip" data-range="6M" role="tab">6M</button>
+          <button class="chip" data-range="1Y" role="tab">1Y</button>
+        </div>
+      </div>
+
+      <!-- Keep your original dashboard content below -->
+      <div id="dashboard-content" class="card pad">
+        <p style="margin:0">Your original dashboard HTML/JS remains intact here. Replace this block with your actual widgets, charts, and tables.</p>
+      </div>
+    </section>
+
+    <!-- PRODUCTS (placeholder) -->
+    <section id="page-products" class="page">
+      <div class="card pad"><h2 style="margin:0 0 8px">Products</h2><p style="margin:0; color:var(--muted)">Placeholder products page.</p></div>
+    </section>
+
+    <!-- LOGIN -->
+    <section id="page-login" class="page">
+      <div class="card pad auth-card">
+        <h2 style="margin:0 0 8px">Login</h2>
+        <p style="margin:0 0 16px; color:var(--muted)">Use any email & password (fake auth). Replace later with real auth.</p>
+        <form id="loginForm" class="stack">
+          <div class="stack">
+            <label for="login-email">Email</label>
+            <input class="input" id="login-email" name="email" type="email" autocomplete="email" required />
+          </div>
+          <div class="stack">
+            <label for="login-password">Password</label>
+            <input class="input" id="login-password" name="password" type="password" autocomplete="current-password" required />
+          </div>
+          <button class="btn primary" type="submit">Login</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- SIGNUP -->
+    <section id="page-signup" class="page">
+      <div class="card pad auth-card">
+        <h2 style="margin:0 0 8px">Sign Up</h2>
+        <p style="margin:0 0 16px; color:var(--muted)">Create a demo account (stored locally). Swap with your backend later.</p>
+        <form id="signupForm" class="stack">
+          <div class="stack">
+            <label for="signup-email">Email</label>
+            <input class="input" id="signup-email" name="email" type="email" autocomplete="email" required />
+          </div>
+          <div class="stack">
+            <label for="signup-password">Password</label>
+            <input class="input" id="signup-password" name="password" type="password" autocomplete="new-password" minlength="6" required />
+          </div>
+          <button class="btn primary" type="submit">Create Account</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --------------------------------------------------------------
+    // Tiny router + fake auth with clean hooks
+    // --------------------------------------------------------------
+    const routes = ["#/dashboard", "#/products", "#/login", "#/signup", "#/logout"];
+    const protectedRoutes = new Set(["#/dashboard", "#/products"]);
+
+    const qs = (s, r = document) => r.querySelector(s);
+    const qsa = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+    const Auth = (() => {
+      const KEY = "auth_user";
+      const getUser = () => {
+        try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; }
+      };
+      const isAuthed = () => !!getUser();
+      const login = (email) => {
+        localStorage.setItem(KEY, JSON.stringify({ email, ts: Date.now() }));
+        window.dispatchEvent(new CustomEvent("auth:login", { detail: { email } }));
+      };
+      const logout = () => {
+        localStorage.removeItem(KEY);
+        window.dispatchEvent(new Event("auth:logout"));
+      };
+      return { getUser, isAuthed, login, logout };
+    })();
+
+    function setActiveNav(hash) {
+      qsa("a.nav-item").forEach(a => a.classList.toggle("active", a.dataset.route === hash));
+    }
+
+    function setTopbar(hash) {
+      const titles = { "#/dashboard": "Dashboard", "#/products": "Products", "#/login": "Login", "#/signup": "Sign Up" };
+      qs("#topbar-title").textContent = titles[hash] || "Trade Journal";
+    }
+
+    function showRoute(hash) {
+      qsa('.page').forEach(p => p.classList.remove('active'));
+      const id = `page-${hash.slice(2)}`.replace("/", "-");
+      const page = qs(`#${id}`);
+      if (page) page.classList.add('active');
+      setActiveNav(hash);
+      setTopbar(hash);
+      document.title = `${qs('#topbar-title').textContent} • Trade Journal`;
+      window.dispatchEvent(new CustomEvent('app:route', { detail: { hash } }));
+    }
+
+    function navigate(hash) {
+      if (location.hash !== hash) {
+        location.hash = hash; // will trigger route()
+      } else {
+        showRoute(hash);
+      }
+    }
+
+    function route() {
+      let hash = location.hash || "#/dashboard";
+      if (!routes.includes(hash)) hash = "#/dashboard";
+
+      if (hash === "#/logout") {
+        Auth.logout();
+        const redirect = "#/login";
+        setTimeout(() => navigate(redirect), 0);
+        return;
+      }
+
+      if (protectedRoutes.has(hash) && !Auth.isAuthed()) {
+        sessionStorage.setItem("postLoginRedirect", hash);
+        navigate("#/login");
+        return;
+      }
+      showRoute(hash);
+    }
+
+    window.addEventListener("hashchange", route);
+    window.addEventListener("load", () => {
+      updateAuthUI();
+      route();
+    });
+
+    // --------------------------------------------------------------
+    // Auth UI wiring (non-networked)
+    // --------------------------------------------------------------
+    function updateAuthUI() {
+      const authed = Auth.isAuthed();
+      const user = Auth.getUser();
+
+      // Sidebar login/signup vs logout
+      qs('#link-logout').style.display = authed ? '' : 'none';
+      qsa('#nav-auth a[data-route="#/login"], #nav-auth a[data-route="#/signup"]').forEach(a => a.style.display = authed ? 'none' : '');
+
+      // Topbar button toggles state
+      const btn = qs('#btn-auth-toggle');
+      if (authed) {
+        btn.textContent = user?.email ? user.email : 'Account';
+        btn.onclick = () => navigate('#/logout');
+        btn.title = 'Logout';
+      } else {
+        btn.textContent = 'Login';
+        btn.onclick = () => navigate('#/login');
+        btn.title = 'Login';
+      }
+    }
+
+    window.addEventListener('auth:login', updateAuthUI);
+    window.addEventListener('auth:logout', updateAuthUI);
+
+    // Login form
+    qs('#loginForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = (e.currentTarget.email.value || '').trim();
+      if (!email) return;
+      Auth.login(email);
+      const dest = sessionStorage.getItem('postLoginRedirect') || '#/dashboard';
+      sessionStorage.removeItem('postLoginRedirect');
+      navigate(dest);
+    });
+
+    // Signup form
+    qs('#signupForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = (e.currentTarget.email.value || '').trim();
+      if (!email) return;
+      Auth.login(email); // fake: treat signup as logged-in
+      navigate('#/dashboard');
+    });
+
+    // Range chips
+    qsa('.chip').forEach(chip => chip.addEventListener('click', () => {
+      qsa('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      window.dispatchEvent(new CustomEvent('app:range', { detail: { range: chip.dataset.range } }));
+    }));
+
+    // --------------------------------------------------------------
+    // Public hooks (keep it simple for later wiring)
+    // --------------------------------------------------------------
+    window.app = {
+      navigate,
+      route,
+      Auth,
+      get range() { const a = qs('.chip.active'); return a ? a.dataset.range : 'ALL'; },
+      onRoute(fn) { window.addEventListener('app:route', (e) => fn(e.detail.hash)); },
+      onRange(fn) { window.addEventListener('app:range', (e) => fn(e.detail.range)); }
+    };
+  </script>
+</body>
+</html>
