@@ -122,6 +122,28 @@
       </div>
     </section>
 
+    <!-- Charts (MOVED ABOVE Add Trade & Trades) -->
+    <section class="grid grid-2" style="margin-top:16px">
+      <div class="card chart-card">
+        <div class="card-h"><div class="section-title">PnL Over Time</div></div>
+        <div class="card-c">
+          <div class="chart-body" id="lineWrap">
+            <svg class="chart" id="lineChart"></svg>
+            <div id="tooltipLine" class="tooltip" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card chart-card">
+        <div class="card-h"><div class="section-title">P/L by Symbol</div></div>
+        <div class="card-c">
+          <div class="chart-body" id="barWrap">
+            <svg class="chart" id="barChart"></svg>
+            <div id="tooltipBar" class="tooltip" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Add Trade -->
     <section class="card" style="margin-top:16px">
       <div class="card-h"><div class="section-title">Add Trade</div></div>
@@ -161,28 +183,6 @@
             <tr><td colspan="8" style="color:var(--muted)">No trades yet. Add your first trade above.</td></tr>
           </tbody>
         </table>
-      </div>
-    </section>
-
-    <!-- Charts -->
-    <section class="grid grid-2" style="margin-top:16px">
-      <div class="card chart-card">
-        <div class="card-h"><div class="section-title">PnL Over Time</div></div>
-        <div class="card-c">
-          <div class="chart-body" id="lineWrap">
-            <svg class="chart" id="lineChart"></svg>
-            <div id="tooltipLine" class="tooltip" style="display:none;"></div>
-          </div>
-        </div>
-      </div>
-      <div class="card chart-card">
-        <div class="card-h"><div class="section-title">P/L by Symbol</div></div>
-        <div class="card-c">
-          <div class="chart-body" id="barWrap">
-            <svg class="chart" id="barChart"></svg>
-            <div id="tooltipBar" class="tooltip" style="display:none;"></div>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -308,7 +308,7 @@
           </tr>`;
       }).join('');
     }
-    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","&gt;":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
 
     // -------- Charts (pixel-sized; no text stretching) ----------
     function clearSVG(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
