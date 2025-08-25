@@ -29,7 +29,6 @@
     .btn:hover{transform:translateY(-1px)}
     .btn.primary{background:#111827;color:#fff;border-color:#111827}
     .btn.ghost{background:transparent}
-    /* smaller, subtler buttons */
     .btn.sm{padding:6px 10px;font-size:12px;border-radius:10px;box-shadow:0 1px 4px rgba(15,23,42,.06)}
 
     .header{padding:24px 0}
@@ -62,7 +61,6 @@
     .field{min-width:120px}
     .field.small{min-width:90px}
 
-    /* Table */
     .table-wrap{overflow:auto}
     table{width:100%;border-collapse:separate;border-spacing:0}
     thead th{position:sticky;top:0;background:#f1f5f9;text-align:left;font-weight:600;color:#475569;font-size:12px;border-bottom:1px solid var(--border);padding:10px}
@@ -72,7 +70,6 @@
     .pl-pos{color:var(--ok)}
     .pl-neg{color:var(--danger)}
 
-    /* Charts: header inside card, chart fills card without stretched text */
     .chart-card .card-c{padding:0}
     .chart-body{position:relative;height:360px}
     .chart-body svg.chart{position:absolute;inset:0;width:100%;height:100%}
@@ -87,7 +84,6 @@
   </div>
 
   <main class="container">
-    <!-- Header -->
     <div class="header row between">
       <div class="row" style="gap:16px;align-items:center">
         <div class="logo">FP</div>
@@ -98,7 +94,6 @@
       </div>
     </div>
 
-    <!-- KPI row (Average Loss before Win Ratio, not red) -->
     <section class="grid grid-top" style="margin-bottom:8px">
       <div class="card">
         <div class="card-h kpi-label">Total PnL</div>
@@ -122,7 +117,6 @@
       </div>
     </section>
 
-    <!-- Charts (MOVED ABOVE Add Trade & Trades) -->
     <section class="grid grid-2" style="margin-top:16px">
       <div class="card chart-card">
         <div class="card-h"><div class="section-title">PnL Over Time</div></div>
@@ -144,7 +138,6 @@
       </div>
     </section>
 
-    <!-- Add Trade -->
     <section class="card" style="margin-top:16px">
       <div class="card-h"><div class="section-title">Add Trade</div></div>
       <div class="card-c">
@@ -161,7 +154,6 @@
       </div>
     </section>
 
-    <!-- Trades -->
     <section class="card" style="margin-top:16px">
       <div class="card-h">
         <div class="row between">
@@ -186,39 +178,106 @@
       </div>
     </section>
 
-    <div class="footer">Personal Trading Journal · Light UI · LocalStorage</div>
+    <div class="footer">Personal Trading Journal · Firestore Sync</div>
   </main>
 
-  <script>
-    // -------- State ----------
-    const STORAGE_KEY = 'tj.basic.model.v3';
-    const state = { trades: [], editId: null };
+  <!-- Entire app + Firebase in one module script -->
+  <script type="module">
+    /* ---------------- Firebase SDK (v10+) ---------------- */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { 
+      getFirestore, collection, addDoc, doc, updateDoc, deleteDoc,
+      onSnapshot, query, orderBy, serverTimestamp, enableIndexedDbPersistence
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import {
+      getAuth, onAuthStateChanged, signInAnonymously
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-    // -------- Utils ----------
+    // ---- YOUR Firebase config ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyDbmcQAhQrdNzS13l2fVSWqyPPfJN2JjgE",
+      authDomain: "journal-6e115.firebaseapp.com",
+      projectId: "journal-6e115",
+      storageBucket: "journal-6e115.firebasestorage.app",
+      messagingSenderId: "945757301047",
+      appId: "1:945757301047:web:b6c8d856defda9a60b92b2"
+    };
+
+    // Init
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Optional offline cache
+    enableIndexedDbPersistence(db).catch(() => {});
+
+    /* ---------------- State & Utils ---------------- */
+    const state = { trades: [], editId: null, uid: null, unsub: null };
+
     const $ = s => document.querySelector(s);
     const nf2 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const usd = n => n.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
     const parseDate = s => { const m = /^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); if(!m) return null; const d = new Date(+m[3], +m[2]-1, +m[1]); return d && d.getMonth()==(+m[2]-1)? d : null; };
-    const uid = () => 't_'+Math.random().toString(36).slice(2,10);
-    const normTrade = t => ({ id:t.id||uid(), date:t.date, symbol:String(t.symbol||'').toUpperCase(), entry:+t.entry, sl:+t.sl, tp:+t.tp, netpl:+t.netpl, notes:String(t.notes||'') });
+    const normTrade = t => ({ id:t.id, date:t.date, symbol:String(t.symbol||'').toUpperCase(), entry:+t.entry, sl:+t.sl, tp:+t.tp, netpl:+t.netpl, notes:String(t.notes||'') });
+    const varColor = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#3b82f6';
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","&gt;":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
-    function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    function load(){
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return;
-      try { const obj = JSON.parse(raw); state.trades = Array.isArray(obj.trades) ? obj.trades : []; }
-      catch {}
+    /* ---------------- Firestore helpers ---------------- */
+    const tradesCol = () => collection(db, 'users', state.uid, 'trades');
+
+    async function fbAddTrade(t) {
+      const d = parseDate(t.date); if(!d) throw new Error('Invalid date');
+      await addDoc(tradesCol(), {
+        date: t.date,
+        dateTS: d.getTime(),
+        symbol: t.symbol,
+        entry: t.entry,
+        sl: t.sl,
+        tp: t.tp,
+        netpl: t.netpl,
+        notes: t.notes || '',
+        createdAt: serverTimestamp()
+      });
     }
-    function seedIfEmpty(){
-      if(state.trades.length) return;
-      state.trades = [
-        { id: uid(), date:'18-08-2025', symbol:'ETHUSD', entry:4180, sl:4120, tp:4290, netpl:220, notes:'Momentum continuation' },
-        { id: uid(), date:'19-08-2025', symbol:'XAUUSD', entry:2344.1, sl:2351.5, tp:2336, netpl:-95.5, notes:'Stopped before reversal' },
-        { id: uid(), date:'20-08-2025', symbol:'XAUUSD', entry:2355.2, sl:2348, tp:2365, netpl:180, notes:'NY session scalp' },
-      ];
+    async function fbUpdateTrade(id, t) {
+      const d = parseDate(t.date); if(!d) throw new Error('Invalid date');
+      await updateDoc(doc(db, 'users', state.uid, 'trades', id), {
+        date: t.date,
+        dateTS: d.getTime(),
+        symbol: t.symbol,
+        entry: t.entry,
+        sl: t.sl,
+        tp: t.tp,
+        netpl: t.netpl,
+        notes: t.notes || ''
+      });
+    }
+    async function fbDeleteTrade(id) {
+      await deleteDoc(doc(db, 'users', state.uid, 'trades', id));
+    }
+    function startRealtime() {
+      if (state.unsub) state.unsub();
+      const qy = query(tradesCol(), orderBy('dateTS'));
+      state.unsub = onSnapshot(qy, (snap) => {
+        state.trades = snap.docs.map(d => {
+          const x = d.data();
+          return normTrade({
+            id: d.id,
+            date: x.date,
+            symbol: x.symbol,
+            entry: x.entry,
+            sl: x.sl,
+            tp: x.tp,
+            netpl: x.netpl,
+            notes: x.notes || ''
+          });
+        });
+        state.editId = null;
+        render();
+      });
     }
 
-    // -------- KPIs ----------
+    /* ---------------- KPIs & series ---------------- */
     function calcKPIs(list){
       const totalPL = list.reduce((a,t)=>a+t.netpl,0);
       const wins = list.filter(t=>t.netpl>0);
@@ -231,8 +290,6 @@
       const pf = lossSum===0 ? (winSum>0 ? '∞' : '0.00') : (winSum/lossSum).toFixed(2);
       return { totalPL, winRate, avgWin, avgLoss, pf };
     }
-
-    // -------- Series builders ----------
     function buildPnlSeries(list){
       const byDate = new Map();
       for(const t of list){ byDate.set(t.date, (byDate.get(t.date)||0) + t.netpl); }
@@ -249,12 +306,11 @@
       return { labels, values };
     }
 
-    // -------- Rendering ----------
+    /* ---------------- Rendering ---------------- */
     function render(){
       const list = state.trades.slice().sort((a,b)=> parseDate(a.date) - parseDate(b.date));
       const k = calcKPIs(list);
 
-      // KPIs
       const totalEl = $('#kpi-total-pnl');
       totalEl.textContent = (k.totalPL>=0? '+' : '-') + nf2.format(Math.abs(k.totalPL));
       totalEl.className = 'kpi-value ' + (k.totalPL>=0? 'text-green':'text-red');
@@ -263,11 +319,9 @@
       $('#winRatio').textContent = (k.winRate||0).toFixed(1)+'%';
       $('#profitFactor').textContent = k.pf;
 
-      // Charts
       drawLineChart($('#lineChart'), $('#lineWrap'), buildPnlSeries(list));
       drawBarChart($('#barChart'), $('#barWrap'), buildPLBySymbol(list));
 
-      // Table
       renderTable(list);
     }
 
@@ -308,9 +362,8 @@
           </tr>`;
       }).join('');
     }
-    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","&gt;":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
 
-    // -------- Charts (pixel-sized; no text stretching) ----------
+    /* ---------------- Charts ---------------- */
     function clearSVG(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
     function elSVG(name, attrs={}, text){
       const n=document.createElementNS('http://www.w3.org/2000/svg',name);
@@ -341,7 +394,6 @@
 
       const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
 
-      // grid & y labels
       const ticks = 5;
       for(let i=0;i<=ticks;i++){
         const tv = yMin + (i/ticks) * (yMax - yMin);
@@ -349,12 +401,10 @@
         svg.appendChild(elSVG('line',{x1:pad.left,x2:width-pad.right,y1:y,y2:y,stroke:'#e5e7eb'}));
         svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
       }
-      // x labels
       data.forEach((d,i)=>{
         svg.appendChild(elSVG('text',{x:xs(i), y:height-12, fill:'#6b7280','font-size':12,'text-anchor':'middle'}, d.t));
       });
 
-      // path
       if(data.length){
         let dAttr = '';
         data.forEach((d,i)=>{
@@ -365,7 +415,6 @@
         svg.appendChild(path);
       }
 
-      // tooltip (mouse + touch)
       const tooltip = wrap.querySelector('#tooltipLine');
       let dot = elSVG('circle',{r:4,fill:varColor('--blue')}); dot.style.display='none'; svg.appendChild(dot);
       function showAt(clientX){
@@ -417,7 +466,6 @@
 
       const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
 
-      // grid & y labels
       const ticks = 5;
       for(let i=0;i<=ticks;i++){
         const tv = yMin + (i/ticks) * (yMax - yMin);
@@ -425,12 +473,10 @@
         svg.appendChild(elSVG('line',{x1:pad.left,x2:width-pad.right,y1:y,y2:y,stroke:'#e5e7eb'}));
         svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
       }
-      // x labels
       labels.forEach((lab,i)=>{
         svg.appendChild(elSVG('text',{x:pad.left + band*i + band/2, y:height-12, fill:'#6b7280','font-size':12,'text-anchor':'middle'}, lab));
       });
 
-      // bars + tooltips
       const tooltip = wrap.querySelector('#tooltipBar');
       const zeroY = ys(0);
       values.forEach((v,i)=>{
@@ -455,36 +501,42 @@
       });
     }
 
-    function varColor(name){
-      return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#3b82f6';
-    }
-
-    // -------- Events ----------
+    /* ---------------- Events (wired to Firestore) ---------------- */
     function attach(){
       $('#symbol').addEventListener('input', e=> e.target.value=e.target.value.toUpperCase());
 
-      $('#tradeForm').addEventListener('submit', e=>{
+      $('#tradeForm').addEventListener('submit', async (e)=>{
         e.preventDefault();
-        const t = normTrade({
-          date:$('#date').value.trim(),
-          symbol:$('#symbol').value.trim(),
-          entry:$('#entry').value, sl:$('#sl').value, tp:$('#tp').value,
-          netpl:$('#netpl').value, notes:$('#notes').value
-        });
-        if(!parseDate(t.date) || !t.symbol){ alert('Check date format and symbol'); return; }
-        state.trades.push(t); save(); e.target.reset(); render();
+        if (!state.uid) { alert('Connecting to Firebase… try again in a second.'); return; }
+        const btn = e.submitter; btn && (btn.disabled = true);
+        try {
+          const t = normTrade({
+            date:$('#date').value.trim(),
+            symbol:$('#symbol').value.trim(),
+            entry:$('#entry').value, sl:$('#sl').value, tp:$('#tp').value,
+            netpl:$('#netpl').value, notes:$('#notes').value
+          });
+          if(!parseDate(t.date) || !t.symbol){ alert('Check date format and symbol'); return; }
+          await fbAddTrade(t);
+          e.target.reset(); // snapshot will re-render
+        } catch (err) {
+          console.error(err);
+          alert('Could not save trade. Check console.');
+        } finally {
+          btn && (btn.disabled = false);
+        }
       });
 
       window.addEventListener('resize', render);
 
-      // Table actions
-      $('#tradesTable').addEventListener('click', (e)=>{
+      $('#tradesTable').addEventListener('click', async (e)=>{
         const btn = e.target.closest('button'); if(!btn) return;
         const tr = e.target.closest('tr[data-id]'); if(!tr) return;
         const id = tr.dataset.id;
 
         if(btn.classList.contains('btn-del')){
-          state.trades = state.trades.filter(t=>t.id!==id); save(); render(); return;
+          await fbDeleteTrade(id);
+          return;
         }
         if(btn.classList.contains('btn-edit')){
           state.editId = id; render(); return;
@@ -496,9 +548,9 @@
           const [dateEl,symEl,entryEl,slEl,tpEl,netplEl,notesEl] = tr.querySelectorAll('input');
           const t = normTrade({ id, date:dateEl.value.trim(), symbol:symEl.value.trim(), entry:entryEl.value, sl:slEl.value, tp:tpEl.value, netpl:netplEl.value, notes:notesEl.value });
           if(!parseDate(t.date) || !t.symbol){ alert('Check date format and symbol'); return; }
-          const idx = state.trades.findIndex(x=>x.id===id);
-          if(idx>-1) state.trades[idx] = t;
-          state.editId=null; save(); render(); return;
+          await fbUpdateTrade(id, t);
+          state.editId=null; // render via snapshot
+          return;
         }
       });
 
@@ -507,7 +559,7 @@
       $('#btnExportJSON').addEventListener('click', exportJSON);
     }
 
-    // -------- Export ----------
+    /* ---------------- Export ---------------- */
     function exportJSON(){
       const payload = state.trades.map(({date,symbol,entry,sl,tp,netpl,notes})=>({date,symbol,entry,sl,tp,netpl,notes}));
       downloadBlob(JSON.stringify(payload, null, 2), 'trades.json', 'application/json');
@@ -526,8 +578,20 @@
       setTimeout(()=> URL.revokeObjectURL(url), 1000);
     }
 
-    // -------- Boot ----------
-    load(); seedIfEmpty(); attach(); render();
+    /* ---------------- Boot ---------------- */
+    attach();
+    render(); // empty until snapshot arrives
+
+    onAuthStateChanged(auth, async (user) => {
+      try {
+        if (!user) await signInAnonymously(auth);
+        state.uid = (user || auth.currentUser).uid;
+        startRealtime();
+      } catch (e) {
+        console.error(e);
+        alert('Authentication failed. Check Firebase config & rules.');
+      }
+    });
   </script>
 </body>
 </html>
