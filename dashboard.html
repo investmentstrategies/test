@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Prevent pinch-zoom & keep scale stable on phones -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
   <title>Trading Journal Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,52 +16,81 @@
       --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 16px rgba(15,23,42,.06);
       --radius:16px;
     }
-    *{box-sizing:border-box} html,body{height:100%}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    html{ -webkit-text-size-adjust:100%; touch-action:manipulation; }
     body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;color:var(--text);background:var(--bg)}
     .container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+    /* Header is NO LONGER STICKY */
+    .topbar{position:static; border-bottom:1px solid var(--border); background:#fff}
     .row{display:flex;gap:16px}
     .between{justify-content:space-between;align-items:center}
-    .topbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
-    .btn{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:12px;box-shadow:var(--shadow);font-size:14px;cursor:pointer}
-    .btn:hover{transform:translateY(-1px)} .btn.primary{background:#111827;color:#fff;border-color:#111827}
-    .btn.sm{padding:6px 10px;font-size:12px;border-radius:10px;box-shadow:0 1px 4px rgba(15,23,42,.06)}
     .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px}
+
+    .btn{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:12px;box-shadow:var(--shadow);font-size:14px;cursor:pointer}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:#111827;color:#fff;border-color:#111827}
+    .btn.sm{padding:6px 10px;font-size:12px;border-radius:10px;box-shadow:0 1px 4px rgba(15,23,42,.06)}
+
     .header{padding:24px 0}
     .logo{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:#111827;color:#fff;font-weight:700}
     .meta small{color:var(--muted)}
+
     .grid{display:grid;gap:16px}
     .grid-top{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
     .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
     @media (max-width:1024px){.grid-2{grid-template-columns:1fr}}
+
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-    .card-h{padding:18px 20px 0 20px} .card-c{padding:12px 20px 20px 20px}
+    .card-h{padding:18px 20px 0 20px}
+    .card-c{padding:12px 20px 20px 20px}
+
     .kpi-label{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px}
     .kpi-value{font-size:24px;font-weight:600}
-    .text-red{color:var(--danger)} .text-green{color:var(--ok)}
+    .text-red{color:var(--danger)}
+    .text-green{color:var(--ok)}
     .section-title{font-weight:600;font-size:18px}
+
     .footer{padding:40px 0;color:#94a3b8;text-align:center;font-size:12px}
-    .input, select{width:100%;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+
+    .input, select{width:100%;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:16px} /* >=16px to prevent iOS zoom */
     .input:focus, select:focus{outline:none;box-shadow:0 0 0 3px rgba(59,130,246,.2)}
     label{display:block;font-size:12px;color:var(--muted);margin:2px 2px 6px}
-    .field{min-width:120px} .field.small{min-width:90px}
+    .field{min-width:120px}
+    .field.small{min-width:90px}
+
+    /* Table */
     .table-wrap{overflow:auto}
     table{width:100%;border-collapse:separate;border-spacing:0}
     thead th{position:sticky;top:0;background:#f1f5f9;text-align:left;font-weight:600;color:#475569;font-size:12px;border-bottom:1px solid var(--border);padding:10px}
     tbody td{border-bottom:1px solid var(--border);padding:10px;vertical-align:top;font-size:13px}
     tbody tr:hover{background:#f8fafc}
-    .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-    .pl-pos{color:var(--ok)} .pl-neg{color:var(--danger)}
+    .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+    .pl-pos{color:var(--ok)}
+    .pl-neg{color:var(--danger)}
+
+    /* Charts */
     .chart-card .card-c{padding:0}
     .chart-body{position:relative;height:360px}
     .chart-body svg.chart{position:absolute;inset:0;width:100%;height:100%}
     .tooltip{position:fixed;background:#111827;color:#fff;border-radius:8px;padding:6px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none}
-    .pill{font-size:12px;color:#64748b}
+
+    /* --- Mobile fixes --- */
+    /* Allow the Add Trade form to wrap and scroll on phones */
+    #tradeForm{flex-wrap:wrap}
+    @media (max-width: 640px){
+      .container{padding:0 14px}
+      #tradeForm{max-height:58vh; overflow:auto; -webkit-overflow-scrolling:touch; }
+      .table-wrap{max-height:60vh; overflow:auto; -webkit-overflow-scrolling:touch;}
+      .chart-body{height:300px}
+    }
   </style>
 </head>
 <body>
   <div class="topbar">
     <div class="container row between" style="padding:14px 24px;">
-      <div class="crumbs"><span>Dashboard</span> <span class="pill" id="whoami"></span></div>
+      <div class="crumbs"><span>Dashboard</span> <small id="whoami" style="color:#64748b"></small></div>
       <div class="row"><button class="btn sm" id="btnSignOut">Sign out</button></div>
     </div>
   </div>
@@ -86,11 +117,21 @@
     <section class="grid grid-2" style="margin-top:16px">
       <div class="card chart-card">
         <div class="card-h"><div class="section-title">PnL Over Time</div></div>
-        <div class="card-c"><div class="chart-body" id="lineWrap"><svg class="chart" id="lineChart"></svg><div id="tooltipLine" class="tooltip" style="display:none;"></div></div></div>
+        <div class="card-c">
+          <div class="chart-body" id="lineWrap">
+            <svg class="chart" id="lineChart"></svg>
+            <div id="tooltipLine" class="tooltip" style="display:none;"></div>
+          </div>
+        </div>
       </div>
       <div class="card chart-card">
         <div class="card-h"><div class="section-title">P/L by Symbol</div></div>
-        <div class="card-c"><div class="chart-body" id="barWrap"><svg class="chart" id="barChart"></svg><div id="tooltipBar" class="tooltip" style="display:none;"></div></div></div>
+        <div class="card-c">
+          <div class="chart-body" id="barWrap">
+            <svg class="chart" id="barChart"></svg>
+            <div id="tooltipBar" class="tooltip" style="display:none;"></div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -143,11 +184,8 @@
       getFirestore, collection, addDoc, doc, updateDoc, deleteDoc,
       onSnapshot, query, orderBy, serverTimestamp, enableIndexedDbPersistence
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-    import {
-      getAuth, onAuthStateChanged, signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-    // ---- Your Firebase config ----
     const firebaseConfig = {
       apiKey: "AIzaSyDbmcQAhQrdNzS13l2fVSWqyPPfJN2JjgE",
       authDomain: "journal-6e115.firebaseapp.com",
@@ -160,8 +198,6 @@
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
     const auth= getAuth(app);
-
-    // Optional offline cache
     enableIndexedDbPersistence(db).catch(() => {});
 
     /* ---------- State & utils ---------- */
@@ -170,41 +206,22 @@
     const nf2 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const usd = n => n.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
     const parseDate = s => { const m = /^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); if(!m) return null; const d = new Date(+m[3], +m[2]-1, +m[1]); return d && d.getMonth()==(+m[2]-1)? d : null; };
-    const normTrade = t => ({ id:t.id, date:t.date, symbol:String(t.symbol||'').toUpperCase(), entry:+t.entry, sl:+t.sl, tp:+t.tp, netpl:+t.netpl, notes:String(t.notes||'') });
     const varColor = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#3b82f6';
     const escapeHtml = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","&gt;":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    const normTrade = t => ({ id:t.id, date:t.date, symbol:String(t.symbol||'').toUpperCase(), entry:+t.entry, sl:+t.sl, tp:+t.tp, netpl:+t.netpl, notes:String(t.notes||'') });
 
     /* ---------- Firestore helpers ---------- */
     const tradesCol = () => collection(db, 'users', state.uid, 'trades');
 
     async function fbAddTrade(t) {
       const d = parseDate(t.date); if(!d) throw new Error('Invalid date');
-      await addDoc(tradesCol(), {
-        date: t.date,
-        dateTS: d.getTime(),
-        symbol: t.symbol,
-        entry: t.entry,
-        sl: t.sl,
-        tp: t.tp,
-        netpl: t.netpl,
-        notes: t.notes || '',
-        createdAt: serverTimestamp()
-      });
+      await addDoc(tradesCol(), { date:t.date, dateTS:d.getTime(), symbol:t.symbol, entry:t.entry, sl:t.sl, tp:t.tp, netpl:t.netpl, notes:t.notes||'', createdAt:serverTimestamp() });
     }
     async function fbUpdateTrade(id, t) {
       const d = parseDate(t.date); if(!d) throw new Error('Invalid date');
-      await updateDoc(doc(db, 'users', state.uid, 'trades', id), {
-        date: t.date,
-        dateTS: d.getTime(),
-        symbol: t.symbol,
-        entry: t.entry,
-        sl: t.sl,
-        tp: t.tp,
-        netpl: t.netpl,
-        notes: t.notes || ''
-      });
+      await updateDoc(doc(db,'users',state.uid,'trades',id), { date:t.date, dateTS:d.getTime(), symbol:t.symbol, entry:t.entry, sl:t.sl, tp:t.tp, netpl:t.netpl, notes:t.notes||'' });
     }
-    async function fbDeleteTrade(id) { await deleteDoc(doc(db, 'users', state.uid, 'trades', id)); }
+    async function fbDeleteTrade(id) { await deleteDoc(doc(db,'users',state.uid,'trades',id)); }
 
     function startRealtime() {
       if (state.unsub) state.unsub();
@@ -212,7 +229,7 @@
       state.unsub = onSnapshot(qy, (snap) => {
         state.trades = snap.docs.map(d => {
           const x = d.data();
-          return normTrade({ id: d.id, date: x.date, symbol: x.symbol, entry: x.entry, sl: x.sl, tp: x.tp, netpl: x.netpl, notes: x.notes || '' });
+          return normTrade({ id:d.id, date:x.date, symbol:x.symbol, entry:x.entry, sl:x.sl, tp:x.tp, netpl:x.netpl, notes:x.notes||'' });
         });
         state.editId = null;
         render();
@@ -305,61 +322,150 @@
       }).join('');
     }
 
-    /* ---------- Charts ---------- */
+    /* ---------- Charts (with label clamping so last date isn't cut) ---------- */
     function clearSVG(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
-    function elSVG(name, attrs={}, text){ const n=document.createElementNS('http://www.w3.org/2000/svg',name); for(const k in attrs){ n.setAttribute(k, attrs[k]); } if(text!=null) n.textContent=text; return n; }
+    function elSVG(name, attrs={}, text){
+      const n=document.createElementNS('http://www.w3.org/2000/svg',name);
+      for(const k in attrs){ n.setAttribute(k, attrs[k]); }
+      if(text!=null) n.textContent=text;
+      return n;
+    }
 
     function drawLineChart(svg, wrap, data){
       clearSVG(svg);
       const rect = wrap.getBoundingClientRect();
-      const width = Math.max(300, rect.width), height = Math.max(220, rect.height);
-      svg.setAttribute('width', width); svg.setAttribute('height', height);
-      const pad = { top:20, right:16, bottom:36, left:56 }, w = width - pad.left - pad.right, h = height - pad.top - pad.bottom;
+      const width = Math.max(300, rect.width);
+      const height = Math.max(220, rect.height);
+      svg.setAttribute('width', width);
+      svg.setAttribute('height', height);
+
+      // increase right padding to keep last label visible
+      const pad = { top:20, right:64, bottom:36, left:56 };
+      const w = width - pad.left - pad.right;
+      const h = height - pad.top - pad.bottom;
+
       const xs = i => pad.left + (i/Math.max(1, data.length-1))*w;
-      const vals = data.map(d=>d.pnl); const minV = Math.min(0, ...vals, 0); const maxV = Math.max(0, ...vals, 0);
-      const rangePad = Math.max(10, (maxV - minV) * 0.1); const yMin = minV - rangePad, yMax = maxV + rangePad;
+      const vals = data.map(d=>d.pnl);
+      const minV = Math.min(0, ...vals, 0);
+      const maxV = Math.max(0, ...vals, 0);
+      const rangePad = Math.max(10, (maxV - minV) * 0.1);
+      const yMin = minV - rangePad, yMax = maxV + rangePad;
       const ys = v => pad.top + (1 - (v - yMin) / (yMax - yMin)) * h;
+
       const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
-      for(let i=0;i<=5;i++){ const tv = yMin + (i/5) * (yMax - yMin); const y = ys(tv);
+
+      // grid & y labels
+      const ticks = 5;
+      for(let i=0;i<=ticks;i++){
+        const tv = yMin + (i/ticks) * (yMax - yMin);
+        const y = ys(tv);
         svg.appendChild(elSVG('line',{x1:pad.left,x2:width-pad.right,y1:y,y2:y,stroke:'#e5e7eb'}));
         svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
       }
-      data.forEach((d,i)=> svg.appendChild(elSVG('text',{x:xs(i), y:height-12, fill:'#6b7280','font-size':12,'text-anchor':'middle'}, d.t)));
-      if(data.length){ let dAttr=''; data.forEach((d,i)=>{ const x=xs(i), y=ys(d.pnl); dAttr += (i?` L ${x} ${y}`:`M ${x} ${y}`); });
-        svg.appendChild(elSVG('path',{d:dAttr,fill:'none',stroke:varColor('--blue'),'stroke-width':3,'vector-effect':'non-scaling-stroke'})); }
-      const tooltip = wrap.querySelector('#tooltipLine'); let dot = elSVG('circle',{r:4,fill:varColor('--blue')}); dot.style.display='none'; svg.appendChild(dot);
-      function showAt(clientX){ if(!data.length) return; const bb = svg.getBoundingClientRect(); const rx = clientX - bb.left;
+      // x labels (clamp to keep inside chart area)
+      data.forEach((d,i)=>{
+        const rawX = xs(i);
+        const x = Math.min(width - pad.right - 6, Math.max(pad.left + 6, rawX));
+        const anchor = i===0 ? 'start' : (i===data.length-1 ? 'end' : 'middle');
+        svg.appendChild(elSVG('text',{x, y:height-12, fill:'#6b7280','font-size':12,'text-anchor':anchor}, d.t));
+      });
+
+      if(data.length){
+        let dAttr = '';
+        data.forEach((d,i)=>{
+          const x = xs(i), y = ys(d.pnl);
+          dAttr += (i ? ` L ${x} ${y}` : `M ${x} ${y}`);
+        });
+        const path = elSVG('path',{d:dAttr,fill:'none',stroke:varColor('--blue'),'stroke-width':3, 'vector-effect':'non-scaling-stroke'});
+        svg.appendChild(path);
+      }
+
+      const tooltip = wrap.querySelector('#tooltipLine');
+      let dot = elSVG('circle',{r:4,fill:varColor('--blue')}); dot.style.display='none'; svg.appendChild(dot);
+      function showAt(clientX){
+        if(!data.length) return;
+        const bb = svg.getBoundingClientRect();
+        const rx = clientX - bb.left;
         const idx = Math.max(0, Math.min(data.length-1, Math.round((rx - pad.left)/w*(data.length-1))));
-        const d = data[idx]; const x=xs(idx), y=ys(d.pnl); dot.style.display=''; dot.setAttribute('cx',x); dot.setAttribute('cy',y);
-        tooltip.style.display='block'; const signed = v => (v>=0? '+':'-') + `$${Math.abs(v).toFixed(2)}`;
-        tooltip.textContent = `${d.t} · PnL ${signed(d.pnl)}`; tooltip.style.left = (bb.left + x + 8) + 'px'; tooltip.style.top = (bb.top + y - 28) + 'px'; }
-      svg.onmousemove = e => showAt(e.clientX); svg.onmouseleave = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
-      svg.ontouchstart = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); }; svg.ontouchmove = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
+        const d = data[idx];
+        const x = xs(idx), y = ys(d.pnl);
+        dot.style.display=''; dot.setAttribute('cx',x); dot.setAttribute('cy',y);
+        tooltip.style.display='block';
+        const signed = v => (v>=0? '+':'-') + `$${Math.abs(v).toFixed(2)}`;
+        tooltip.textContent = `${d.t} · PnL ${signed(d.pnl)}`;
+        tooltip.style.left = (bb.left + x + 8) + 'px';
+        tooltip.style.top = (bb.top + y - 28) + 'px';
+      }
+      svg.onmousemove = e => showAt(e.clientX);
+      svg.onmouseleave = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
+      svg.ontouchstart = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
+      svg.ontouchmove = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
       svg.ontouchend = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
     }
 
     function drawBarChart(svg, wrap, agg){
       clearSVG(svg);
       const rect = wrap.getBoundingClientRect();
-      const width = Math.max(300, rect.width), height = Math.max(220, rect.height);
-      svg.setAttribute('width', width); svg.setAttribute('height', height);
-      const pad = { top:20, right:16, bottom:36, left:56 }, w = width - pad.left - pad.right, h = height - pad.top - pad.bottom;
-      const labels = (agg.labels && agg.labels.length) ? agg.labels : ['—']; const values = (agg.values && agg.values.length) ? agg.values : [0];
-      const n = Math.max(1, labels.length), band = w/n, barW = Math.max(22, band*0.6), xs = i => pad.left + band*i + (band - barW)/2;
-      const minV = Math.min(0, ...values), maxV = Math.max(0, ...values), rangePad = Math.max(10, (maxV - minV) * 0.1);
-      const yMin = minV - rangePad, yMax = maxV + rangePad, ys = v => pad.top + (1 - (v - yMin) / (yMax - yMin)) * h;
+      const width = Math.max(300, rect.width);
+      const height = Math.max(220, rect.height);
+      svg.setAttribute('width', width);
+      svg.setAttribute('height', height);
+
+      const pad = { top:20, right:64, bottom:36, left:56 };
+      const w = width - pad.left - pad.right;
+      const h = height - pad.top - pad.bottom;
+
+      const labels = (agg.labels && agg.labels.length) ? agg.labels : ['—'];
+      const values = (agg.values && agg.values.length) ? agg.values : [0];
+
+      const n = Math.max(1, labels.length);
+      const band = w / n;
+      const barW = Math.max(22, band * 0.6);
+      const xs = i => pad.left + band*i + (band - barW)/2;
+
+      const minV = Math.min(0, ...values);
+      const maxV = Math.max(0, ...values);
+      const rangePad = Math.max(10, (maxV - minV) * 0.1);
+      const yMin = minV - rangePad, yMax = maxV + rangePad;
+      const ys = v => pad.top + (1 - (v - yMin) / (yMax - yMin)) * (h);
+
       const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
-      for(let i=0;i<=5;i++){ const tv = yMin + (i/5) * (yMax - yMin); const y = ys(tv);
+
+      const ticks = 5;
+      for(let i=0;i<=ticks;i++){
+        const tv = yMin + (i/ticks) * (yMax - yMin);
+        const y = ys(tv);
         svg.appendChild(elSVG('line',{x1:pad.left,x2:width-pad.right,y1:y,y2:y,stroke:'#e5e7eb'}));
-        svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv))); }
-      labels.forEach((lab,i)=> svg.appendChild(elSVG('text',{x:pad.left + band*i + band/2, y:height-12, fill:'#6b7280','font-size':12,'text-anchor':'middle'}, lab)));
-      const tooltip = wrap.querySelector('#tooltipBar'); const zeroY = ys(0);
-      values.forEach((v,i)=>{ const x=xs(i), y=v>=0? ys(v):zeroY, bh=Math.abs(ys(v)-zeroY), color=v>=0? varColor('--ok'):varColor('--danger');
-        const r = elSVG('rect',{x, y, width:barW, height:bh, fill:color, rx:6, ry:6, 'vector-effect':'non-scaling-stroke'}); svg.appendChild(r);
-        function showAt(clientX, clientY){ tooltip.style.display='block'; tooltip.textContent = `${labels[i]} · ${v>=0?'+':'-'}$${Math.abs(v).toFixed(2)}`; tooltip.style.left = (clientX + 8) + 'px'; tooltip.style.top = (clientY - 28) + 'px'; }
-        r.addEventListener('mousemove', (e)=>{ showAt(e.clientX, e.clientY); }); r.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
+        svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
+      }
+      labels.forEach((lab,i)=>{
+        const rawX = pad.left + band*i + band/2;
+        const x = Math.min(width - pad.right - 6, Math.max(pad.left + 6, rawX));
+        const anchor = i===0 ? 'start' : (i===labels.length-1 ? 'end' : 'middle');
+        svg.appendChild(elSVG('text',{x, y:height-12, fill:'#6b7280','font-size':12,'text-anchor':anchor}, lab));
+      });
+
+      const tooltip = wrap.querySelector('#tooltipBar');
+      const zeroY = ys(0);
+      values.forEach((v,i)=>{
+        const x = xs(i);
+        const y = v>=0 ? ys(v) : zeroY;
+        const bh = Math.abs(ys(v) - zeroY);
+        const color = v>=0 ? varColor('--ok') : varColor('--danger');
+        const r = elSVG('rect',{x, y, width:barW, height:bh, fill:color, rx:6, ry:6, 'vector-effect':'non-scaling-stroke'});
+        svg.appendChild(r);
+
+        function showAt(clientX, clientY){
+          tooltip.style.display='block';
+          tooltip.textContent = `${labels[i]} · ${v>=0?'+':'-'}$${Math.abs(v).toFixed(2)}`;
+          tooltip.style.left = (clientX + 8) + 'px';
+          tooltip.style.top = (clientY - 28) + 'px';
+        }
+        r.addEventListener('mousemove', (e)=>{ showAt(e.clientX, e.clientY); });
+        r.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
         r.addEventListener('touchstart', (e)=>{ if(e.touches[0]) showAt(e.touches[0].clientX, e.touches[0].clientY); });
-        r.addEventListener('touchmove', (e)=>{ if(e.touches[0]) showAt(e.touches[0].clientX, e.touches[0].clientY); }); r.addEventListener('touchend', ()=>{ tooltip.style.display='none'; });
+        r.addEventListener('touchmove', (e)=>{ if(e.touches[0]) showAt(e.touches[0].clientX, e.touches[0].clientY); });
+        r.addEventListener('touchend', ()=>{ tooltip.style.display='none'; });
       });
     }
 
@@ -372,12 +478,14 @@
         const btn = e.submitter; btn && (btn.disabled = true);
         try {
           const t = normTrade({
-            date:$('#date').value.trim(), symbol:$('#symbol').value.trim(),
+            date:$('#date').value.trim(),
+            symbol:$('#symbol').value.trim(),
             entry:$('#entry').value, sl:$('#sl').value, tp:$('#tp').value,
             netpl:$('#netpl').value, notes:$('#notes').value
           });
           if(!parseDate(t.date) || !t.symbol){ alert('Check date format and symbol'); return; }
-          await fbAddTrade(t); e.target.reset();
+          await fbAddTrade(t);
+          e.target.reset();
         } catch(err){ console.error(err); alert('Could not save trade.'); }
         finally { btn && (btn.disabled = false); }
       });
@@ -432,11 +540,7 @@
     onAuthStateChanged(auth, (user)=>{
       const who = document.getElementById('whoami');
       if (!user) { location.href = 'index.html'; return; }
-      if (user.isAnonymous) { // shouldn’t happen if you came via index.html flow
-        who.textContent = `Anonymous (${user.uid.slice(0,6)}…)`;
-      } else {
-        who.textContent = `Signed in as ${user.email}`;
-      }
+      who.textContent = user.email || user.uid;
       if (state.uid !== user.uid) {
         state.uid = user.uid;
         startRealtime();
