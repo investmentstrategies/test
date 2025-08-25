@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <!-- Prevent pinch-zoom & keep scale stable on phones -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta name="format-detection" content="telephone=no">
   <title>Trading Journal Dashboard</title>
@@ -22,7 +21,6 @@
     body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;color:var(--text);background:var(--bg)}
     .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-    /* Header is NO LONGER STICKY */
     .topbar{position:static; border-bottom:1px solid var(--border); background:#fff}
     .row{display:flex;gap:16px}
     .between{justify-content:space-between;align-items:center}
@@ -57,7 +55,7 @@
     .input, select, textarea.input{
       width:100%;background:#fff;color:var(--text);border:1px solid var(--border);
       border-radius:10px;padding:10px 12px;font-size:16px
-    } /* >=16px to prevent iOS zoom */
+    }
     .input:focus, select:focus, textarea.input:focus{outline:none;box-shadow:0 0 0 3px rgba(59,130,246,.2)}
     textarea.input{resize:vertical; min-height:80px;}
     label{display:block;font-size:12px;color:var(--muted);margin:2px 2px 6px}
@@ -80,7 +78,7 @@
     .chart-body svg.chart{position:absolute;inset:0;width:100%;height:100%}
     .tooltip{position:fixed;background:#111827;color:#fff;border-radius:8px;padding:6px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none}
 
-    /* --- Add Trade form layout (grid) --- */
+    /* Add Trade grid */
     #tradeForm{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -88,9 +86,8 @@
       align-items:end;
       max-height:58vh; overflow:auto; -webkit-overflow-scrolling:touch;
     }
-    .field.notes{ grid-column: 1 / -1; } /* notes spans full row below */
+    .field.notes{ grid-column: 1 / -1; }
 
-    /* Make links in the notes column look nice */
     td.notes a { color: var(--blue); text-decoration: underline; word-break: break-word; }
 
     @media (max-width: 640px){
@@ -159,6 +156,9 @@
           <div class="field small"><label for="tp">TP</label><input id="tp" class="input mono" type="number" step="0.000001" inputmode="decimal" required /></div>
           <div class="field small"><label for="netpl">Net P/L ($)</label><input id="netpl" class="input mono" type="number" step="0.01" inputmode="decimal" required /></div>
 
+          <!-- NEW: Risk amount -->
+          <div class="field small"><label for="risk">Risk ($)</label><input id="risk" class="input mono" type="number" step="0.01" inputmode="decimal" placeholder="optional" /></div>
+
           <div class="field notes">
             <label for="notes">Notes</label>
             <textarea id="notes" class="input mono" rows="3" placeholder="Optional"></textarea>
@@ -186,11 +186,11 @@
         <table id="tradesTable">
           <thead>
             <tr>
-              <th>Date</th><th>Symbol</th><th>Entry</th><th>SL</th><th>TP</th><th>Net P/L ($)</th><th>Notes</th><th>Actions</th>
+              <th>Date</th><th>Symbol</th><th>Entry</th><th>SL</th><th>TP</th><th>Net P/L ($)</th><th>Risk ($)</th><th>Notes</th><th>Actions</th>
             </tr>
           </thead>
           <tbody id="tableBody">
-            <tr><td colspan="8" style="color:var(--muted)">Loading…</td></tr>
+            <tr><td colspan="9" style="color:var(--muted)">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -201,7 +201,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { 
+    import {
       getFirestore, collection, addDoc, doc, updateDoc, deleteDoc,
       onSnapshot, query, orderBy, serverTimestamp, enableIndexedDbPersistence
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -226,41 +226,36 @@
     const $ = s => document.querySelector(s);
     const nf2 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const nf6 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 6 });
-    const usd = n => n.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
+    const usd = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); // force $ not US$
     const parseDate = s => { const m = /^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); if(!m) return null; const d = new Date(+m[3], +m[2]-1, +m[1]); return d && d.getMonth()==(+m[2]-1)? d : null; };
     const varColor = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#3b82f6';
-    const escapeHtml = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-    const normTrade = t => ({ id:t.id, date:t.date, symbol:String(t.symbol||'').toUpperCase(), entry:+t.entry, sl:+t.sl, tp:+t.tp, netpl:+t.netpl, notes:String(t.notes||'') });
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","~":"&quot;","'":"&#39;"}[c]));
+    const normTrade = t => ({
+      id:t.id,
+      date:t.date,
+      symbol:String(t.symbol||'').toUpperCase(),
+      entry:+t.entry, sl:+t.sl, tp:+t.tp, netpl:+t.netpl,
+      risk: Math.abs(+t.risk || 0),
+      notes:String(t.notes||'')
+    });
 
-    /* ---------- Linkify Notes safely ---------- */
-    function escapeAndBreak(s){ return escapeHtml(s).replace(/\n/g,'<br>'); }
+    /* ---------- linkify notes ---------- */
+    function escapeAndBreak(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])).replace(/\n/g,'<br>'); }
     function safeLinkify(text){
       if(!text) return '';
-      // support http(s)://, www., and common typo www/
       const re = /((https?:\/\/|www[./])[^\s<]+)/gi;
-      const parts = [];
-      let last = 0, m;
+      const parts = []; let last = 0, m;
       while((m = re.exec(text)) !== null){
-        const full = m[0];
-        const start = m.index;
-        // preceding text
+        const full = m[0], start = m.index;
         parts.push(escapeAndBreak(text.slice(last, start)));
-
-        // Normalize "www/" -> "www."
         let url = full.replace(/^www\//i, 'www.');
-        // Strip trailing punctuation from the URL token
         let trail = '';
         while(/[),.;!?]$/.test(url)){ trail = url.slice(-1) + trail; url = url.slice(0,-1); }
-
-        let href = url;
-        if(/^www[./]/i.test(url)) href = 'https://' + url.replace(/^www\./i,'www.');
-        if(!/^https?:\/\//i.test(href)) href = 'https://' + href; // fallback
-
-        parts.push(`<a href="${href}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>`);
+        let href = /^https?:\/\//i.test(url) ? url : 'https://' + url.replace(/^www\./i,'www.');
+        parts.push(`<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`);
         if(trail) parts.push(escapeAndBreak(trail));
         last = start + full.length;
       }
-      // tail
       parts.push(escapeAndBreak(text.slice(last)));
       return parts.join('');
     }
@@ -270,11 +265,19 @@
 
     async function fbAddTrade(t) {
       const d = parseDate(t.date); if(!d) throw new Error('Invalid date');
-      await addDoc(tradesCol(), { date:t.date, dateTS:d.getTime(), symbol:t.symbol, entry:t.entry, sl:t.sl, tp:t.tp, netpl:t.netpl, notes:t.notes||'', createdAt:serverTimestamp() });
+      await addDoc(tradesCol(), {
+        date:t.date, dateTS:d.getTime(), symbol:t.symbol,
+        entry:t.entry, sl:t.sl, tp:t.tp, netpl:t.netpl,
+        risk:t.risk, notes:t.notes||'', createdAt:serverTimestamp()
+      });
     }
     async function fbUpdateTrade(id, t) {
       const d = parseDate(t.date); if(!d) throw new Error('Invalid date');
-      await updateDoc(doc(db,'users',state.uid,'trades',id), { date:t.date, dateTS:d.getTime(), symbol:t.symbol, entry:t.entry, sl:t.sl, tp:t.tp, netpl:t.netpl, notes:t.notes||'' });
+      await updateDoc(doc(db,'users',state.uid,'trades',id), {
+        date:t.date, dateTS:d.getTime(), symbol:t.symbol,
+        entry:t.entry, sl:t.sl, tp:t.tp, netpl:t.netpl,
+        risk:t.risk, notes:t.notes||''
+      });
     }
     async function fbDeleteTrade(id) { await deleteDoc(doc(db,'users',state.uid,'trades',id)); }
 
@@ -284,7 +287,11 @@
       state.unsub = onSnapshot(qy, (snap) => {
         state.trades = snap.docs.map(d => {
           const x = d.data();
-          return normTrade({ id:d.id, date:x.date, symbol:x.symbol, entry:x.entry, sl:x.sl, tp:x.tp, netpl:x.netpl, notes:x.notes||'' });
+          return normTrade({
+            id:d.id, date:x.date, symbol:x.symbol,
+            entry:x.entry, sl:x.sl, tp:x.tp, netpl:x.netpl,
+            risk:(x.risk ?? 0), notes:x.notes||''
+          });
         });
         state.editId = null;
         render();
@@ -305,18 +312,12 @@
       return { totalPL, winRate, avgWin, avgLoss, pf };
     }
 
-    // CUMULATIVE daily series (running total).
     function buildPnlSeries(list){
       const byDate = new Map();
-      for(const t of list){
-        byDate.set(t.date, (byDate.get(t.date)||0) + t.netpl);
-      }
+      for(const t of list){ byDate.set(t.date, (byDate.get(t.date)||0) + t.netpl); }
       const dates = Array.from(byDate.keys()).sort((a,b)=> parseDate(a) - parseDate(b));
       let cum = 0; const out=[];
-      for(const d of dates){
-        cum += byDate.get(d);
-        out.push({ t:d, pnl:cum });
-      }
+      for(const d of dates){ cum += byDate.get(d); out.push({ t:d, pnl:cum }); }
       return out;
     }
 
@@ -349,10 +350,14 @@
 
     function renderTable(list){
       const tb = $('#tableBody');
-      if(!list.length){ tb.innerHTML = `<tr><td colspan="8" style="color:var(--muted)">No trades yet. Add your first trade above.</td></tr>`; return; }
+      if(!list.length){
+        tb.innerHTML = `<tr><td colspan="9" style="color:var(--muted)">No trades yet. Add your first trade above.</td></tr>`;
+        return;
+      }
       tb.innerHTML = list.map(t=>{
         const editing = state.editId===t.id;
         if(!editing){
+          let notesHTML; try{ notesHTML = safeLinkify(t.notes); } catch(e){ notesHTML = escapeAndBreak(t.notes||''); }
           return `
           <tr data-id="${t.id}">
             <td class="mono">${t.date}</td>
@@ -361,7 +366,8 @@
             <td class="mono">${nf6.format(t.sl)}</td>
             <td class="mono">${nf6.format(t.tp)}</td>
             <td class="mono ${t.netpl>=0? 'pl-pos':'pl-neg'}">${usd(t.netpl)}</td>
-            <td class="notes">${safeLinkify(t.notes)}</td>
+            <td class="mono">${usd(t.risk || 0)}</td>
+            <td class="notes">${notesHTML}</td>
             <td>
               <button class="btn sm btn-edit">Edit</button>
               <button class="btn sm btn-del">Delete</button>
@@ -370,15 +376,14 @@
         }
         return `
           <tr data-id="${t.id}">
-            <td><input class="input mono" value="${escapeHtml(t.date)}" /></td>
-            <td><input class="input mono" value="${escapeHtml(t.symbol)}" /></td>
+            <td><input class="input mono" value="${t.date}"/></td>
+            <td><input class="input mono" value="${t.symbol}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.entry}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.sl}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.tp}"/></td>
             <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.netpl}"/></td>
-            <td>
-              <textarea class="input mono" rows="2">${escapeHtml(t.notes)}</textarea>
-            </td>
+            <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.risk || 0}"/></td>
+            <td><textarea class="input mono" rows="2">${t.notes||''}</textarea></td>
             <td>
               <button class="btn primary btn-save">Save</button>
               <button class="btn sm btn-cancel">Cancel</button>
@@ -396,15 +401,18 @@
       return n;
     }
 
+    // line chart (with rotated labels on mobile if needed)
+    function shortDM(s){ const m=/^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); return m?`${m[1]}-${m[2]}`:s; }
     function drawLineChart(svg, wrap, data){
       clearSVG(svg);
       const rect = wrap.getBoundingClientRect();
-      const width = Math.max(300, rect.width);
+      const width  = Math.max(300, rect.width);
       const height = Math.max(220, rect.height);
       svg.setAttribute('width', width);
       svg.setAttribute('height', height);
 
-      const pad = { top:20, right:64, bottom:36, left:56 };
+      const rotateLabels = (width < 520) || (data.length > 8);
+      const pad = { top:20, right:64, bottom: rotateLabels ? 120 : 36, left:56 };
       const w = width - pad.left - pad.right;
       const h = height - pad.top - pad.bottom;
 
@@ -425,21 +433,27 @@
         svg.appendChild(elSVG('line',{x1:pad.left,x2:width-pad.right,y1:y,y2:y,stroke:'#e5e7eb'}));
         svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
       }
+
+      const maxLabels = rotateLabels ? 12 : 8;
+      const step = Math.max(1, Math.ceil(data.length / maxLabels));
       data.forEach((d,i)=>{
+        if (i % step) return;
+        const label = shortDM(d.t);
         const rawX = xs(i);
         const x = Math.min(width - pad.right - 6, Math.max(pad.left + 6, rawX));
-        const anchor = i===0 ? 'start' : (i===data.length-1 ? 'end' : 'middle');
-        svg.appendChild(elSVG('text',{x, y:height-12, fill:'#6b7280','font-size':12,'text-anchor':anchor}, d.t));
+        if (rotateLabels){
+          const t = elSVG('text',{transform:`translate(${x},${height - pad.bottom + 74}) rotate(-65)`,fill:'#6b7280','font-size':12,'text-anchor':'end'}, label);
+          svg.appendChild(t);
+        } else {
+          const anchor = i===0 ? 'start' : (i===data.length-1 ? 'end' : 'middle');
+          svg.appendChild(elSVG('text',{x, y:height-12, fill:'#6b7280','font-size':12,'text-anchor':anchor}, label));
+        }
       });
 
       if(data.length){
         let dAttr = '';
-        data.forEach((d,i)=>{
-          const x = xs(i), y = ys(d.pnl);
-          dAttr += (i ? ` L ${x} ${y}` : `M ${x} ${y}`);
-        });
-        const path = elSVG('path',{d:dAttr,fill:'none',stroke:varColor('--blue'),'stroke-width':3, 'vector-effect':'non-scaling-stroke'});
-        svg.appendChild(path);
+        data.forEach((d,i)=>{ const x=xs(i), y=ys(d.pnl); dAttr += (i?` L ${x} ${y}`:`M ${x} ${y}`); });
+        svg.appendChild(elSVG('path',{d:dAttr,fill:'none',stroke:varColor('--blue'),'stroke-width':3,'vector-effect':'non-scaling-stroke'}));
       }
 
       const tooltip = wrap.querySelector('#tooltipLine');
@@ -452,17 +466,17 @@
         const d = data[idx];
         const x = xs(idx), y = ys(d.pnl);
         dot.style.display=''; dot.setAttribute('cx',x); dot.setAttribute('cy',y);
-        tooltip.style.display='block';
         const signed = v => (v>=0? '+':'-') + `$${Math.abs(v).toFixed(2)}`;
-        tooltip.textContent = `${d.t} · Cumulative PnL ${signed(d.pnl)}`;
+        tooltip.style.display='block';
+        tooltip.textContent = `${shortDM(d.t)} · Cumulative PnL ${signed(d.pnl)}`;
         tooltip.style.left = (bb.left + x + 8) + 'px';
-        tooltip.style.top = (bb.top + y - 28) + 'px';
+        tooltip.style.top  = (bb.top + y - 28) + 'px';
       }
       svg.onmousemove = e => showAt(e.clientX);
       svg.onmouseleave = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
       svg.ontouchstart = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
-      svg.ontouchmove = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
-      svg.ontouchend = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
+      svg.ontouchmove  = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
+      svg.ontouchend   = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
     }
 
     function drawBarChart(svg, wrap, agg){
@@ -543,7 +557,8 @@
             date:$('#date').value.trim(),
             symbol:$('#symbol').value.trim(),
             entry:$('#entry').value, sl:$('#sl').value, tp:$('#tp').value,
-            netpl:$('#netpl').value, notes:$('#notes').value
+            netpl:$('#netpl').value, risk:$('#risk').value,  // NEW
+            notes:$('#notes').value
           });
           if(!parseDate(t.date) || !t.symbol){ alert('Check date format and symbol'); return; }
           await fbAddTrade(t);
@@ -561,24 +576,22 @@
         if(btn.classList.contains('btn-edit')){ state.editId = id; render(); return; }
         if(btn.classList.contains('btn-cancel')){ state.editId = null; render(); return; }
         if(btn.classList.contains('btn-save')){
-          // Grab inputs + textarea in the edit row
+          // indices updated to include Risk ($) as column 7, Notes now 8
           const dateEl   = tr.querySelector('td:nth-child(1) input');
           const symEl    = tr.querySelector('td:nth-child(2) input');
           const entryEl  = tr.querySelector('td:nth-child(3) input');
           const slEl     = tr.querySelector('td:nth-child(4) input');
           const tpEl     = tr.querySelector('td:nth-child(5) input');
           const netplEl  = tr.querySelector('td:nth-child(6) input');
-          const notesEl  = tr.querySelector('td:nth-child(7) textarea');
+          const riskEl   = tr.querySelector('td:nth-child(7) input');
+          const notesEl  = tr.querySelector('td:nth-child(8) textarea');
 
           const t = normTrade({
             id,
             date:dateEl.value.trim(),
             symbol:symEl.value.trim(),
-            entry:entryEl.value,
-            sl:slEl.value,
-            tp:tpEl.value,
-            netpl:netplEl.value,
-            notes:notesEl.value
+            entry:entryEl.value, sl:slEl.value, tp:tpEl.value,
+            netpl:netplEl.value, risk:riskEl.value, notes:notesEl.value
           });
           if(!parseDate(t.date) || !t.symbol){ alert('Check date format and symbol'); return; }
           await fbUpdateTrade(id, t); state.editId=null;
@@ -595,13 +608,13 @@
 
     /* ---------- Export ---------- */
     function exportJSON(){
-      const payload = state.trades.map(({date,symbol,entry,sl,tp,netpl,notes})=>({date,symbol,entry,sl,tp,netpl,notes}));
+      const payload = state.trades.map(({date,symbol,entry,sl,tp,netpl,risk,notes})=>({date,symbol,entry,sl,tp,netpl,risk,notes}));
       downloadBlob(JSON.stringify(payload, null, 2), 'trades.json', 'application/json');
     }
     function exportCSV(){
-      const header = ['Date','Symbol','Entry','SL','TP','NetPL','Notes'];
-      const rows = state.trades.map(t=> [t.date,t.symbol,t.entry,t.sl,t.tp,t.netpl,escapeCSV(t.notes)]);
-      const csv = [header.join(','), ...rows.map(r=> r.map((v,i)=> i===6 ? `"${String(v).replace(/"/g,'""')}"` : v).join(','))].join('\n');
+      const header = ['Date','Symbol','Entry','SL','TP','NetPL','Risk','Notes'];
+      const rows = state.trades.map(t=> [t.date,t.symbol,t.entry,t.sl,t.tp,t.netpl,t.risk,escapeCSV(t.notes)]);
+      const csv = [header.join(','), ...rows.map(r=> r.map((v,i)=> i===7 ? `"${String(v).replace(/"/g,'""')}"` : v).join(','))].join('\n');
       downloadBlob(csv, 'trades.csv', 'text/csv');
     }
     function escapeCSV(s){ return String(s||'').replace(/\r?\n/g,' '); }
@@ -614,7 +627,7 @@
 
     /* ---------- Boot & auth gating ---------- */
     attach();
-    render(); // placeholder until snapshot
+    render();
 
     onAuthStateChanged(auth, (user)=>{
       const who = document.getElementById('whoami');
