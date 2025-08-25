@@ -54,8 +54,12 @@
 
     .footer{padding:40px 0;color:#94a3b8;text-align:center;font-size:12px}
 
-    .input, select{width:100%;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:16px} /* >=16px to prevent iOS zoom */
-    .input:focus, select:focus{outline:none;box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+    .input, select, textarea.input{
+      width:100%;background:#fff;color:var(--text);border:1px solid var(--border);
+      border-radius:10px;padding:10px 12px;font-size:16px
+    } /* >=16px to prevent iOS zoom */
+    .input:focus, select:focus, textarea.input:focus{outline:none;box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+    textarea.input{resize:vertical; min-height:80px;}
     label{display:block;font-size:12px;color:var(--muted);margin:2px 2px 6px}
     .field{min-width:120px}
     .field.small{min-width:90px}
@@ -76,12 +80,18 @@
     .chart-body svg.chart{position:absolute;inset:0;width:100%;height:100%}
     .tooltip{position:fixed;background:#111827;color:#fff;border-radius:8px;padding:6px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none}
 
-    /* --- Mobile fixes --- */
-    /* Allow the Add Trade form to wrap and scroll on phones */
-    #tradeForm{flex-wrap:wrap}
+    /* --- Add Trade form layout (grid) --- */
+    #tradeForm{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap:12px;
+      align-items:end;
+      max-height:58vh; overflow:auto; -webkit-overflow-scrolling:touch;
+    }
+    .field.notes{ grid-column: 1 / -1; } /* notes spans full row below */
+
     @media (max-width: 640px){
       .container{padding:0 14px}
-      #tradeForm{max-height:58vh; overflow:auto; -webkit-overflow-scrolling:touch; }
       .table-wrap{max-height:60vh; overflow:auto; -webkit-overflow-scrolling:touch;}
       .chart-body{height:300px}
     }
@@ -138,15 +148,24 @@
     <section class="card" style="margin-top:16px">
       <div class="card-h"><div class="section-title">Add Trade</div></div>
       <div class="card-c">
-        <form id="tradeForm" class="row" autocomplete="off">
+        <form id="tradeForm" autocomplete="off">
           <div class="field"><label for="symbol">Symbol</label><input id="symbol" class="input mono" placeholder="XAUUSD" required /></div>
           <div class="field small"><label for="date">Date (dd-mm-yyyy)</label><input id="date" class="input mono" placeholder="dd-mm-yyyy" required /></div>
-          <div class="field small"><label for="entry">Entry</label><input id="entry" class="input mono" type="number" step="0.01" required /></div>
-          <div class="field small"><label for="sl">SL</label><input id="sl" class="input mono" type="number" step="0.01" required /></div>
-          <div class="field small"><label for="tp">TP</label><input id="tp" class="input mono" type="number" step="0.01" required /></div>
-          <div class="field small"><label for="netpl">Net P/L ($)</label><input id="netpl" class="input mono" type="number" step="0.01" required /></div>
-          <div class="field" style="flex:1 1 220px"><label for="notes">Notes</label><input id="notes" class="input" placeholder="Optional" /></div>
-          <div class="field" style="min-width:120px; align-self:flex-end"><button class="btn primary" type="submit">Add Trade</button></div>
+          <div class="field small"><label for="entry">Entry</label><input id="entry" class="input mono" type="number" step="0.000001" inputmode="decimal" required /></div>
+          <div class="field small"><label for="sl">SL</label><input id="sl" class="input mono" type="number" step="0.000001" inputmode="decimal" required /></div>
+          <div class="field small"><label for="tp">TP</label><input id="tp" class="input mono" type="number" step="0.000001" inputmode="decimal" required /></div>
+          <div class="field small"><label for="netpl">Net P/L ($)</label><input id="netpl" class="input mono" type="number" step="0.01" inputmode="decimal" required /></div>
+
+          <!-- Notes now same row width feel, but placed BELOW and taller -->
+          <div class="field notes">
+            <label for="notes">Notes</label>
+            <textarea id="notes" class="input mono" rows="3" placeholder="Optional"></textarea>
+          </div>
+
+          <div class="field" style="min-width:120px;">
+            <label>&nbsp;</label>
+            <button class="btn primary" type="submit">Add Trade</button>
+          </div>
         </form>
       </div>
     </section>
@@ -204,6 +223,7 @@
     const state = { trades: [], editId: null, uid: null, unsub: null };
     const $ = s => document.querySelector(s);
     const nf2 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const nf6 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 6 });
     const usd = n => n.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
     const parseDate = s => { const m = /^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); if(!m) return null; const d = new Date(+m[3], +m[2]-1, +m[1]); return d && d.getMonth()==(+m[2]-1)? d : null; };
     const varColor = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#3b82f6';
@@ -294,9 +314,9 @@
           <tr data-id="${t.id}">
             <td class="mono">${t.date}</td>
             <td>${t.symbol}</td>
-            <td class="mono">${nf2.format(t.entry)}</td>
-            <td class="mono">${nf2.format(t.sl)}</td>
-            <td class="mono">${nf2.format(t.tp)}</td>
+            <td class="mono">${nf6.format(t.entry)}</td>
+            <td class="mono">${nf6.format(t.sl)}</td>
+            <td class="mono">${nf6.format(t.tp)}</td>
             <td class="mono ${t.netpl>=0? 'pl-pos':'pl-neg'}">${usd(t.netpl)}</td>
             <td>${escapeHtml(t.notes)}</td>
             <td>
@@ -309,10 +329,10 @@
           <tr data-id="${t.id}">
             <td><input class="input mono" value="${t.date}" /></td>
             <td><input class="input mono" value="${t.symbol}" /></td>
-            <td><input class="input mono" type="number" step="0.01" value="${t.entry}" /></td>
-            <td><input class="input mono" type="number" step="0.01" value="${t.sl}" /></td>
-            <td><input class="input mono" type="number" step="0.01" value="${t.tp}" /></td>
-            <td><input class="input mono" type="number" step="0.01" value="${t.netpl}" /></td>
+            <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.entry}"/></td>
+            <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.sl}"/></td>
+            <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.tp}"/></td>
+            <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.netpl}"/></td>
             <td><input class="input" value="${escapeHtml(t.notes)}" /></td>
             <td>
               <button class="btn primary btn-save">Save</button>
@@ -322,7 +342,7 @@
       }).join('');
     }
 
-    /* ---------- Charts (with label clamping so last date isn't cut) ---------- */
+    /* ---------- Charts (unchanged) ---------- */
     function clearSVG(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
     function elSVG(name, attrs={}, text){
       const n=document.createElementNS('http://www.w3.org/2000/svg',name);
@@ -339,7 +359,6 @@
       svg.setAttribute('width', width);
       svg.setAttribute('height', height);
 
-      // increase right padding to keep last label visible
       const pad = { top:20, right:64, bottom:36, left:56 };
       const w = width - pad.left - pad.right;
       const h = height - pad.top - pad.bottom;
@@ -354,7 +373,6 @@
 
       const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
 
-      // grid & y labels
       const ticks = 5;
       for(let i=0;i<=ticks;i++){
         const tv = yMin + (i/ticks) * (yMax - yMin);
@@ -362,7 +380,6 @@
         svg.appendChild(elSVG('line',{x1:pad.left,x2:width-pad.right,y1:y,y2:y,stroke:'#e5e7eb'}));
         svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
       }
-      // x labels (clamp to keep inside chart area)
       data.forEach((d,i)=>{
         const rawX = xs(i);
         const x = Math.min(width - pad.right - 6, Math.max(pad.left + 6, rawX));
@@ -548,4 +565,4 @@
     });
   </script>
 </body>
-</html>
+</html> 
