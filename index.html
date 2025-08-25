@@ -13,8 +13,7 @@
     body{margin:0;background:radial-gradient(1200px 700px at 80% -10%, #172554, transparent 50%), #0b1220; color:var(--text); font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
     .wrap{min-height:100%;display:grid;place-items:center;padding:24px}
     .card{width:100%;max-width:460px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
-    h1{margin:0 0 6px;font-size:22px}
-    p{margin:0 0 18px;color:var(--muted)}
+    h1{margin:0 0 6px;font-size:22px} p{margin:0 0 18px;color:var(--muted)}
     label{display:block;font-size:12px;color:var(--muted);margin:10px 2px 6px}
     .input{width:100%;padding:10px 12px;border-radius:12px;background:#0b1324;border:1px solid #253046;color:#e5e7eb}
     .row{display:flex;gap:10px;align-items:center}
@@ -44,7 +43,7 @@
       </div>
 
       <label for="email">Email</label>
-      <input id="email" class="input" type="email" placeholder="you@example.com" value="nicolas.gomez.colchero@gmail.com">
+      <input id="email" class="input" type="email" placeholder="you@example.com" value="">
 
       <label for="password">Password</label>
       <input id="password" class="input" type="password" placeholder="••••••••">
@@ -57,16 +56,15 @@
       </div>
       <div id="msg" class="error"></div>
       <div id="ok" class="success"></div>
-      <div class="note">By continuing, you’ll be redirected to your dashboard.</div>
+      <div class="note">You’ll be redirected to your dashboard after authentication.</div>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
-      getAuth, onAuthStateChanged, signInAnonymously,
-      signInWithEmailAndPassword, createUserWithEmailAndPassword,
-      EmailAuthProvider, linkWithCredential
+      getAuth, onAuthStateChanged,
+      signInWithEmailAndPassword, createUserWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
     // ---- Your Firebase config ----
@@ -90,48 +88,37 @@
     const btnLogin= $('#btnLogin');
     const btnSignup=$('#btnSignup');
 
-    function setBusy(b){
-      btnLogin.disabled = b;
-      btnSignup.disabled = b;
-      msgEl.textContent = '';
-      okEl.textContent = '';
-    }
     const goDash = () => location.href = 'dashboard.html';
+    const setBusy = (b) => { btnLogin.disabled = b; btnSignup.disabled = b; msgEl.textContent=''; okEl.textContent=''; };
 
-    // If already logged in, bounce to dashboard
-    onAuthStateChanged(auth, async (user) => {
-      if (user && !user.isAnonymous) goDash();
-      else if (!user) await signInAnonymously(auth);  // allow linking if you want later
-    });
+    // Already signed in? Go straight to dashboard.
+    onAuthStateChanged(auth, (user) => { if (user) goDash(); });
 
+    function prettyAuthError(e){
+      console.error(e);
+      switch (e.code) {
+        case 'auth/user-not-found': return 'No account for that email.';
+        case 'auth/wrong-password': return 'Wrong password.';
+        case 'auth/invalid-email': return 'Invalid email address.';
+        case 'auth/weak-password': return 'Password is too weak.';
+        case 'auth/email-already-in-use': return 'Email already in use.';
+        case 'auth/unauthorized-domain': return 'Unauthorized domain. Add YOUR_USERNAME.github.io in Firebase Auth → Settings → Authorized domains.';
+        default: return e.message || 'Authentication error.';
+      }
+    }
+
+    // ✅ LOGIN button: try sign-in; if not found, create then redirect
     async function loginOrCreate(){
       setBusy(true);
       const email = emailEl.value.trim();
       const password = passEl.value;
       if (!email || !password) { msgEl.textContent = 'Enter email and password.'; setBusy(false); return; }
-
       try {
-        // If currently anonymous, try linking first so any anon data you might add later can migrate
-        if (auth.currentUser?.isAnonymous) {
-          const cred = EmailAuthProvider.credential(email, password);
-          try {
-            await linkWithCredential(auth.currentUser, cred);
-            okEl.textContent = 'Account linked. Redirecting…';
-            goDash();
-            return;
-          } catch (e) {
-            // If the email already exists, fall through to sign-in.
-            if (e.code !== 'auth/credential-already-in-use') throw e;
-          }
-        }
-
-        // Try sign-in
         await signInWithEmailAndPassword(auth, email, password);
         goDash();
       } catch (e) {
         if (e.code === 'auth/user-not-found') {
           try {
-            // Create account if it doesn’t exist
             await createUserWithEmailAndPassword(auth, email, password);
             okEl.textContent = 'Account created. Redirecting…';
             goDash();
@@ -144,25 +131,20 @@
       } finally { setBusy(false); }
     }
 
+    // ✅ SIGNUP button: try create; if email exists, sign in
     async function signupExplicit(){
       setBusy(true);
       const email = emailEl.value.trim();
       const password = passEl.value;
       if (!email || !password) { msgEl.textContent = 'Enter email and password.'; setBusy(false); return; }
       if (password.length < 6) { msgEl.textContent = 'Password must be at least 6 characters.'; setBusy(false); return; }
-
       try {
-        if (auth.currentUser?.isAnonymous) {
-          const cred = EmailAuthProvider.credential(email, password);
-          await linkWithCredential(auth.currentUser, cred); // migrates any anon data
-        } else {
-          await createUserWithEmailAndPassword(auth, email, password);
-        }
+        await createUserWithEmailAndPassword(auth, email, password);
         okEl.textContent = 'Account created. Redirecting…';
         goDash();
       } catch (e) {
-        // If email already exists, just sign in.
         if (e.code === 'auth/email-already-in-use') {
+          // If the account exists already, just sign in.
           try {
             await signInWithEmailAndPassword(auth, email, password);
             goDash();
@@ -175,20 +157,9 @@
       } finally { setBusy(false); }
     }
 
-    function prettyAuthError(e){
-      console.error(e);
-      switch (e.code) {
-        case 'auth/wrong-password': return 'Wrong password.';
-        case 'auth/invalid-email': return 'Invalid email address.';
-        case 'auth/weak-password': return 'Password is too weak.';
-        case 'auth/unauthorized-domain': return 'Unauthorized domain. Add YOUR_USERNAME.github.io in Firebase Auth → Settings → Authorized domains.';
-        default: return e.message || 'Authentication error.';
-      }
-    }
-
+    // 🔁 Correct bindings (this is what was swapped)
     btnLogin.addEventListener('click', loginOrCreate);
     btnSignup.addEventListener('click', signupExplicit);
-    // Enter key
     [emailEl, passEl].forEach(el => el.addEventListener('keydown', e => { if(e.key==='Enter') loginOrCreate(); }));
   </script>
 </body>
