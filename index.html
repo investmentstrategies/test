@@ -29,6 +29,8 @@
     .btn:hover{transform:translateY(-1px)}
     .btn.primary{background:#111827;color:#fff;border-color:#111827}
     .btn.ghost{background:transparent}
+    /* smaller, subtler buttons */
+    .btn.sm{padding:6px 10px;font-size:12px;border-radius:10px;box-shadow:0 1px 4px rgba(15,23,42,.06)}
 
     .header{padding:24px 0}
     .logo{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:#111827;color:#fff;font-weight:700}
@@ -54,15 +56,15 @@
 
     .footer{padding:40px 0;color:#94a3b8;text-align:center;font-size:12px}
 
-    .input, select{width:100%;background:#fff;color:#000;border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+    .input, select{width:100%;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 10px}
     .input:focus, select:focus{outline:none;box-shadow:0 0 0 3px rgba(59,130,246,.2)}
     label{display:block;font-size:12px;color:var(--muted);margin:2px 2px 6px}
     .field{min-width:120px}
     .field.small{min-width:90px}
 
     /* Table */
-    .table-wrap{overflow:auto;-webkit-overflow-scrolling:touch}
-    table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:separate;border-spacing:0}
     thead th{position:sticky;top:0;background:#f1f5f9;text-align:left;font-weight:600;color:#475569;font-size:12px;border-bottom:1px solid var(--border);padding:10px}
     tbody td{border-bottom:1px solid var(--border);padding:10px;vertical-align:top;font-size:13px}
     tbody tr:hover{background:#f8fafc}
@@ -74,33 +76,7 @@
     .chart-card .card-c{padding:0}
     .chart-body{position:relative;height:360px}
     .chart-body svg.chart{position:absolute;inset:0;width:100%;height:100%}
-    .tooltip{position:absolute;background:#111827;color:#fff;border-radius:8px;padding:6px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none}
-
-    /* --------- Responsive tweaks --------- */
-    @media (max-width:900px){
-      .container{padding:0 16px}
-      .kpi-value{font-size:22px}
-      /* Export buttons wrap under the title */
-      .card-h .between{flex-wrap:wrap}
-      .card-h .between > .row:last-child{margin-left:auto}
-    }
-    @media (max-width:640px){
-      .container{padding:0 12px}
-      .kpi-value{font-size:20px}
-      .btn{padding:8px 12px;font-size:13px}
-      .card-h{padding:14px 14px 0}
-      .card-c{padding:10px 14px 14px}
-      /* Add Trade form wraps gracefully */
-      form.row{flex-wrap:wrap}
-      form.row .field{flex:1 1 160px}
-      .chart-body{height:260px}
-      /* Put export buttons on a new line with left alignment */
-      .card-h .between > .row:last-child{width:100%;margin-left:0;justify-content:flex-start;margin-top:8px}
-    }
-    @media (max-width:420px){
-      .chart-body{height:220px}
-      form.row .field{flex:1 1 140px}
-    }
+    .tooltip{position:fixed;background:#111827;color:#fff;border-radius:8px;padding:6px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none}
   </style>
 </head>
 <body>
@@ -122,7 +98,7 @@
       </div>
     </div>
 
-    <!-- KPI row -->
+    <!-- KPI row (Average Loss before Win Ratio, not red) -->
     <section class="grid grid-top" style="margin-bottom:8px">
       <div class="card">
         <div class="card-h kpi-label">Total PnL</div>
@@ -133,12 +109,12 @@
         <div class="card-c kpi-value" id="avgWin">$0.00</div>
       </div>
       <div class="card">
-        <div class="card-h" style="color:var(--muted);font-size:14px">Win Ratio</div>
-        <div class="card-c kpi-value" id="winRatio">0.0%</div>
+        <div class="card-h" style="color:var(--muted);font-size:14px">Average Loss</div>
+        <div class="card-c kpi-value" id="avgLoss">-$0.00</div>
       </div>
       <div class="card">
-        <div class="card-h" style="color:var(--muted);font-size:14px">Average Loss</div>
-        <div class="card-c kpi-value text-red" id="avgLoss">-$0.00</div>
+        <div class="card-h" style="color:var(--muted);font-size:14px">Win Ratio</div>
+        <div class="card-c kpi-value" id="winRatio">0.0%</div>
       </div>
       <div class="card">
         <div class="card-h" style="color:var(--muted);font-size:14px">Profit Factor</div>
@@ -169,8 +145,8 @@
         <div class="row between">
           <div class="section-title">Trades</div>
           <div class="row">
-            <button class="btn" id="btnExportCSV">Export CSV</button>
-            <button class="btn" id="btnExportJSON">Export JSON</button>
+            <button class="btn sm" id="btnExportCSV">Export CSV</button>
+            <button class="btn sm" id="btnExportJSON">Export JSON</button>
           </div>
         </div>
       </div>
@@ -195,7 +171,7 @@
         <div class="card-c">
           <div class="chart-body" id="lineWrap">
             <svg class="chart" id="lineChart"></svg>
-            <div id="tooltip" class="tooltip" style="display:none;"></div>
+            <div id="tooltipLine" class="tooltip" style="display:none;"></div>
           </div>
         </div>
       </div>
@@ -204,6 +180,7 @@
         <div class="card-c">
           <div class="chart-body" id="barWrap">
             <svg class="chart" id="barChart"></svg>
+            <div id="tooltipBar" class="tooltip" style="display:none;"></div>
           </div>
         </div>
       </div>
@@ -279,11 +256,11 @@
 
       // KPIs
       const totalEl = $('#kpi-total-pnl');
-      totalEl.textContent = (k.totalPL>=0? '+':'-') + nf2.format(Math.abs(k.totalPL));
+      totalEl.textContent = (k.totalPL>=0? '+' : '-') + nf2.format(Math.abs(k.totalPL));
       totalEl.className = 'kpi-value ' + (k.totalPL>=0? 'text-green':'text-red');
       $('#avgWin').textContent = usd(k.avgWin);
-      $('#winRatio').textContent = (k.winRate||0).toFixed(1)+'%';
       $('#avgLoss').textContent = usd(k.avgLoss);
+      $('#winRatio').textContent = (k.winRate||0).toFixed(1)+'%';
       $('#profitFactor').textContent = k.pf;
 
       // Charts
@@ -378,21 +355,23 @@
       });
 
       // path
-      let dAttr = '';
-      data.forEach((d,i)=>{
-        const x = xs(i), y = ys(d.pnl);
-        dAttr += (i ? ` L ${x} ${y}` : `M ${x} ${y}`);
-      });
-      const path = elSVG('path',{d:dAttr,fill:'none',stroke:varColor('--blue'),'stroke-width':3, 'vector-effect':'non-scaling-stroke'});
-      svg.appendChild(path);
+      if(data.length){
+        let dAttr = '';
+        data.forEach((d,i)=>{
+          const x = xs(i), y = ys(d.pnl);
+          dAttr += (i ? ` L ${x} ${y}` : `M ${x} ${y}`);
+        });
+        const path = elSVG('path',{d:dAttr,fill:'none',stroke:varColor('--blue'),'stroke-width':3, 'vector-effect':'non-scaling-stroke'});
+        svg.appendChild(path);
+      }
 
-      // tooltip
-      const tooltip = $('#tooltip');
+      // tooltip (mouse + touch)
+      const tooltip = wrap.querySelector('#tooltipLine');
       let dot = elSVG('circle',{r:4,fill:varColor('--blue')}); dot.style.display='none'; svg.appendChild(dot);
-      svg.onmousemove = e=>{
+      function showAt(clientX){
         if(!data.length) return;
         const bb = svg.getBoundingClientRect();
-        const rx = e.clientX - bb.left;
+        const rx = clientX - bb.left;
         const idx = Math.max(0, Math.min(data.length-1, Math.round((rx - pad.left)/w*(data.length-1))));
         const d = data[idx];
         const x = xs(idx), y = ys(d.pnl);
@@ -400,10 +379,14 @@
         tooltip.style.display='block';
         const signed = v => (v>=0? '+':'-') + `$${Math.abs(v).toFixed(2)}`;
         tooltip.textContent = `${d.t} · PnL ${signed(d.pnl)}`;
-        tooltip.style.left = (bb.left + x) + 'px';
-        tooltip.style.top = (bb.top + y - 12) + 'px';
-      };
+        tooltip.style.left = (bb.left + x + 8) + 'px';
+        tooltip.style.top = (bb.top + y - 28) + 'px';
+      }
+      svg.onmousemove = e => showAt(e.clientX);
       svg.onmouseleave = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
+      svg.ontouchstart = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
+      svg.ontouchmove = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
+      svg.ontouchend = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
     }
 
     function drawBarChart(svg, wrap, agg){
@@ -418,14 +401,16 @@
       const w = width - pad.left - pad.right;
       const h = height - pad.top - pad.bottom;
 
-      const n = Math.max(1, agg.labels.length || 1);
+      const labels = (agg.labels && agg.labels.length) ? agg.labels : ['—'];
+      const values = (agg.values && agg.values.length) ? agg.values : [0];
+
+      const n = Math.max(1, labels.length);
       const band = w / n;
       const barW = Math.max(22, band * 0.6);
       const xs = i => pad.left + band*i + (band - barW)/2;
 
-      const vals = agg.values && agg.values.length ? agg.values : [0];
-      const minV = Math.min(0, ...vals);
-      const maxV = Math.max(0, ...vals);
+      const minV = Math.min(0, ...values);
+      const maxV = Math.max(0, ...values);
       const rangePad = Math.max(10, (maxV - minV) * 0.1);
       const yMin = minV - rangePad, yMax = maxV + rangePad;
       const ys = v => pad.top + (1 - (v - yMin) / (yMax - yMin)) * (h);
@@ -441,18 +426,32 @@
         svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
       }
       // x labels
-      (agg.labels && agg.labels.length ? agg.labels : ['—']).forEach((lab,i)=>{
+      labels.forEach((lab,i)=>{
         svg.appendChild(elSVG('text',{x:pad.left + band*i + band/2, y:height-12, fill:'#6b7280','font-size':12,'text-anchor':'middle'}, lab));
       });
 
-      // bars
+      // bars + tooltips
+      const tooltip = wrap.querySelector('#tooltipBar');
       const zeroY = ys(0);
-      (agg.values && agg.values.length ? agg.values : [0]).forEach((v,i)=>{
+      values.forEach((v,i)=>{
         const x = xs(i);
         const y = v>=0 ? ys(v) : zeroY;
         const bh = Math.abs(ys(v) - zeroY);
         const color = v>=0 ? varColor('--ok') : varColor('--danger');
-        svg.appendChild(elSVG('rect',{x, y, width:barW, height:bh, fill:color, rx:6, ry:6, 'vector-effect':'non-scaling-stroke'}));
+        const r = elSVG('rect',{x, y, width:barW, height:bh, fill:color, rx:6, ry:6, 'vector-effect':'non-scaling-stroke'});
+        svg.appendChild(r);
+
+        function showAt(clientX, clientY){
+          tooltip.style.display='block';
+          tooltip.textContent = `${labels[i]} · ${v>=0?'+':'-'}$${Math.abs(v).toFixed(2)}`;
+          tooltip.style.left = (clientX + 8) + 'px';
+          tooltip.style.top = (clientY - 28) + 'px';
+        }
+        r.addEventListener('mousemove', (e)=>{ showAt(e.clientX, e.clientY); });
+        r.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
+        r.addEventListener('touchstart', (e)=>{ if(e.touches[0]) showAt(e.touches[0].clientX, e.touches[0].clientY); });
+        r.addEventListener('touchmove', (e)=>{ if(e.touches[0]) showAt(e.touches[0].clientX, e.touches[0].clientY); });
+        r.addEventListener('touchend', ()=>{ tooltip.style.display='none'; });
       });
     }
 
