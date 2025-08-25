@@ -2,22 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Prevent pinch-zoom & weird scaling on mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
   <title>Sign in · Trading Journal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{ --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --border:#1f2937; --accent:#3b82f6; --danger:#ef4444; --ok:#22c55e; --shadow:0 10px 30px rgba(0,0,0,.35); --radius:16px; }
-    *{box-sizing:border-box} html,body{height:100%}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    html{ -webkit-text-size-adjust:100%; touch-action:manipulation; }
     body{margin:0;background:radial-gradient(1200px 700px at 80% -10%, #172554, transparent 50%), #0b1220; color:var(--text); font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
     .wrap{min-height:100%;display:grid;place-items:center;padding:24px}
     .card{width:100%;max-width:460px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
     h1{margin:0 0 6px;font-size:22px} p{margin:0 0 18px;color:var(--muted)}
     label{display:block;font-size:12px;color:var(--muted);margin:10px 2px 6px}
-    .input{width:100%;padding:10px 12px;border-radius:12px;background:#0b1324;border:1px solid #253046;color:#e5e7eb}
+    .input{width:100%;padding:12px 14px;border-radius:12px;background:#0b1324;border:1px solid #253046;color:#e5e7eb;font-size:16px; /* >=16px avoids iOS zoom */ }
     .row{display:flex;gap:10px;align-items:center}
-    .btn{width:100%;padding:10px 14px;border-radius:12px;border:1px solid #2a3a55;background:#14213a;color:#e5e7eb;font-weight:600;cursor:pointer}
+    .btn{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2a3a55;background:#14213a;color:#e5e7eb;font-weight:600;cursor:pointer;font-size:16px}
     .btn.primary{background:linear-gradient(180deg,#2563eb,#1d4ed8);border-color:#1d4ed8}
     .btn.alt{background:#0b1324;border-color:#2a3a55}
     .btn:disabled{opacity:.7;cursor:not-allowed}
@@ -43,10 +47,10 @@
       </div>
 
       <label for="email">Email</label>
-      <input id="email" class="input" type="email" placeholder="you@example.com" value="">
+      <input id="email" class="input" type="email" placeholder="you@example.com" />
 
       <label for="password">Password</label>
-      <input id="password" class="input" type="password" placeholder="••••••••">
+      <input id="password" class="input" type="password" placeholder="••••••••" />
 
       <div class="row" style="margin-top:14px">
         <button id="btnLogin" class="btn primary">Log in (or create if new)</button>
@@ -62,12 +66,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import {
-      getAuth, onAuthStateChanged,
-      signInWithEmailAndPassword, createUserWithEmailAndPassword
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-    // ---- Your Firebase config ----
     const firebaseConfig = {
       apiKey: "AIzaSyDbmcQAhQrdNzS13l2fVSWqyPPfJN2JjgE",
       authDomain: "journal-6e115.firebaseapp.com",
@@ -91,7 +91,6 @@
     const goDash = () => location.href = 'dashboard.html';
     const setBusy = (b) => { btnLogin.disabled = b; btnSignup.disabled = b; msgEl.textContent=''; okEl.textContent=''; };
 
-    // Already signed in? Go straight to dashboard.
     onAuthStateChanged(auth, (user) => { if (user) goDash(); });
 
     function prettyAuthError(e){
@@ -99,15 +98,14 @@
       switch (e.code) {
         case 'auth/user-not-found': return 'No account for that email.';
         case 'auth/wrong-password': return 'Wrong password.';
-        case 'auth/invalid-email': return 'Invalid email address.';
+        case 'auth/invalid-email': return 'Invalid email.';
         case 'auth/weak-password': return 'Password is too weak.';
         case 'auth/email-already-in-use': return 'Email already in use.';
-        case 'auth/unauthorized-domain': return 'Unauthorized domain. Add YOUR_USERNAME.github.io in Firebase Auth → Settings → Authorized domains.';
+        case 'auth/unauthorized-domain': return 'Unauthorized domain in Firebase Auth settings.';
         default: return e.message || 'Authentication error.';
       }
     }
 
-    // ✅ LOGIN button: try sign-in; if not found, create then redirect
     async function loginOrCreate(){
       setBusy(true);
       const email = emailEl.value.trim();
@@ -131,7 +129,6 @@
       } finally { setBusy(false); }
     }
 
-    // ✅ SIGNUP button: try create; if email exists, sign in
     async function signupExplicit(){
       setBusy(true);
       const email = emailEl.value.trim();
@@ -144,7 +141,6 @@
         goDash();
       } catch (e) {
         if (e.code === 'auth/email-already-in-use') {
-          // If the account exists already, just sign in.
           try {
             await signInWithEmailAndPassword(auth, email, password);
             goDash();
@@ -157,7 +153,6 @@
       } finally { setBusy(false); }
     }
 
-    // 🔁 Correct bindings (this is what was swapped)
     btnLogin.addEventListener('click', loginOrCreate);
     btnSignup.addEventListener('click', signupExplicit);
     [emailEl, passEl].forEach(el => el.addEventListener('keydown', e => { if(e.key==='Enter') loginOrCreate(); }));
