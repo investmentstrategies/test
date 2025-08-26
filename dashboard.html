@@ -62,7 +62,6 @@
     .field{min-width:120px}
     .field.small{min-width:90px}
 
-    /* Table */
     .table-wrap{overflow:auto}
     table{width:100%;border-collapse:separate;border-spacing:0}
     thead th{position:sticky;top:0;background:#f1f5f9;text-align:left;font-weight:600;color:#475569;font-size:12px;border-bottom:1px solid var(--border);padding:10px}
@@ -72,13 +71,11 @@
     .pl-pos{color:var(--ok)}
     .pl-neg{color:var(--danger)}
 
-    /* Charts */
     .chart-card .card-c{padding:0}
     .chart-body{position:relative;height:360px}
     .chart-body svg.chart{position:absolute;inset:0;width:100%;height:100%}
     .tooltip{position:fixed;background:#111827;color:#fff;border-radius:8px;padding:6px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none}
 
-    /* Add Trade grid */
     #tradeForm{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -87,7 +84,6 @@
       max-height:58vh; overflow:auto; -webkit-overflow-scrolling:touch;
     }
     .field.notes{ grid-column: 1 / -1; }
-
     td.notes a { color: var(--blue); text-decoration: underline; word-break: break-word; }
 
     @media (max-width: 640px){
@@ -95,13 +91,32 @@
       .table-wrap{max-height:60vh; overflow:auto; -webkit-overflow-scrolling:touch;}
       .chart-body{height:300px}
     }
+
+    /* Leaderboard modal */
+    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:1000;}
+    .modal.show{display:flex;}
+    .modal .backdrop{position:absolute; inset:0; background:rgba(15,23,42,.45);}
+    .modal .panel{
+      position:relative; width:min(640px,92vw); max-height:80vh; overflow:auto;
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:14px 16px;
+    }
+    .lb-list{list-style:none; margin:0; padding:0;}
+    .lb-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);}
+    .lb-rank{width:28px; text-align:right; color:var(--muted);}
+    .lb-user{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+    .lb-pnl{font-variant-numeric:tabular-nums;}
+    .lb-pnl.pos{color:var(--ok);} .lb-pnl.neg{color:var(--danger);}
   </style>
 </head>
 <body>
   <div class="topbar">
     <div class="container row between" style="padding:14px 24px;">
       <div class="crumbs"><span>Dashboard</span> <small id="whoami" style="color:#64748b"></small></div>
-      <div class="row"><button class="btn sm" id="btnSignOut">Sign out</button></div>
+      <div class="row">
+        <button class="btn sm" id="btnLeaderboard">Leaderboard</button>
+        <button class="btn sm" id="btnSignOut">Sign out</button>
+      </div>
     </div>
   </div>
 
@@ -156,7 +171,6 @@
           <div class="field small"><label for="tp">TP</label><input id="tp" class="input mono" type="number" step="0.000001" inputmode="decimal" required /></div>
           <div class="field small"><label for="netpl">Net P/L ($)</label><input id="netpl" class="input mono" type="number" step="0.01" inputmode="decimal" required /></div>
 
-          <!-- NEW: Risk amount -->
           <div class="field small"><label for="risk">Risk ($)</label><input id="risk" class="input mono" type="number" step="0.01" inputmode="decimal" placeholder="optional" /></div>
 
           <div class="field notes">
@@ -199,13 +213,30 @@
     <div class="footer">Personal Trading Journal · Firestore Sync</div>
   </main>
 
+  <!-- Leaderboard modal -->
+  <div id="leaderboardModal" class="modal" aria-hidden="true">
+    <div class="backdrop"></div>
+    <div class="panel">
+      <div class="row between" style="margin-bottom:8px">
+        <div class="section-title">Leaderboard – Top PnL</div>
+        <button class="btn sm" id="lbClose">Close</button>
+      </div>
+      <div id="lbBody" style="max-height:60vh; overflow:auto;">
+        <div style="color:var(--muted)">Loading…</div>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
-      getFirestore, collection, addDoc, doc, updateDoc, deleteDoc,
-      onSnapshot, query, orderBy, serverTimestamp, enableIndexedDbPersistence
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc,
+  onSnapshot, query, orderBy, serverTimestamp, enableIndexedDbPersistence,
+  getDocs, collectionGroup
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
 
     const firebaseConfig = {
       apiKey: "AIzaSyDbmcQAhQrdNzS13l2fVSWqyPPfJN2JjgE",
@@ -226,21 +257,17 @@
     const $ = s => document.querySelector(s);
     const nf2 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const nf6 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 6 });
-    const usd = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); // force $ not US$
+    const usd = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
     const parseDate = s => { const m = /^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); if(!m) return null; const d = new Date(+m[3], +m[2]-1, +m[1]); return d && d.getMonth()==(+m[2]-1)? d : null; };
     const varColor = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#3b82f6';
-    const escapeHtml = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","~":"&quot;","'":"&#39;"}[c]));
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
     const normTrade = t => ({
-      id:t.id,
-      date:t.date,
-      symbol:String(t.symbol||'').toUpperCase(),
+      id:t.id, date:t.date, symbol:String(t.symbol||'').toUpperCase(),
       entry:+t.entry, sl:+t.sl, tp:+t.tp, netpl:+t.netpl,
-      risk: Math.abs(+t.risk || 0),
-      notes:String(t.notes||'')
+      risk: Math.abs(+t.risk || 0), notes:String(t.notes||'')
     });
 
-    /* ---------- linkify notes ---------- */
-    function escapeAndBreak(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])).replace(/\n/g,'<br>'); }
+    function escapeAndBreak(s){ return escapeHtml(String(s)).replace(/\n/g,'<br>'); }
     function safeLinkify(text){
       if(!text) return '';
       const re = /((https?:\/\/|www[./])[^\s<]+)/gi;
@@ -252,7 +279,7 @@
         let trail = '';
         while(/[),.;!?]$/.test(url)){ trail = url.slice(-1) + trail; url = url.slice(0,-1); }
         let href = /^https?:\/\//i.test(url) ? url : 'https://' + url.replace(/^www\./i,'www.');
-        parts.push(`<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+        parts.push(`<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>`);
         if(trail) parts.push(escapeAndBreak(trail));
         last = start + full.length;
       }
@@ -376,14 +403,14 @@
         }
         return `
           <tr data-id="${t.id}">
-            <td><input class="input mono" value="${t.date}"/></td>
-            <td><input class="input mono" value="${t.symbol}"/></td>
+            <td><input class="input mono" value="${escapeHtml(t.date)}"/></td>
+            <td><input class="input mono" value="${escapeHtml(t.symbol)}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.entry}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.sl}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.tp}"/></td>
             <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.netpl}"/></td>
             <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.risk || 0}"/></td>
-            <td><textarea class="input mono" rows="2">${t.notes||''}</textarea></td>
+            <td><textarea class="input mono" rows="2">${escapeHtml(t.notes||'')}</textarea></td>
             <td>
               <button class="btn primary btn-save">Save</button>
               <button class="btn sm btn-cancel">Cancel</button>
@@ -401,8 +428,9 @@
       return n;
     }
 
-    // line chart (with rotated labels on mobile if needed)
+    // DD-MM label helper
     function shortDM(s){ const m=/^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); return m?`${m[1]}-${m[2]}`:s; }
+
     function drawLineChart(svg, wrap, data){
       clearSVG(svg);
       const rect = wrap.getBoundingClientRect();
@@ -412,7 +440,7 @@
       svg.setAttribute('height', height);
 
       const rotateLabels = (width < 520) || (data.length > 8);
-      const pad = { top:20, right:64, bottom: rotateLabels ? 120 : 36, left:56 };
+      const pad = { top:20, right:64, bottom: rotateLabels ? 72 : 36, left:56 };
       const w = width - pad.left - pad.right;
       const h = height - pad.top - pad.bottom;
 
@@ -442,7 +470,7 @@
         const rawX = xs(i);
         const x = Math.min(width - pad.right - 6, Math.max(pad.left + 6, rawX));
         if (rotateLabels){
-          const t = elSVG('text',{transform:`translate(${x},${height - pad.bottom + 74}) rotate(-65)`,fill:'#6b7280','font-size':12,'text-anchor':'end'}, label);
+          const t = elSVG('text',{transform:`translate(${x},${height - pad.bottom + 14}) rotate(-55)`,fill:'#6b7280','font-size':12,'text-anchor':'end'}, label);
           svg.appendChild(t);
         } else {
           const anchor = i===0 ? 'start' : (i===data.length-1 ? 'end' : 'middle');
@@ -545,6 +573,102 @@
       });
     }
 
+    /* ---------- Leaderboard ---------- */
+
+await ensureSignedIn();
+
+
+    function abbreviate(str){
+      if(!str) return '—';
+      if (str.includes('@')) return str;         // show full emails
+      if (str.length <= 10) return str;
+      return str.slice(0,4) + '...' + str.slice(-4);
+    }
+
+    async function upsertProfile(user){
+      try{
+        await setDoc(
+          doc(db,'users',user.uid),
+          { email: user.email || null, displayName: user.displayName || null, updatedAt: serverTimestamp() },
+          { merge: true }
+        );
+      }catch(e){ console.warn('profile upsert failed', e); }
+    }
+
+  async function fetchNames(uids){
+  const out = {};
+  await Promise.all(uids.map(async uid=>{
+    try{
+      const snap = await getDoc(doc(db,'users',uid));
+      if (snap.exists()) {
+        const d = snap.data() || {};
+        // prefer explicit 'name', then displayName, then email
+        out[uid] = d.name || d.displayName || d.email || '';
+      } else {
+        out[uid] = '';
+      }
+    }catch(e){ out[uid] = ''; }
+  }));
+  return out;
+}
+
+async function ensureSignedIn() {
+  if (auth.currentUser) return auth.currentUser;
+  return await new Promise((resolve) => {
+    const off = onAuthStateChanged(auth, (u) => { if (u) { off(); resolve(u); } });
+  });
+}
+
+
+
+    async function buildLeaderboard(){
+      const lbBody = $('#lbBody');
+      // Make sure we're authenticated before querying cross-user data
+await ensureSignedIn();
+
+
+
+      lbBody.innerHTML = `<div style="color:var(--muted)">Loading…</div>`;
+      try{
+        // Total PnL per owner uid using collection group
+        const snap = await getDocs(collectionGroup(db,'trades'));
+const totals = new Map();
+snap.forEach(ds=>{
+  const data = ds.data() || {};
+  const uid = ds.ref.parent.parent ? ds.ref.parent.parent.id : null;
+  if (!uid) return;
+  const n = typeof data.netpl === 'number' ? data.netpl : parseFloat(data.netpl);
+  if (isNaN(n)) return;
+  totals.set(uid, (totals.get(uid) || 0) + n);
+});
+
+
+        const entries = Array.from(totals, ([uid,total])=>({uid,total}));
+        entries.sort((a,b)=> b.total - a.total);
+
+        const names = await fetchNames(entries.map(e=>e.uid));
+
+
+        lbBody.innerHTML = `
+          <ul class="lb-list">
+            ${entries.map((e,i)=>{
+              const name = abbreviate(names[e.uid] || e.uid);
+
+              const cls = e.total>=0 ? 'lb-pnl pos' : 'lb-pnl neg';
+              const val = usd(e.total);
+              return `<li class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-user">${name}</div><div class="${cls}">${val}</div></li>`;
+            }).join('')}
+          </ul>`;
+      } catch(err){
+  console.error(err);
+  lbBody.innerHTML = `<div style="color:var(--danger)">Failed to load leaderboard: ${escapeHtml(err.message || String(err))}</div>`;
+}
+
+    }
+
+    function openLeaderboard(){ $('#leaderboardModal').classList.add('show'); buildLeaderboard(); }
+    function closeLeaderboard(){ $('#leaderboardModal').classList.remove('show'); }
+
     /* ---------- Events ---------- */
     function attach(){
       $('#symbol').addEventListener('input', e=> e.target.value=e.target.value.toUpperCase());
@@ -557,7 +681,7 @@
             date:$('#date').value.trim(),
             symbol:$('#symbol').value.trim(),
             entry:$('#entry').value, sl:$('#sl').value, tp:$('#tp').value,
-            netpl:$('#netpl').value, risk:$('#risk').value,  // NEW
+            netpl:$('#netpl').value, risk:$('#risk').value,
             notes:$('#notes').value
           });
           if(!parseDate(t.date) || !t.symbol){ alert('Check date format and symbol'); return; }
@@ -576,7 +700,6 @@
         if(btn.classList.contains('btn-edit')){ state.editId = id; render(); return; }
         if(btn.classList.contains('btn-cancel')){ state.editId = null; render(); return; }
         if(btn.classList.contains('btn-save')){
-          // indices updated to include Risk ($) as column 7, Notes now 8
           const dateEl   = tr.querySelector('td:nth-child(1) input');
           const symEl    = tr.querySelector('td:nth-child(2) input');
           const entryEl  = tr.querySelector('td:nth-child(3) input');
@@ -600,10 +723,13 @@
 
       $('#btnExportCSV').addEventListener('click', exportCSV);
       $('#btnExportJSON').addEventListener('click', exportJSON);
-      $('#btnSignOut').addEventListener('click', async ()=>{
-        await signOut(auth);
-        location.href = 'index.html';
-      });
+
+      $('#btnSignOut').addEventListener('click', async ()=>{ await signOut(auth); location.href = 'index.html'; });
+
+      // Leaderboard events
+      $('#btnLeaderboard').addEventListener('click', openLeaderboard);
+      $('#lbClose').addEventListener('click', closeLeaderboard);
+      $('#leaderboardModal .backdrop').addEventListener('click', closeLeaderboard);
     }
 
     /* ---------- Export ---------- */
@@ -627,17 +753,38 @@
 
     /* ---------- Boot & auth gating ---------- */
     attach();
-    render();
+    render(); // placeholder until snapshot
 
-    onAuthStateChanged(auth, (user)=>{
-      const who = document.getElementById('whoami');
-      if (!user) { location.href = 'index.html'; return; }
-      who.textContent = user.email || user.uid;
-      if (state.uid !== user.uid) {
-        state.uid = user.uid;
-        startRealtime();
+    onAuthStateChanged(auth, async (user)=>{
+  const who = document.getElementById('whoami');
+  if (!user) { location.href = 'index.html'; return; }
+  who.textContent = user.email || user.uid;
+
+  if (state.uid !== user.uid) {
+    state.uid = user.uid;
+
+    // ⬇️ Ensure /users/{uid} exists with email for the leaderboard
+    try {
+      const uref = doc(db, 'users', user.uid);
+      const usnap = await getDoc(uref);
+      if (!usnap.exists()) {
+        await setDoc(uref, {
+          email: user.email || null,
+          displayName: user.displayName || null,
+          createdAt: serverTimestamp()
+        });
+      } else if ((usnap.data().email ?? null) !== (user.email ?? null)) {
+        await setDoc(uref, { email: user.email || null }, { merge: true });
       }
-    });
+    } catch (e) {
+      console.error('profile upsert failed', e);
+    }
+
+    startRealtime();
+  }
+});
+
+
   </script>
 </body>
 </html>
