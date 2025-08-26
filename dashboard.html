@@ -189,18 +189,21 @@
         <input id="tp" class="input mono" type="number" step="0.000001" inputmode="decimal" required />
       </div>
 
-      <div class="field small">
-        <label for="netpl">Net P/L ($)</label>
-        <input
-          id="netpl"
-          class="input mono"
-          type="text"
-          inputmode="tel"
-          placeholder="e.g. -50.25"
-          aria-label="Net profit or loss (negative for losses)"
-          required
-        />
-      </div>
+     <div class="field small">
+  <label for="netpl">Net P/L ($)</label>
+  <input
+    id="netpl"
+    class="input mono"
+    type="number"
+    step="0.01"
+    inputmode="decimal"
+    min="-1000000000"
+    max="1000000000"
+    placeholder="e.g. -50.25"
+    required
+  />
+</div>
+
 
       <div class="field small">
         <label for="risk">Risk ($)</label>
@@ -443,7 +446,9 @@
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.entry}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.sl}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.tp}"/></td>
-            <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.netpl}"/></td>
+            <td><input class="input mono" type="number" step="0.01" inputmode="decimal"
+       min="-1000000000" max="1000000000" value="${t.netpl}"/>
+</td>
             <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.risk || 0}"/></td>
             <td><textarea class="input mono" rows="2">${escapeHtml(t.notes||'')}</textarea></td>
             <td>
