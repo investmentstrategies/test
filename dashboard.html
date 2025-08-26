@@ -86,10 +86,13 @@
     .field.notes{ grid-column: 1 / -1; }
     td.notes a { color: var(--blue); text-decoration: underline; word-break: break-word; }
 
+    /* Mobile tweaks */
     @media (max-width: 640px){
       .container{padding:0 14px}
       .table-wrap{max-height:60vh; overflow:auto; -webkit-overflow-scrolling:touch;}
       .chart-body{height:300px}
+      /* HIDE the email next to "Dashboard" on mobile */
+      #whoami{ display:none !important; }
     }
 
     /* Leaderboard modal */
@@ -160,69 +163,67 @@
       </div>
     </section>
 
-<section class="card" style="margin-top:16px">
-  <div class="card-h"><div class="section-title">Add Trade</div></div>
-  <div class="card-c">
-    <form id="tradeForm" autocomplete="off">
-      <div class="field">
-        <label for="symbol">Symbol</label>
-        <input id="symbol" class="input mono" placeholder="XAUUSD" required />
+    <section class="card" style="margin-top:16px">
+      <div class="card-h"><div class="section-title">Add Trade</div></div>
+      <div class="card-c">
+        <form id="tradeForm" autocomplete="off">
+          <div class="field">
+            <label for="symbol">Symbol</label>
+            <input id="symbol" class="input mono" placeholder="XAUUSD" required />
+          </div>
+
+          <div class="field small">
+            <label for="date">Date (dd-mm-yyyy)</label>
+            <input id="date" class="input mono" placeholder="dd-mm-yyyy" required />
+          </div>
+
+          <div class="field small">
+            <label for="entry">Entry</label>
+            <input id="entry" class="input mono" type="number" step="0.000001" inputmode="decimal" required />
+          </div>
+
+          <div class="field small">
+            <label for="sl">SL</label>
+            <input id="sl" class="input mono" type="number" step="0.000001" inputmode="decimal" required />
+          </div>
+
+          <div class="field small">
+            <label for="tp">TP</label>
+            <input id="tp" class="input mono" type="number" step="0.000001" inputmode="decimal" required />
+          </div>
+
+          <div class="field small">
+            <label for="netpl">Net P/L ($)</label>
+            <input
+              id="netpl"
+              class="input mono"
+              type="number"
+              step="0.01"
+              inputmode="decimal"
+              min="-1000000000"
+              max="1000000000"
+              placeholder="e.g. -50.25"
+              required
+            />
+          </div>
+
+          <div class="field small">
+            <label for="risk">Risk ($)</label>
+            <input id="risk" class="input mono" type="number" step="0.01" inputmode="decimal" placeholder="optional" />
+          </div>
+
+          <div class="field notes">
+            <label for="notes">Notes</label>
+            <textarea id="notes" class="input mono" rows="3" placeholder="Optional"></textarea>
+          </div>
+
+          <div class="field" style="min-width:120px;">
+            <label>&nbsp;</label>
+            <button class="btn primary" type="submit">Add Trade</button>
+          </div>
+        </form>
       </div>
-
-      <div class="field small">
-        <label for="date">Date (dd-mm-yyyy)</label>
-        <input id="date" class="input mono" placeholder="dd-mm-yyyy" required />
-      </div>
-
-      <div class="field small">
-        <label for="entry">Entry</label>
-        <input id="entry" class="input mono" type="number" step="0.000001" inputmode="decimal" required />
-      </div>
-
-      <div class="field small">
-        <label for="sl">SL</label>
-        <input id="sl" class="input mono" type="number" step="0.000001" inputmode="decimal" required />
-      </div>
-
-      <div class="field small">
-        <label for="tp">TP</label>
-        <input id="tp" class="input mono" type="number" step="0.000001" inputmode="decimal" required />
-      </div>
-
-     <div class="field small">
-  <label for="netpl">Net P/L ($)</label>
-  <input
-    id="netpl"
-    class="input mono"
-    type="number"
-    step="0.01"
-    inputmode="decimal"
-    min="-1000000000"
-    max="1000000000"
-    placeholder="e.g. -50.25"
-    required
-  />
-</div>
-
-
-      <div class="field small">
-        <label for="risk">Risk ($)</label>
-        <input id="risk" class="input mono" type="number" step="0.01" inputmode="decimal" placeholder="optional" />
-      </div>
-
-      <div class="field notes">
-        <label for="notes">Notes</label>
-        <textarea id="notes" class="input mono" rows="3" placeholder="Optional"></textarea>
-      </div>
-
-      <div class="field" style="min-width:120px;">
-        <label>&nbsp;</label>
-        <button class="btn primary" type="submit">Add Trade</button>
-      </div>
-    </form>
-  </div>
-</section>
-
+    </section>
 
     <section class="card" style="margin-top:16px">
       <div class="card-h">
@@ -268,13 +269,11 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
-  getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc,
-  onSnapshot, query, orderBy, serverTimestamp, enableIndexedDbPersistence,
-  getDocs, collectionGroup
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
+      getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc,
+      onSnapshot, query, orderBy, serverTimestamp, enableIndexedDbPersistence,
+      getDocs, collectionGroup
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
 
     const firebaseConfig = {
       apiKey: "AIzaSyDbmcQAhQrdNzS13l2fVSWqyPPfJN2JjgE",
@@ -446,9 +445,7 @@
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.entry}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.sl}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.tp}"/></td>
-            <td><input class="input mono" type="number" step="0.01" inputmode="decimal"
-       min="-1000000000" max="1000000000" value="${t.netpl}"/>
-</td>
+            <td><input class="input mono" type="number" step="0.01" inputmode="decimal" min="-1000000000" max="1000000000" value="${t.netpl}"/></td>
             <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.risk || 0}"/></td>
             <td><textarea class="input mono" rows="2">${escapeHtml(t.notes||'')}</textarea></td>
             <td>
@@ -615,12 +612,11 @@
 
     /* ---------- Leaderboard ---------- */
 
-await ensureSignedIn();
-
+    await ensureSignedIn();
 
     function abbreviate(str){
       if(!str) return '—';
-      if (str.includes('@')) return str;         // show full emails
+      if (str.includes('@')) return str;
       if (str.length <= 10) return str;
       return str.slice(0,4) + '...' + str.slice(-4);
     }
@@ -635,75 +631,64 @@ await ensureSignedIn();
       }catch(e){ console.warn('profile upsert failed', e); }
     }
 
-  async function fetchNames(uids){
-  const out = {};
-  await Promise.all(uids.map(async uid=>{
-    try{
-      const snap = await getDoc(doc(db,'users',uid));
-      if (snap.exists()) {
-        const d = snap.data() || {};
-        // prefer explicit 'name', then displayName, then email
-        out[uid] = d.name || d.displayName || d.email || '';
-      } else {
-        out[uid] = '';
-      }
-    }catch(e){ out[uid] = ''; }
-  }));
-  return out;
-}
+    async function fetchNames(uids){
+      const out = {};
+      await Promise.all(uids.map(async uid=>{
+        try{
+          const snap = await getDoc(doc(db,'users',uid));
+          if (snap.exists()) {
+            const d = snap.data() || {};
+            out[uid] = d.name || d.displayName || d.email || '';
+          } else {
+            out[uid] = '';
+          }
+        }catch(e){ out[uid] = ''; }
+      }));
+      return out;
+    }
 
-async function ensureSignedIn() {
-  if (auth.currentUser) return auth.currentUser;
-  return await new Promise((resolve) => {
-    const off = onAuthStateChanged(auth, (u) => { if (u) { off(); resolve(u); } });
-  });
-}
-
-
+    async function ensureSignedIn() {
+      if (auth.currentUser) return auth.currentUser;
+      return await new Promise((resolve) => {
+        const off = onAuthStateChanged(auth, (u) => { if (u) { off(); resolve(u); } });
+      });
+    }
 
     async function buildLeaderboard(){
       const lbBody = $('#lbBody');
-      // Make sure we're authenticated before querying cross-user data
-await ensureSignedIn();
-
-
+      await ensureSignedIn();
 
       lbBody.innerHTML = `<div style="color:var(--muted)">Loading…</div>`;
       try{
-        // Total PnL per owner uid using collection group
         const snap = await getDocs(collectionGroup(db,'trades'));
-const totals = new Map();
-snap.forEach(ds=>{
-  const data = ds.data() || {};
-  const uid = ds.ref.parent.parent ? ds.ref.parent.parent.id : null;
-  if (!uid) return;
-  const n = typeof data.netpl === 'number' ? data.netpl : parseFloat(data.netpl);
-  if (isNaN(n)) return;
-  totals.set(uid, (totals.get(uid) || 0) + n);
-});
-
+        const totals = new Map();
+        snap.forEach(ds=>{
+          const data = ds.data() || {};
+          const uid = ds.ref.parent.parent ? ds.ref.parent.parent.id : null;
+          if (!uid) return;
+          const n = typeof data.netpl === 'number' ? data.netpl : parseFloat(data.netpl);
+          if (isNaN(n)) return;
+          totals.set(uid, (totals.get(uid) || 0) + n);
+        });
 
         const entries = Array.from(totals, ([uid,total])=>({uid,total}));
         entries.sort((a,b)=> b.total - a.total);
 
         const names = await fetchNames(entries.map(e=>e.uid));
 
-
         lbBody.innerHTML = `
           <ul class="lb-list">
             ${entries.map((e,i)=>{
               const name = abbreviate(names[e.uid] || e.uid);
-
               const cls = e.total>=0 ? 'lb-pnl pos' : 'lb-pnl neg';
               const val = usd(e.total);
               return `<li class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-user">${name}</div><div class="${cls}">${val}</div></li>`;
             }).join('')}
           </ul>`;
       } catch(err){
-  console.error(err);
-  lbBody.innerHTML = `<div style="color:var(--danger)">Failed to load leaderboard: ${escapeHtml(err.message || String(err))}</div>`;
-}
-
+        console.error(err);
+        lbBody.innerHTML = `<div style="color:var(--danger)">Failed to load leaderboard: ${escapeHtml(err.message || String(err))}</div>`;
+      }
     }
 
     function openLeaderboard(){ $('#leaderboardModal').classList.add('show'); buildLeaderboard(); }
@@ -796,35 +781,33 @@ snap.forEach(ds=>{
     render(); // placeholder until snapshot
 
     onAuthStateChanged(auth, async (user)=>{
-  const who = document.getElementById('whoami');
-  if (!user) { location.href = 'index.html'; return; }
-  who.textContent = user.email || user.uid;
+      const who = document.getElementById('whoami');
+      if (!user) { location.href = 'index.html'; return; }
+      who.textContent = user.email || user.uid;
 
-  if (state.uid !== user.uid) {
-    state.uid = user.uid;
+      if (state.uid !== user.uid) {
+        state.uid = user.uid;
 
-    // ⬇️ Ensure /users/{uid} exists with email for the leaderboard
-    try {
-      const uref = doc(db, 'users', user.uid);
-      const usnap = await getDoc(uref);
-      if (!usnap.exists()) {
-        await setDoc(uref, {
-          email: user.email || null,
-          displayName: user.displayName || null,
-          createdAt: serverTimestamp()
-        });
-      } else if ((usnap.data().email ?? null) !== (user.email ?? null)) {
-        await setDoc(uref, { email: user.email || null }, { merge: true });
+        // Ensure /users/{uid} exists with email for the leaderboard
+        try {
+          const uref = doc(db, 'users', user.uid);
+          const usnap = await getDoc(uref);
+          if (!usnap.exists()) {
+            await setDoc(uref, {
+              email: user.email || null,
+              displayName: user.displayName || null,
+              createdAt: serverTimestamp()
+            });
+          } else if ((usnap.data().email ?? null) !== (user.email ?? null)) {
+            await setDoc(uref, { email: user.email || null }, { merge: true });
+          }
+        } catch (e) {
+          console.error('profile upsert failed', e);
+        }
+
+        startRealtime();
       }
-    } catch (e) {
-      console.error('profile upsert failed', e);
-    }
-
-    startRealtime();
-  }
-});
-
-
+    });
   </script>
 </body>
 </html>
