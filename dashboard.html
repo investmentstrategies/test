@@ -169,7 +169,13 @@
           <div class="field small"><label for="entry">Entry</label><input id="entry" class="input mono" type="number" step="0.000001" inputmode="decimal" required /></div>
           <div class="field small"><label for="sl">SL</label><input id="sl" class="input mono" type="number" step="0.000001" inputmode="decimal" required /></div>
           <div class="field small"><label for="tp">TP</label><input id="tp" class="input mono" type="number" step="0.000001" inputmode="decimal" required /></div>
-          <div class="field small"><label for="netpl">Net P/L ($)</label><input id="netpl" class="input mono" type="number" step="0.01" inputmode="decimal" required /></div>
+          <div class="field small"><label for="netpl">Net P/L ($)</label><input id="netpl"
+       class="input mono"
+       type="text"
+       inputmode="tel"
+       placeholder="e.g. -50.25"
+       aria-label="Net profit or loss"
+       required />div>
 
           <div class="field small"><label for="risk">Risk ($)</label><input id="risk" class="input mono" type="number" step="0.01" inputmode="decimal" placeholder="optional" /></div>
 
