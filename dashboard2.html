@@ -42,10 +42,8 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"
 
 /* Cards */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-.card-h{
-  padding:16px 20px 12px 20px;       /* add bottom padding so header doesn't glue to table */
-}
-.card-h .row{align-items:center}      /* keep the “Export” buttons vertically centered */
+.card-h{padding:16px 20px 12px 20px}
+.card-h .row{align-items:center}
 .card-c{padding:12px 20px 20px 20px}
 
 /* KPI */
@@ -69,16 +67,15 @@ label{display:block;font-size:12px;color:var(--muted);margin:2px 2px 6px}
 .field{min-width:120px}
 .field.small{min-width:90px}
 
-/* ---------- TABLE (sticky header, nice spacing) ---------- */
+/* Table */
 .card-c.table-wrap{
-  padding:8px 20px 20px 20px;        /* small TOP padding for breathing room under header */
+  padding:8px 20px 20px 20px;
   overflow:auto;
   position:relative;
   isolation:isolate;
   -webkit-overflow-scrolling:touch;
 }
 table{width:100%;border-collapse:separate;border-spacing:0}
-
 thead{background:#f1f5f9}
 thead th{
   position:sticky; top:0;
@@ -95,7 +92,6 @@ thead th{
   backface-visibility:hidden;
   box-shadow:0 1px 0 0 var(--border);
 }
-
 tbody{position:relative;z-index:1}
 tbody td{
   background:#fff;
@@ -105,19 +101,18 @@ tbody td{
   font-size:13px;
 }
 tbody tr:hover{background:#f8fafc}
-
 .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
 .pl-pos{color:var(--ok)}
 .pl-neg{color:var(--danger)}
 td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 
-/* ---------- Charts ---------- */
+/* Charts */
 .chart-card .card-c{padding:0}
 .chart-body{position:relative;height:360px}
 .chart-body svg.chart{position:absolute;inset:0;width:100%;height:100%}
 .tooltip{position:fixed;background:#111827;color:#fff;border-radius:8px;padding:6px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none}
 
-/* ---------- Form ---------- */
+/* Form */
 #tradeForm{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
@@ -127,15 +122,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 }
 .field.notes{grid-column:1 / -1}
 
-/* ---------- Mobile tweaks ---------- */
-@media (max-width:640px){
-  .container{padding:0 14px}
-  .card-c.table-wrap{max-height:60vh}
-  .chart-body{height:300px}
-  #whoami{display:none !important}
-}
-
-/* ---------- Leaderboard modal ---------- */
+/* Modals */
 .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1000}
 .modal.show{display:flex}
 .modal .backdrop{position:absolute;inset:0;background:rgba(15,23,42,.45)}
@@ -151,7 +138,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 .lb-pnl{font-variant-numeric:tabular-nums}
 .lb-pnl.pos{color:var(--ok)} .lb-pnl.neg{color:var(--danger)}
 
-/* ---------- Calendar ---------- */
+/* Calendar */
 .cal-card .card-c{padding:0}
 .cal-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border)}
 .cal-title{font-weight:600}
@@ -168,18 +155,23 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 .cal-cell.loss{background:rgba(220,38,38,.10);border-color:rgba(220,38,38,.35)}
 .cal-cell.muted{opacity:.55}
 
+/* Pills */
 .pill{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:6px 10px;font-size:12px;box-shadow:var(--shadow)}
 .pill .val.pos{color:var(--ok)} .pill .val.neg{color:var(--danger)}
 
-/* Day modal list */
+/* Day list */
 .dlist{list-style:none;margin:8px 0 0;padding:0}
 .drow{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
 .drow .sym{font-weight:600}
 .drow .amt.pos{color:var(--ok)} .drow .amt.neg{color:var(--danger)}
 .drow .note{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:45vw}
 
-/* Mobile calendar compact */
+/* Mobile tweaks */
 @media (max-width:640px){
+  .container{padding:0 14px}
+  .card-c.table-wrap{max-height:60vh}
+  .chart-body{height:300px}
+  #whoami{display:none !important}
   .cal-cell{min-height:64px}
   .cal-dows{gap:6px;padding:8px 12px 4px}
   .cal-grid{gap:6px;padding:0 12px 12px}
@@ -187,7 +179,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
   .pill span.lbl{display:none}
 }
 
-/* ===== Compact calendar (desktop) ===== */
+/* Compact calendar (desktop) */
 @media (min-width:768px){
   .cal-bar{padding:8px 12px}
   .cal-title{font-size:16px}
@@ -197,7 +189,6 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
   .cal-cell .day{font-size:14px}
   .cal-cell .info{font-size:11px}
 }
-/* — tweak min-height above to 66px/64px if you want it even shorter — */
 </style>
 
 </head>
@@ -252,7 +243,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       </div>
     </section>
 
-    <!-- Activity Calendar (below charts) -->
+    <!-- Activity Calendar -->
     <section class="card cal-card" style="margin-top:16px">
       <div class="cal-bar">
         <div class="row" style="gap:8px;align-items:center">
@@ -302,13 +293,13 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 
           <div class="field small">
             <label for="netpl">Net P/L ($)</label>
-            <!-- Samsung minus workaround: type="text" + inputmode="numeric" so the "-" key is available -->
+            <!-- Allow minus on all keyboards (incl. Samsung): text + numeric inputmode -->
             <input
               id="netpl"
               class="input mono"
               type="text"
               inputmode="numeric"
-              pattern="-?[0-9]*([.][0-9]{0,2})?"
+              pattern="-?\\d+(\\.\\d{1,2})?"
               placeholder="e.g. -50.25"
               title="Enter a number like -50.25"
               required
@@ -417,7 +408,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
     const usd = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
     const parseDate = s => { const m = /^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); if(!m) return null; const d = new Date(+m[3], +m[2]-1, +m[1]); return d && d.getMonth()==(+m[2]-1)? d : null; };
     const varColor = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#3b82f6';
-    const escapeHtml = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","&gt;":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
     const signed = v => (v>=0? '+':'-') + `$${Math.abs(v).toFixed(2)}`;
 
     const normTrade = t => ({
@@ -426,10 +417,10 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       risk: Math.abs(+t.risk || 0), notes:String(t.notes||'')
     });
 
-    // Strict parser for text-based numeric inputs (supports optional minus, up to 6 decimals)
+    // Strict number parser so "text+numeric" input can include "-"
     function parseNumStrict(s){
       const v = String(s ?? '').trim();
-      if (!/^-?\d+(\.\d{1,6})?$/.test(v)) return NaN;
+      if (!/^-?\d+(\.\d{1,2})?$/.test(v)) return NaN;   // allow minus + up to 2 decimals
       const n = parseFloat(v);
       return Number.isFinite(n) ? n : NaN;
     }
@@ -530,7 +521,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
     function dailyAgg(list){
       const m = new Map();
       for(const t of list){
-        const k = t.date; // already dd-mm-yyyy
+        const k = t.date;
         const v = m.get(k) || {count:0,total:0,trades:[]};
         v.count++; v.total += t.netpl; v.trades.push(t);
         m.set(k,v);
@@ -590,8 +581,8 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.entry}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.sl}"/></td>
             <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.tp}"/></td>
-            <!-- Samsung minus workaround also applied in edit mode -->
-            <td><input class="input mono" type="text" inputmode="numeric" pattern="-?[0-9]*([.][0-9]{0,2})?" value="${t.netpl}"/></td>
+            <!-- Net P/L edit as text+numeric so '-' is available -->
+            <td><input class="input mono" type="text" inputmode="numeric" pattern="-?\\d+(\\.\\d{1,2})?" value="${t.netpl}"/></td>
             <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.risk || 0}"/></td>
             <td><textarea class="input mono" rows="2">${escapeHtml(t.notes||'')}</textarea></td>
             <td>
@@ -602,7 +593,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       }).join('');
     }
 
-    /* ---------- Charts ---------- */
+    /* ---------- Charts (SVG) ---------- */
     function clearSVG(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
     function elSVG(name, attrs={}, text){
       const n=document.createElementNS('http://www.w3.org/2000/svg',name);
@@ -610,8 +601,6 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       if(text!=null) n.textContent=text;
       return n;
     }
-
-    // DD-MM label helper
     function shortDM(s){ const m=/^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); return m?`${m[1]}-${m[2]}`:s; }
 
     function drawLineChart(svg, wrap, data){
@@ -634,7 +623,6 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       const rangePad = Math.max(10, (maxV - minV) * 0.1);
       const yMin = minV - rangePad, yMax = maxV + rangePad;
       const ys = v => pad.top + (1 - (v - yMin) / (yMax - yMin)) * h;
-
       const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
 
       const ticks = 5;
@@ -714,7 +702,6 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       const rangePad = Math.max(10, (maxV - minV) * 0.1);
       const yMin = minV - rangePad, yMax = maxV + rangePad;
       const ys = v => pad.top + (1 - (v - yMin) / (yMax - yMin)) * (h);
-
       const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
 
       const ticks = 5;
@@ -725,7 +712,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
         svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
       }
       labels.forEach((lab,i)=>{
-        const cx = xs(i) + barW/2; // center of the bar
+        const cx = xs(i) + barW/2;
         svg.appendChild(elSVG('text',{x: cx, y: height - 12, fill:'#6b7280', 'font-size':12, 'text-anchor':'middle'}, lab));
       });
 
@@ -769,7 +756,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 
       const agg = dailyAgg(state.trades);
 
-      // Month total PnL for pill
+      // Month total PnL
       let monthPnl = 0;
       for(const t of state.trades){
         const d = parseDate(t.date); if(!d) continue;
@@ -806,7 +793,6 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       const title = document.getElementById('dayTitle');
       if(!modal || !body || !title) return;
 
-      // Collect trades for that date
       const trades = state.trades.filter(t=> t.date === dateStr);
       const total = trades.reduce((a,t)=> a + t.netpl, 0);
       const d = parseDate(dateStr);
@@ -925,9 +911,8 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
         if (!state.uid) { alert('Not authenticated yet.'); return; }
         const btn = e.submitter; btn && (btn.disabled = true);
         try {
-          // Parse Net P/L from text field (handles "-" on Samsung)
-          const netplStr = $('#netpl').value;
-          const netplNum = parseNumStrict(netplStr);
+          // Parse Net P/L from text field (handles "-" on all keyboards)
+          const netplNum = parseNumStrict($('#netpl').value);
           if (Number.isNaN(netplNum)) { alert('Please enter a valid Net P/L (e.g. -50.25)'); return; }
 
           const t = normTrade({
@@ -944,7 +929,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
         finally { btn && (btn.disabled = false); }
       });
 
-      // Calendar navigation (FIX: outside of submit handler)
+      // Calendar navigation
       const ensureMonth = () => { if(!state.calMonth) state.calMonth = new Date(); };
       document.getElementById('calPrev')?.addEventListener('click', ()=>{
         ensureMonth(); state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()-1, 1);
@@ -958,7 +943,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
         state.calMonth = new Date(); renderCalendar();
       });
 
-      // Open day summary modal on cell click
+      // Day modal open
       document.getElementById('calGrid')?.addEventListener('click', (e)=>{
         const cell = e.target.closest('.cal-cell'); if(!cell) return;
         const key = cell.getAttribute('data-date'); if(!key) return;
@@ -967,6 +952,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       document.getElementById('dayClose')?.addEventListener('click', closeDayModal);
       document.querySelector('#dayModal .backdrop')?.addEventListener('click', closeDayModal);
 
+      // Table actions
       $('#tradesTable').addEventListener('click', async (e)=>{
         const btn = e.target.closest('button'); if(!btn) return;
         const tr = e.target.closest('tr[data-id]'); if(!tr) return;
@@ -1005,7 +991,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 
       $('#btnSignOut').addEventListener('click', async ()=>{ await signOut(auth); location.href = 'index.html'; });
 
-      // Leaderboard events
+      // Leaderboard
       $('#btnLeaderboard').addEventListener('click', openLeaderboard);
       $('#lbClose').addEventListener('click', closeLeaderboard);
       $('#leaderboardModal .backdrop').addEventListener('click', closeLeaderboard);
@@ -1030,9 +1016,9 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       setTimeout(()=> URL.revokeObjectURL(url), 1000);
     }
 
-    /* ---------- Boot & auth gating ---------- */
+    /* ---------- Boot ---------- */
     attach();
-    render(); // placeholder until snapshot
+    render();
 
     onAuthStateChanged(auth, async (user)=>{
       const who = document.getElementById('whoami');
@@ -1042,7 +1028,6 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       if (state.uid !== user.uid) {
         state.uid = user.uid;
 
-        // Ensure /users/{uid} exists with email for the leaderboard
         try {
           const uref = doc(db, 'users', user.uid);
           const usnap = await getDoc(uref);
