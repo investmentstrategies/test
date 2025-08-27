@@ -11,7 +11,7 @@
 <style>
 :root{
   --bg:#f8fafc; --card:#fff; --border:#e5e7eb; --muted:#6b7280; --text:#0f172a;
-  --blue:#3b82f6; --danger:#dc2626; --ok:#16a34a;
+  --blue:#3b82f6; --danger:#dc2626; --ok:#16a34a; --ink:#111827;
   --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 16px rgba(15,23,42,.06);
   --radius:16px;
 }
@@ -26,13 +26,14 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"
 .between{justify-content:space-between;align-items:center}
 .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px}
 
-.btn{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:12px;box-shadow:var(--shadow);font-size:14px;cursor:pointer}
+.btn{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:12px;box-shadow:var(--shadow);font-size:14px;cursor:pointer;transition:.15s transform}
 .btn:hover{transform:translateY(-1px)}
-.btn.primary{background:#111827;color:#fff;border-color:#111827}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.ghost{background:transparent}
 .btn.sm{padding:6px 10px;font-size:12px;border-radius:10px;box-shadow:0 1px 4px rgba(15,23,42,.06)}
 
 .header{padding:24px 0}
-.logo{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:#111827;color:#fff;font-weight:700}
+.logo{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:var(--ink);color:#fff;font-weight:700}
 .meta small{color:var(--muted)}
 
 .grid{display:grid;gap:16px}
@@ -42,10 +43,8 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"
 
 /* Cards */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-.card-h{
-  padding:16px 20px 12px 20px;       /* add bottom padding so header doesn't glue to table */
-}
-.card-h .row{align-items:center}      /* keep the “Export” buttons vertically centered */
+.card-h{padding:16px 20px 12px 20px;}
+.card-h .row{align-items:center}
 .card-c{padding:12px 20px 20px 20px}
 
 /* KPI */
@@ -63,47 +62,20 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"
   width:100%;background:#fff;color:var(--text);border:1px solid var(--border);
   border-radius:10px;padding:10px 12px;font-size:16px
 }
+select{appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%236b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>');background-repeat:no-repeat;background-position:right 10px center;background-size:16px}
 .input:focus, select:focus, textarea.input:focus{outline:none;box-shadow:0 0 0 3px rgba(59,130,246,.2)}
 textarea.input{resize:vertical;min-height:80px}
 label{display:block;font-size:12px;color:var(--muted);margin:2px 2px 6px}
 .field{min-width:120px}
 .field.small{min-width:90px}
 
-/* ---------- TABLE (sticky header, nice spacing) ---------- */
-.card-c.table-wrap{
-  padding:8px 20px 20px 20px;        /* small TOP padding for breathing room under header */
-  overflow:auto;
-  position:relative;
-  isolation:isolate;
-  -webkit-overflow-scrolling:touch;
-}
+/* Table */
+.card-c.table-wrap{padding:8px 20px 20px 20px;overflow:auto;position:relative;isolation:isolate;-webkit-overflow-scrolling:touch;}
 table{width:100%;border-collapse:separate;border-spacing:0}
-
 thead{background:#f1f5f9}
-thead th{
-  position:sticky; top:0;
-  background:#f1f5f9;
-  text-align:left;
-  font-weight:600;
-  color:#475569;
-  font-size:12px;
-  border-bottom:1px solid var(--border);
-  padding:10px;
-  z-index:3;
-  contain:paint;
-  transform:translateZ(0);
-  backface-visibility:hidden;
-  box-shadow:0 1px 0 0 var(--border);
-}
-
+thead th{position:sticky; top:0;background:#f1f5f9;text-align:left;font-weight:600;color:#475569;font-size:12px;border-bottom:1px solid var(--border);padding:10px;z-index:3;contain:paint;transform:translateZ(0);backface-visibility:hidden;box-shadow:0 1px 0 0 var(--border);}
 tbody{position:relative;z-index:1}
-tbody td{
-  background:#fff;
-  border-bottom:1px solid var(--border);
-  padding:10px;
-  vertical-align:top;
-  font-size:13px;
-}
+tbody td{background:#fff;border-bottom:1px solid var(--border);padding:10px;vertical-align:top;font-size:13px}
 tbody tr:hover{background:#f8fafc}
 
 .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
@@ -111,23 +83,34 @@ tbody tr:hover{background:#f8fafc}
 .pl-neg{color:var(--danger)}
 td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 
-/* ---------- Charts ---------- */
+/* Charts */
 .chart-card .card-c{padding:0}
 .chart-body{position:relative;height:360px}
 .chart-body svg.chart{position:absolute;inset:0;width:100%;height:100%}
 .tooltip{position:fixed;background:#111827;color:#fff;border-radius:8px;padding:6px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none}
 
-/* ---------- Form ---------- */
+/* ===== Form (prettier, stable grid) ===== */
+#formBar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 #tradeForm{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:12px;
+  gap:12px 12px;
   align-items:end;
+  grid-template-columns:repeat(2,minmax(160px,1fr));
   max-height:58vh;overflow:auto;-webkit-overflow-scrolling:touch;
 }
+@media (min-width:720px){
+  #tradeForm{grid-template-columns:repeat(3,minmax(160px,1fr));}
+}
+@media (min-width:980px){
+  #tradeForm{grid-template-columns:repeat(6,minmax(140px,1fr));}
+}
 .field.notes{grid-column:1 / -1}
+.actions{display:flex;gap:10px;align-items:center}
 
-/* ---------- Mobile tweaks ---------- */
+/* Small helper text */
+.help{font-size:12px;color:var(--muted)}
+
+/* Mobile tweaks */
 @media (max-width:640px){
   .container{padding:0 14px}
   .card-c.table-wrap{max-height:60vh}
@@ -135,32 +118,30 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
   #whoami{display:none !important}
 }
 
-/* ---------- Leaderboard modal ---------- */
+/* ===== Leaderboard (cleaner) ===== */
 .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1000}
 .modal.show{display:flex}
 .modal .backdrop{position:absolute;inset:0;background:rgba(15,23,42,.45)}
-.modal .panel{
-  position:relative;width:min(640px,92vw);max-height:80vh;overflow:auto;
-  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:14px 16px;
-}
-.lb-list{list-style:none;margin:0;padding:0}
-.lb-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
-.lb-rank{width:28px;text-align:right;color:var(--muted)}
-.lb-user{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lb-pnl{font-variant-numeric:tabular-nums}
+.modal .panel{position:relative;width:min(720px,92vw);max-height:80vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:14px 16px;}
+.lb-head{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 10px}
+.lb-table{width:100%;border-collapse:separate;border-spacing:0 8px}
+.lb-table thead th{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;padding:0 12px;text-align:left}
+.lb-row{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow)}
+.lb-row td{padding:10px 12px}
+.lb-rank{width:48px;text-align:center}
+.lb-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9999px;background:#f1f5f9;color:#111827;font-weight:600}
+.lb-badge.g{background:#d1fae5} .lb-badge.s{background:#e5e7eb} .lb-badge.b{background:#fde68a}
+.lb-me{outline:2px solid rgba(59,130,246,.25)}
 .lb-pnl.pos{color:var(--ok)} .lb-pnl.neg{color:var(--danger)}
+.lb-sub{font-size:12px;color:#94a3b8}
 
-/* ---------- Calendar ---------- */
+/* Calendar */
 .cal-card .card-c{padding:0}
 .cal-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border)}
 .cal-title{font-weight:600}
 .cal-dows{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:10px 16px 6px;color:var(--muted);font-size:12px;text-align:center}
 .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:0 16px 16px}
-.cal-cell{
-  background:var(--card);border:1px solid var(--border);border-radius:12px;
-  min-height:96px;padding:8px;display:flex;flex-direction:column;gap:6px;cursor:pointer;
-}
+.cal-cell{background:var(--card);border:1px solid var(--border);border-radius:12px;min-height:96px;padding:8px;display:flex;flex-direction:column;gap:6px;cursor:pointer;}
 .cal-cell .day{font-weight:600}
 .cal-cell .info{margin-top:auto;font-size:12px;line-height:1.25}
 .cal-cell .pnl.pos{color:var(--ok)} .cal-cell .pnl.neg{color:var(--danger)}
@@ -178,7 +159,15 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 .drow .amt.pos{color:var(--ok)} .drow .amt.neg{color:var(--danger)}
 .drow .note{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:45vw}
 
-/* Mobile calendar compact */
+/* Pairs manager */
+#pairsSearch{margin-bottom:8px}
+.pairs-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.pair-chip{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:#fff}
+.pair-chip .sym{font-weight:600}
+.star{cursor:pointer;font-size:16px;line-height:1}
+.star.fav{color:#f59e0b}
+
+/* Compact calendar */
 @media (max-width:640px){
   .cal-cell{min-height:64px}
   .cal-dows{gap:6px;padding:8px 12px 4px}
@@ -186,8 +175,6 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
   .cal-cell .info{display:none !important}
   .pill span.lbl{display:none}
 }
-
-/* ===== Compact calendar (desktop) ===== */
 @media (min-width:768px){
   .cal-bar{padding:8px 12px}
   .cal-title{font-size:16px}
@@ -197,11 +184,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
   .cal-cell .day{font-size:14px}
   .cal-cell .info{font-size:11px}
 }
-/* — tweak min-height above to 66px/64px if you want it even shorter — */
-
-
 </style>
-
 </head>
 <body>
   <div class="topbar">
@@ -254,7 +237,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       </div>
     </section>
 
-    <!-- Activity Calendar (below charts) -->
+    <!-- Activity Calendar -->
     <section class="card cal-card" style="margin-top:16px">
       <div class="cal-bar">
         <div class="row" style="gap:8px;align-items:center">
@@ -273,18 +256,28 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       <div id="calGrid" class="cal-grid"></div>
     </section>
 
+    <!-- Add Trade -->
     <section class="card" style="margin-top:16px">
-      <div class="card-h"><div class="section-title">Add Trade</div></div>
+      <div class="card-h">
+        <div id="formBar">
+          <div class="section-title">Add Trade</div>
+          <div class="actions">
+            <button class="btn sm" id="btnManagePairs">Manage Pairs</button>
+          </div>
+        </div>
+      </div>
       <div class="card-c">
         <form id="tradeForm" autocomplete="off">
           <div class="field">
-            <label for="symbol">Symbol</label>
-            <input id="symbol" class="input mono" placeholder="XAUUSD" required />
+            <label for="symbol">Pair</label>
+<select id="symbol" required></select>
+
+
           </div>
 
           <div class="field small">
-            <label for="date">Date (dd-mm-yyyy)</label>
-            <input id="date" class="input mono" placeholder="dd-mm-yyyy" required />
+            <label for="date">Date</label>
+            <input id="date" class="input mono" type="date" required />
           </div>
 
           <div class="field small">
@@ -303,18 +296,18 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
           </div>
 
           <div class="field small">
+            <label for="exit">Exit (optional)</label>
+            <input id="exit" class="input mono" type="number" step="0.000001" inputmode="decimal" placeholder="e.g. 2358.25" />
+          </div>
+
+          <div class="field small">
+            <label for="lot">Lot Size</label>
+            <input id="lot" class="input mono" type="number" step="0.01" inputmode="decimal" placeholder="e.g. 0.50" />
+          </div>
+
+          <div class="field small">
             <label for="netpl">Net P/L ($)</label>
-            <input
-              id="netpl"
-              class="input mono"
-              type="number"
-              step="0.01"
-              inputmode="decimal"
-              min="-1000000000"
-              max="1000000000"
-              placeholder="e.g. -50.25"
-              required
-            />
+            <input id="netpl" class="input mono" type="number" step="0.01" inputmode="decimal" min="-1000000000" max="1000000000" placeholder="e.g. -50.25" required />
           </div>
 
           <div class="field small">
@@ -335,6 +328,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
       </div>
     </section>
 
+    <!-- Trades Table -->
     <section class="card" style="margin-top:16px">
       <div class="card-h">
         <div class="row between">
@@ -349,11 +343,11 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
         <table id="tradesTable">
           <thead>
             <tr>
-              <th>Date</th><th>Symbol</th><th>Entry</th><th>SL</th><th>TP</th><th>Net P/L ($)</th><th>Risk ($)</th><th>Notes</th><th>Actions</th>
+              <th>Date</th><th>Pair</th><th>Lot</th><th>Entry</th><th>SL</th><th>TP</th><th>Exit</th><th>Net P/L ($)</th><th>Risk ($)</th><th>Notes</th><th>Actions</th>
             </tr>
           </thead>
           <tbody id="tableBody">
-            <tr><td colspan="9" style="color:var(--muted)">Loading…</td></tr>
+            <tr><td colspan="11" style="color:var(--muted)">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -366,11 +360,14 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
   <div id="leaderboardModal" class="modal" aria-hidden="true">
     <div class="backdrop"></div>
     <div class="panel">
-      <div class="row between" style="margin-bottom:8px">
-        <div class="section-title">Leaderboard – Top PnL</div>
+      <div class="lb-head">
+        <div>
+          <div class="section-title">Leaderboard</div>
+          <div class="lb-sub">Top total PnL across users</div>
+        </div>
         <button class="btn sm" id="lbClose">Close</button>
       </div>
-      <div id="lbBody" style="max-height:60vh; overflow:auto;">
+      <div id="lbBody" style="max-height:60vh; overflow:auto; padding:6px 2px 14px;">
         <div style="color:var(--muted)">Loading…</div>
       </div>
     </div>
@@ -388,666 +385,860 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import {
-      getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc,
-      onSnapshot, query, orderBy, serverTimestamp, enableIndexedDbPersistence,
-      getDocs, collectionGroup
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  <!-- Pairs manager modal -->
+  <div id="pairsModal" class="modal" aria-hidden="true">
+    <div class="backdrop"></div>
+    <div class="panel">
+      <div class="row between" style="margin-bottom:8px">
+        <div>
+          <div class="section-title">Manage Pairs</div>
+          <div class="lb-sub">Favorite pairs show up in the Add Trade selector</div>
+        </div>
+        <button class="btn sm" id="pairsClose">Close</button>
+      </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDbmcQAhQrdNzS13l2fVSWqyPPfJN2JjgE",
-      authDomain: "journal-6e115.firebaseapp.com",
-      projectId: "journal-6e115",
-      storageBucket: "journal-6e115.firebasestorage.app",
-      messagingSenderId: "945757301047",
-      appId: "1:945757301047:web:b6c8d856defda9a60b92b2"
-    };
+      <div style="display:flex; gap:8px; align-items:end; margin-bottom:10px;">
+        <div class="field" style="flex:1">
+          <label for="pairsSearch">Search</label>
+          <input id="pairsSearch" class="input" placeholder="Type to filter…" />
+        </div>
+        <div class="field" style="min-width:180px">
+          <label for="newPair">Add custom pair</label>
+          <input id="newPair" class="input mono" placeholder="e.g. US30" />
+        </div>
+        <button class="btn" id="btnAddPair">Add</button>
+      </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-    const auth= getAuth(app);
-    enableIndexedDbPersistence(db).catch(() => {});
+      <div id="pairsList" class="pairs-list"></div>
 
-    /* ---------- State & utils ---------- */
-    const state = { trades: [], editId: null, uid: null, unsub: null, calMonth: new Date() };
-    const $ = s => document.querySelector(s);
-    const nf2 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const nf6 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 6 });
-    const usd = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    const parseDate = s => { const m = /^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); if(!m) return null; const d = new Date(+m[3], +m[2]-1, +m[1]); return d && d.getMonth()==(+m[2]-1)? d : null; };
-    const varColor = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#3b82f6';
-    const escapeHtml = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","&gt;":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-    const signed = v => (v>=0? '+':'-') + `$${Math.abs(v).toFixed(2)}`;
+      <div class="row" style="justify-content:flex-end; gap:8px; margin-top:12px">
+        <button class="btn ghost" id="btnPairsReset">Reset to Defaults</button>
+        <button class="btn primary" id="btnPairsSave">Save Changes</button>
+      </div>
+    </div>
+  </div>
 
-    const normTrade = t => ({
-      id:t.id, date:t.date, symbol:String(t.symbol||'').toUpperCase(),
-      entry:+t.entry, sl:+t.sl, tp:+t.tp, netpl:+t.netpl,
-      risk: Math.abs(+t.risk || 0), notes:String(t.notes||'')
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc,
+    onSnapshot, query, orderBy, serverTimestamp, enableIndexedDbPersistence,
+    getDocs, collectionGroup
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDbmcQAhQrdNzS13l2fVSWqyPPfJN2JjgE",
+    authDomain: "journal-6e115.firebaseapp.com",
+    projectId: "journal-6e115",
+    storageBucket: "journal-6e115.firebasestorage.app",
+    messagingSenderId: "945757301047",
+    appId: "1:945757301047:web:b6c8d856defda9a60b92b2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const auth= getAuth(app);
+  enableIndexedDbPersistence(db).catch(() => {});
+
+  /* ---------- Pairs (defaults + user prefs) ---------- */
+  const DEFAULT_PAIRS = [
+    "EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD",
+    "EURGBP","EURJPY","EURCHF","EURCAD","EURAUD","EURNZD",
+    "GBPJPY","GBPCHF","GBPCAD","GBPAUD","GBPNZD",
+    "AUDJPY","AUDCHF","AUDCAD","AUDNZD",
+    "NZDJPY","NZDCHF","NZDCAD",
+    "CADJPY","CADCHF",
+    "CHFJPY",
+    "XAUUSD","XAGUSD","US30","US100","US500","UK100","DE40"
+  ];
+
+  /* ---------- State & utils ---------- */
+  const state = {
+    trades: [], editId: null, uid: null, unsub: null, calMonth: new Date(),
+    pairs: { favorites: new Set(DEFAULT_PAIRS.slice(0,12)), custom: new Set() }
+  };
+  const $   = s => document.querySelector(s);
+  const nf2 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const nf6 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 6 });
+  const usd = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  const varColor = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#3b82f6';
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  const signed = v => (v>=0? '+':'-') + `$${Math.abs(v).toFixed(2)}`;
+  const fmt6 = v => (v===null || v===undefined || Number.isNaN(+v)) ? '—' : nf6.format(+v);
+  const numOrNull = v => (v === '' || v === null || v === undefined) ? null : +v;
+
+  function debounce(fn, wait=300){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), wait); }; }
+
+  // Date helpers: store dd-mm-yyyy, inputs use yyyy-mm-dd
+  function toISO(ddmmyyyy){
+    const m = /^([0-3]\d)-([01]\d)-(\d{4})$/.exec(ddmmyyyy||''); if(!m) return '';
+    return `${m[3]}-${m[2]}-${m[1]}`;
+  }
+  function toDDMM(iso){
+    const m = /^(\d{4})-([01]\d)-([0-3]\d)$/.exec(iso||''); if(!m) return '';
+    return `${m[3]}-${m[2]}-${m[1]}`;
+  }
+  const parseDate = s => { const m = /^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); if(!m) return null; const d = new Date(+m[3], +m[2]-1, +m[1]); return d && d.getMonth()==(+m[2]-1)? d : null; };
+
+  function escapeAndBreak(s){ return escapeHtml(String(s)).replace(/\n/g,'<br>'); }
+  function safeLinkify(text){
+    if(!text) return '';
+    const re = /((https?:\/\/|www[./])[^\s<]+)/gi;
+    const parts = []; let last = 0, m;
+    while((m = re.exec(text)) !== null){
+      const full = m[0], start = m.index;
+      parts.push(escapeAndBreak(text.slice(last, start)));
+      let url = full.replace(/^www\//i, 'www.');
+      let trail = '';
+      while(/[),.;!?]$/.test(url)){ trail = url.slice(-1) + trail; url = url.slice(0,-1); }
+      let href = /^https?:\/\//i.test(url) ? url : 'https://' + url.replace(/^www\./i,'www.');
+      parts.push(`<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>`);
+      if(trail) parts.push(escapeAndBreak(trail));
+      last = start + full.length;
+    }
+    parts.push(escapeAndBreak(text.slice(last)));
+    return parts.join('');
+  }
+
+ /* ---------- Firestore helpers (pairs on user doc) ---------- */
+const tradesCol = () => collection(db, 'users', state.uid, 'trades');
+const userDoc   = () => doc(db, 'users', state.uid); // <— store favorites here
+
+async function loadPairs(){
+  try{
+    const snap = await getDoc(userDoc());
+    if (snap.exists()){
+      const d = snap.data() || {};
+      // accept either the new field names or your old ones if they exist
+      const fav = Array.isArray(d.pairsFavorites) ? d.pairsFavorites :
+                  Array.isArray(d.favorites)      ? d.favorites      : [];
+      const custom = Array.isArray(d.pairsCustom) ? d.pairsCustom :
+                     Array.isArray(d.custom)      ? d.custom      : [];
+      state.pairs.favorites = new Set(fav);
+      state.pairs.custom    = new Set(custom);
+    } else {
+      await setDoc(userDoc(), {
+        pairsFavorites: Array.from(state.pairs.favorites),
+        pairsCustom: []
+      }, { merge: true });
+    }
+  } catch(e){
+    console.error('loadPairs failed', e);
+  }
+  renderSymbolSelect();
+}
+
+async function savePairs(){
+  if (!state.uid) return; // safety
+  const favorites = Array.from(state.pairs.favorites);
+  const custom    = Array.from(state.pairs.custom);
+  try{
+    await setDoc(userDoc(), {
+      pairsFavorites: favorites,
+      pairsCustom: custom,
+      pairsUpdatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch(e){
+    console.error('savePairs failed', e);
+    alert('Could not save your favorite pairs. Check console for details.');
+  }
+  renderSymbolSelect();
+}
+
+  const savePairsDebounced = debounce(savePairs, 400);
+
+  async function fbAddTrade(t) {
+    const d = parseDate(t.date); if(!d) throw new Error('Invalid date');
+    await addDoc(tradesCol(), {
+      date: t.date, dateTS: d.getTime(), symbol: t.symbol,
+      entry: t.entry, sl: t.sl, tp: t.tp, exit: t.exit ?? null,
+      lot:  t.lot ?? null,
+      netpl: t.netpl, risk: t.risk, notes: t.notes||'',
+      createdAt: serverTimestamp()
+    });
+  }
+  async function fbUpdateTrade(id, t) {
+    const d = parseDate(t.date); if(!d) throw new Error('Invalid date');
+    await updateDoc(doc(db,'users',state.uid,'trades',id), {
+      date: t.date, dateTS: d.getTime(), symbol: t.symbol,
+      entry: t.entry, sl: t.sl, tp: t.tp, exit: t.exit ?? null,
+      lot:  t.lot ?? null,
+      netpl: t.netpl, risk: t.risk, notes: t.notes||''
+    });
+  }
+  async function fbDeleteTrade(id) { await deleteDoc(doc(db,'users',state.uid,'trades',id)); }
+
+  function startRealtime() {
+    if (state.unsub) state.unsub();
+    const qy = query(tradesCol(), orderBy('dateTS'));
+    state.unsub = onSnapshot(qy, (snap) => {
+      state.trades = snap.docs.map(d => {
+        const x = d.data() || {};
+        return {
+          id: d.id,
+          date: x.date, symbol: String(x.symbol||'').toUpperCase(),
+          entry: +x.entry, sl: +x.sl, tp: +x.tp, exit: numOrNull(x.exit),
+          lot:  numOrNull(x.lot),
+          netpl: +x.netpl, risk: Math.abs(+x.risk || 0), notes: String(x.notes||'')
+        };
+      });
+      state.editId = null;
+      render();
+    });
+  }
+
+  /* ---------- KPIs & series ---------- */
+  function calcKPIs(list){
+    const totalPL = list.reduce((a,t)=>a+t.netpl,0);
+    const wins = list.filter(t=>t.netpl>0);
+    const losses = list.filter(t=>t.netpl<0);
+    const winRate = (wins.length/(wins.length+losses.length)||0)*100;
+    const avgWin = wins.length ? wins.reduce((a,t)=>a+t.netpl,0)/wins.length : 0;
+    const avgLoss = losses.length ? losses.reduce((a,t)=>a+t.netpl,0)/losses.length : 0;
+    const winSum = wins.reduce((a,t)=>a+t.netpl,0);
+    const lossSum = Math.abs(losses.reduce((a,t)=>a+t.netpl,0));
+    const pf = lossSum===0 ? (winSum>0 ? '∞' : '0.00') : (winSum/lossSum).toFixed(2);
+    return { totalPL, winRate, avgWin, avgLoss, pf };
+  }
+
+  function buildPnlSeries(list){
+    const byDate = new Map();
+    for(const t of list){ byDate.set(t.date, (byDate.get(t.date)||0) + t.netpl); }
+    const dates = Array.from(byDate.keys()).sort((a,b)=> parseDate(a) - parseDate(b));
+    let cum = 0; const out=[];
+    for(const d of dates){ cum += byDate.get(d); out.push({ t:d, pnl:cum }); }
+    return out;
+  }
+
+  function buildPLBySymbol(list){
+    const map = new Map();
+    for(const t of list){ map.set(t.symbol, (map.get(t.symbol)||0) + t.netpl); }
+    const labels = Array.from(map.keys()).sort();
+    const values = labels.map(l=> map.get(l));
+    return { labels, values };
+  }
+
+  /* ---------- Calendar helpers ---------- */
+  function pad2(n){return n<10?('0'+n):''+n;}
+  function keyFromDate(d){return `${pad2(d.getDate())}-${pad2(d.getMonth()+1)}-${d.getFullYear()}`;}
+
+  function dailyAgg(list){
+    const m = new Map();
+    for(const t of list){
+      const k = t.date;
+      const v = m.get(k) || {count:0,total:0,trades:[]};
+      v.count++; v.total += t.netpl; v.trades.push(t);
+      m.set(k,v);
+    }
+    return m;
+  }
+
+  /* ---------- Rendering ---------- */
+  function render(){
+    const list = state.trades.slice().sort((a,b)=> parseDate(a.date) - parseDate(b.date));
+    const k = calcKPIs(list);
+
+    const totalEl = $('#kpi-total-pnl');
+    totalEl.textContent = (k.totalPL>=0? '+' : '-') + nf2.format(Math.abs(k.totalPL));
+    totalEl.className = 'kpi-value ' + (k.totalPL>=0? 'text-green':'text-red');
+    $('#avgWin').textContent = usd(k.avgWin);
+    $('#avgLoss').textContent = usd(k.avgLoss);
+    $('#winRatio').textContent = (k.winRate||0).toFixed(1)+'%';
+    $('#profitFactor').textContent = k.pf;
+
+    drawLineChart($('#lineChart'), $('#lineWrap'), buildPnlSeries(list));
+    drawBarChart($('#barChart'), $('#barWrap'), buildPLBySymbol(list));
+    renderCalendar();
+    renderTable(list);
+  }
+
+  function renderTable(list){
+    const tb = $('#tableBody');
+    if(!list.length){
+      tb.innerHTML = `<tr><td colspan="11" style="color:var(--muted)">No trades yet. Add your first trade above.</td></tr>`;
+      return;
+    }
+    tb.innerHTML = list.map(t=>{
+      const editing = state.editId===t.id;
+      if(!editing){
+        let notesHTML; try{ notesHTML = safeLinkify(t.notes); } catch(e){ notesHTML = escapeAndBreak(t.notes||''); }
+        return `
+        <tr data-id="${t.id}">
+          <td class="mono">${t.date}</td>
+          <td>${t.symbol}</td>
+          <td class="mono">${t.lot==null?'—':nf2.format(+t.lot)}</td>
+          <td class="mono">${fmt6(t.entry)}</td>
+          <td class="mono">${fmt6(t.sl)}</td>
+          <td class="mono">${fmt6(t.tp)}</td>
+          <td class="mono">${fmt6(t.exit)}</td>
+          <td class="mono ${t.netpl>=0? 'pl-pos':'pl-neg'}">${usd(t.netpl)}</td>
+          <td class="mono">${usd(t.risk || 0)}</td>
+          <td class="notes">${notesHTML}</td>
+          <td>
+            <button class="btn sm btn-edit">Edit</button>
+            <button class="btn sm btn-del">Delete</button>
+          </td>
+        </tr>`;
+      }
+      return `
+        <tr data-id="${t.id}">
+          <td><input class="input mono" type="date" value="${toISO(t.date)}"/></td>
+          <td><input class="input mono" value="${escapeHtml(t.symbol)}"/></td>
+          <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.lot??''}"/></td>
+          <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.entry)?t.entry:''}"/></td>
+          <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.sl)?t.sl:''}"/></td>
+          <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.tp)?t.tp:''}"/></td>
+          <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.exit)?t.exit:''}"/></td>
+          <td><input class="input mono" type="number" step="0.01" inputmode="decimal" min="-1000000000" max="1000000000" value="${t.netpl}"/></td>
+          <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.risk || 0}"/></td>
+          <td><textarea class="input mono" rows="2">${escapeHtml(t.notes||'')}</textarea></td>
+          <td>
+            <button class="btn primary btn-save">Save</button>
+            <button class="btn sm btn-cancel">Cancel</button>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  /* ---------- Charts ---------- */
+  function clearSVG(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
+  function elSVG(name, attrs={}, text){
+    const n=document.createElementNS('http://www.w3.org/2000/svg',name);
+    for(const k in attrs){ n.setAttribute(k, attrs[k]); }
+    if(text!=null) n.textContent=text;
+    return n;
+  }
+  const shortDM = s=>{ const m=/^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); return m?`${m[1]}-${m[2]}`:s; };
+
+  function drawLineChart(svg, wrap, data){
+    clearSVG(svg);
+    const rect = wrap.getBoundingClientRect();
+    const width  = Math.max(300, rect.width);
+    const height = Math.max(220, rect.height);
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+
+    const rotateLabels = (width < 520) || (data.length > 8);
+    const pad = { top:20, right:64, bottom: rotateLabels ? 72 : 36, left:56 };
+    const w = width - pad.left - pad.right;
+    const h = height - pad.top - pad.bottom;
+
+    const xs = i => pad.left + (i/Math.max(1, data.length-1))*w;
+    const vals = data.map(d=>d.pnl);
+    const minV = Math.min(0, ...vals, 0);
+    const maxV = Math.max(0, ...vals, 0);
+    const rangePad = Math.max(10, (maxV - minV) * 0.1);
+    const yMin = minV - rangePad, yMax = maxV + rangePad;
+    const ys = v => pad.top + (1 - (v - yMin) / (yMax - yMin)) * h;
+
+    const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
+
+    const ticks = 5;
+    for(let i=0;i<=ticks;i++){
+      const tv = yMin + (i/ticks) * (yMax - yMin);
+      const y = ys(tv);
+      svg.appendChild(elSVG('line',{x1:pad.left,x2:width-pad.right,y1:y,y2:y,stroke:'#e5e7eb'}));
+      svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
+    }
+
+    const maxLabels = rotateLabels ? 12 : 8;
+    const step = Math.max(1, Math.ceil(data.length / maxLabels));
+    data.forEach((d,i)=>{
+      if (i % step) return;
+      const label = shortDM(d.t);
+      const rawX = xs(i);
+      const x = Math.min(width - pad.right - 6, Math.max(pad.left + 6, rawX));
+      if (rotateLabels){
+        const t = elSVG('text',{transform:`translate(${x},${height - pad.bottom + 14}) rotate(-55)`,fill:'#6b7280','font-size':12,'text-anchor':'end'}, label);
+        svg.appendChild(t);
+      } else {
+        const anchor = i===0 ? 'start' : (i===data.length-1 ? 'end' : 'middle');
+        svg.appendChild(elSVG('text',{x, y:height-12, fill:'#6b7280','font-size':12,'text-anchor':anchor}, label));
+      }
     });
 
-    function escapeAndBreak(s){ return escapeHtml(String(s)).replace(/\n/g,'<br>'); }
-    function safeLinkify(text){
-      if(!text) return '';
-      const re = /((https?:\/\/|www[./])[^\s<]+)/gi;
-      const parts = []; let last = 0, m;
-      while((m = re.exec(text)) !== null){
-        const full = m[0], start = m.index;
-        parts.push(escapeAndBreak(text.slice(last, start)));
-        let url = full.replace(/^www\//i, 'www.');
-        let trail = '';
-        while(/[),.;!?]$/.test(url)){ trail = url.slice(-1) + trail; url = url.slice(0,-1); }
-        let href = /^https?:\/\//i.test(url) ? url : 'https://' + url.replace(/^www\./i,'www.');
-        parts.push(`<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>`);
-        if(trail) parts.push(escapeAndBreak(trail));
-        last = start + full.length;
+    if(data.length){
+      let dAttr = '';
+      data.forEach((d,i)=>{ const x=xs(i), y=ys(d.pnl); dAttr += (i?` L ${x} ${y}`:`M ${x} ${y}`); });
+      svg.appendChild(elSVG('path',{d:dAttr,fill:'none',stroke:varColor('--blue'),'stroke-width':3,'vector-effect':'non-scaling-stroke'}));
+    }
+
+    const tooltip = wrap.querySelector('#tooltipLine');
+    let dot = elSVG('circle',{r:4,fill:varColor('--blue')}); dot.style.display='none'; svg.appendChild(dot);
+    function showAt(clientX){
+      if(!data.length) return;
+      const bb = svg.getBoundingClientRect();
+      const rx = clientX - bb.left;
+      const idx = Math.max(0, Math.min(data.length-1, Math.round((rx - pad.left)/w*(data.length-1))));
+      const d = data[idx];
+      const x = xs(idx), y = ys(d.pnl);
+      dot.style.display=''; dot.setAttribute('cx',x); dot.setAttribute('cy',y);
+      tooltip.style.display='block';
+      tooltip.textContent = `${shortDM(d.t)} · Cumulative PnL ${signed(d.pnl)}`;
+      tooltip.style.left = (bb.left + x + 8) + 'px';
+      tooltip.style.top  = (bb.top + y - 28) + 'px';
+    }
+    svg.onmousemove = e => showAt(e.clientX);
+    svg.onmouseleave = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
+    svg.ontouchstart = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
+    svg.ontouchmove  = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
+    svg.ontouchend   = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
+  }
+
+  function drawBarChart(svg, wrap, agg){
+    clearSVG(svg);
+    const rect = wrap.getBoundingClientRect();
+    const width = Math.max(300, rect.width);
+    const height = Math.max(220, rect.height);
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+
+    const pad = { top:20, right:64, bottom:36, left:56 };
+    const w = width - pad.left - pad.right;
+    const h = height - pad.top - pad.bottom;
+
+    const labels = (agg.labels && agg.labels.length) ? agg.labels : ['—'];
+    const values = (agg.values && agg.values.length) ? agg.values : [0];
+
+    const n = Math.max(1, labels.length);
+    const band = w / n;
+    const barW = Math.max(22, band * 0.6);
+    const xs = i => pad.left + band*i + (band - barW)/2;
+
+    const minV = Math.min(0, ...values);
+    const maxV = Math.max(0, ...values);
+    const rangePad = Math.max(10, (maxV - minV) * 0.1);
+    const yMin = minV - rangePad, yMax = maxV + rangePad;
+    const ys = v => pad.top + (1 - (v - yMin) / (yMax - yMin)) * (h);
+
+    const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
+
+    const ticks = 5;
+    for(let i=0;i<=ticks;i++){
+      const tv = yMin + (i/ticks) * (yMax - yMin);
+      const y = ys(tv);
+      svg.appendChild(elSVG('line',{x1:pad.left,x2:width-pad.right,y1:y,y2:y,stroke:'#e5e7eb'}));
+      svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
+    }
+    labels.forEach((lab,i)=>{
+      const cx = xs(i) + barW/2;
+      svg.appendChild(elSVG('text',{x: cx, y: height - 12, fill:'#6b7280', 'font-size':12, 'text-anchor':'middle'}, lab));
+    });
+
+    const tooltip = wrap.querySelector('#tooltipBar');
+    const zeroY = ys(0);
+    values.forEach((v,i)=>{
+      const x = xs(i);
+      const y = v>=0 ? ys(v) : zeroY;
+      const bh = Math.abs(ys(v) - zeroY);
+      const color = v>=0 ? varColor('--ok') : varColor('--danger');
+      const r = elSVG('rect',{x, y, width:barW, height:bh, fill:color, rx:6, ry:6, 'vector-effect':'non-scaling-stroke'});
+      svg.appendChild(r);
+
+      function showAt(clientX, clientY){
+        tooltip.style.display='block';
+        tooltip.textContent = `${labels[i]} · ${v>=0?'+':'-'}$${Math.abs(v).toFixed(2)}`;
+        tooltip.style.left = (clientX + 8) + 'px';
+        tooltip.style.top = (clientY - 28) + 'px';
       }
-      parts.push(escapeAndBreak(text.slice(last)));
-      return parts.join('');
+      r.addEventListener('mousemove', (e)=>{ showAt(e.clientX, e.clientY); });
+      r.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
+      r.addEventListener('touchstart', (e)=>{ if(e.touches[0]) showAt(e.touches[0].clientX, e.touches[0].clientY); });
+      r.addEventListener('touchmove', (e)=>{ if(e.touches[0]) showAt(e.touches[0].clientX, e.touches[0].clientY); });
+      r.addEventListener('touchend', ()=>{ tooltip.style.display='none'; });
+    });
+  }
+
+  /* ---------- Calendar ---------- */
+  function renderCalendar(){
+    const grid = document.getElementById('calGrid');
+    const title = document.getElementById('calTitle');
+    const pill  = document.getElementById('calMonthPill')?.querySelector('.val');
+    if(!grid || !title) return;
+
+    const month = state.calMonth || new Date();
+    const first = new Date(month.getFullYear(), month.getMonth(), 1);
+    const start = new Date(first); start.setDate(first.getDate() - first.getDay());
+    const days = Array.from({length:42}, (_,i)=>{ const d=new Date(start); d.setDate(start.getDate()+i); return d; });
+
+    title.textContent = first.toLocaleString('en-US', { month:'long', year:'numeric' });
+
+    const agg = dailyAgg(state.trades);
+
+    let monthPnl = 0;
+    for(const t of state.trades){
+      const d = parseDate(t.date); if(!d) continue;
+      if (d.getFullYear()===first.getFullYear() && d.getMonth()===first.getMonth()) monthPnl += t.netpl;
+    }
+    if(pill){
+      pill.textContent = (monthPnl>=0?'+':'-') + usd(Math.abs(monthPnl)).replace('$','');
+      pill.classList.toggle('pos', monthPnl>=0);
+      pill.classList.toggle('neg', monthPnl<0);
     }
 
-    /* ---------- Firestore helpers ---------- */
-    const tradesCol = () => collection(db, 'users', state.uid, 'trades');
+    grid.innerHTML = days.map(d=>{
+      const key = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+      const data = agg.get(key);
+      const inMonth = d.getMonth() === first.getMonth();
+      const cls = ['cal-cell'];
+      if(!inMonth) cls.push('muted');
+      if(data){ if(data.total>0) cls.push('gain'); else if(data.total<0) cls.push('loss'); }
+      const info = data ? `
+        <div class="info">
+          <div>${data.count} trade${data.count>1?'s':''}</div>
+          <div class="pnl ${data.total>=0?'pos':'neg'}">${signed(data.total)}</div>
+        </div>` : '';
+      return `<div class="${cls.join(' ')}" data-date="${key}">
+        <div class="day">${d.getDate()}</div>
+        ${info}
+      </div>`;
+    }).join('');
+  }
 
-    async function fbAddTrade(t) {
-      const d = parseDate(t.date); if(!d) throw new Error('Invalid date');
-      await addDoc(tradesCol(), {
-        date:t.date, dateTS:d.getTime(), symbol:t.symbol,
-        entry:t.entry, sl:t.sl, tp:t.tp, netpl:t.netpl,
-        risk:t.risk, notes:t.notes||'', createdAt:serverTimestamp()
+  function openDayModal(dateStr){
+    const modal = document.getElementById('dayModal');
+    const body  = document.getElementById('dayBody');
+    const title = document.getElementById('dayTitle');
+    if(!modal || !body || !title) return;
+
+    const trades = state.trades.filter(t=> t.date === dateStr);
+    const total = trades.reduce((a,t)=> a + t.netpl, 0);
+    const dd = parseDate(dateStr);
+    title.textContent = `Daily Summary – ${dd ? dd.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'}) : dateStr}`;
+
+    if(!trades.length){
+      body.innerHTML = `<div style="color:var(--muted)">No trades for this day.</div>`;
+    } else {
+      body.innerHTML = `
+        <div style="margin-bottom:8px;font-weight:600">
+          Total: <span class="${total>=0?'pl-pos':'pl-neg'}">${signed(total)}</span>
+        </div>
+        <ul class="dlist">
+          ${trades.map(t=>`
+            <li class="drow">
+              <div class="sym">${escapeHtml(t.symbol)}</div>
+              <div class="note">${escapeHtml(t.notes||'')}</div>
+              <div class="amt ${t.netpl>=0?'pos':'neg'}">${signed(t.netpl)}</div>
+            </li>
+          `).join('')}
+        </ul>`;
+    }
+    modal.classList.add('show');
+  }
+  function closeDayModal(){ document.getElementById('dayModal')?.classList.remove('show'); }
+
+  /* ---------- Leaderboard (clean) ---------- */
+  async function ensureSignedIn() {
+    if (auth.currentUser) return auth.currentUser;
+    return await new Promise((resolve) => {
+      const off = onAuthStateChanged(auth, (u) => { if (u) { off(); resolve(u); } });
+    });
+  }
+
+  async function fetchNames(uids){
+    const out = {};
+    await Promise.all(uids.map(async uid=>{
+      try{
+        const snap = await getDoc(doc(db,'users',uid));
+        if (snap.exists()) {
+          const d = snap.data() || {};
+          out[uid] = d.name || d.displayName || d.email || uid;
+        } else { out[uid] = uid; }
+      }catch(e){ out[uid] = uid; }
+    }));
+    return out;
+  }
+
+  async function buildLeaderboard(){
+    const lbBody = $('#lbBody');
+    await ensureSignedIn();
+
+    lbBody.innerHTML = `<div style="color:var(--muted)">Loading…</div>`;
+    try{
+      const snap = await getDocs(collectionGroup(db,'trades'));
+      const totals = new Map();
+      snap.forEach(ds=>{
+        const data = ds.data() || {};
+        const uid = ds.ref.parent.parent ? ds.ref.parent.parent.id : null;
+        if (!uid) return;
+        const n = typeof data.netpl === 'number' ? data.netpl : parseFloat(data.netpl);
+        if (isNaN(n)) return;
+        totals.set(uid, (totals.get(uid) || 0) + n);
       });
-    }
-    async function fbUpdateTrade(id, t) {
-      const d = parseDate(t.date); if(!d) throw new Error('Invalid date');
-      await updateDoc(doc(db,'users',state.uid,'trades',id), {
-        date:t.date, dateTS:d.getTime(), symbol:t.symbol,
-        entry:t.entry, sl:t.sl, tp:t.tp, netpl:t.netpl,
-        risk:t.risk, notes:t.notes||''
-      });
-    }
-    async function fbDeleteTrade(id) { await deleteDoc(doc(db,'users',state.uid,'trades',id)); }
 
-    function startRealtime() {
-      if (state.unsub) state.unsub();
-      const qy = query(tradesCol(), orderBy('dateTS'));
-      state.unsub = onSnapshot(qy, (snap) => {
-        state.trades = snap.docs.map(d => {
-          const x = d.data();
-          return normTrade({
-            id:d.id, date:x.date, symbol:x.symbol,
-            entry:x.entry, sl:x.sl, tp:x.tp, netpl:x.netpl,
-            risk:(x.risk ?? 0), notes:x.notes||''
-          });
-        });
-        state.editId = null;
-        render();
-      });
-    }
+      const entries = Array.from(totals, ([uid,total])=>({uid,total})).sort((a,b)=> b.total - a.total);
+      const names = await fetchNames(entries.map(e=>e.uid));
+      const me = auth.currentUser?.uid;
 
-    /* ---------- KPIs & series ---------- */
-    function calcKPIs(list){
-      const totalPL = list.reduce((a,t)=>a+t.netpl,0);
-      const wins = list.filter(t=>t.netpl>0);
-      const losses = list.filter(t=>t.netpl<0);
-      const winRate = (wins.length/(wins.length+losses.length)||0)*100;
-      const avgWin = wins.length ? wins.reduce((a,t)=>a+t.netpl,0)/wins.length : 0;
-      const avgLoss = losses.length ? losses.reduce((a,t)=>a+t.netpl,0)/losses.length : 0;
-      const winSum = wins.reduce((a,t)=>a+t.netpl,0);
-      const lossSum = Math.abs(losses.reduce((a,t)=>a+t.netpl,0));
-      const pf = lossSum===0 ? (winSum>0 ? '∞' : '0.00') : (winSum/lossSum).toFixed(2);
-      return { totalPL, winRate, avgWin, avgLoss, pf };
-    }
+      const head = `
+        <table class="lb-table">
+          <thead><tr><th>Rank</th><th>Trader</th><th style="text-align:right;padding-right:18px">Total PnL</th></tr></thead>
+          <tbody id="lbTbody"></tbody>
+        </table>`;
+      lbBody.innerHTML = head;
 
-    function buildPnlSeries(list){
-      const byDate = new Map();
-      for(const t of list){ byDate.set(t.date, (byDate.get(t.date)||0) + t.netpl); }
-      const dates = Array.from(byDate.keys()).sort((a,b)=> parseDate(a) - parseDate(b));
-      let cum = 0; const out=[];
-      for(const d of dates){ cum += byDate.get(d); out.push({ t:d, pnl:cum }); }
-      return out;
-    }
-
-    function buildPLBySymbol(list){
-      const map = new Map();
-      for(const t of list){ map.set(t.symbol, (map.get(t.symbol)||0) + t.netpl); }
-      const labels = Array.from(map.keys()).sort();
-      const values = labels.map(l=> map.get(l));
-      return { labels, values };
-    }
-
-    /* ---------- Calendar helpers ---------- */
-    function pad2(n){return n<10?('0'+n):''+n;}
-    function keyFromDate(d){return `${pad2(d.getDate())}-${pad2(d.getMonth()+1)}-${d.getFullYear()}`;}
-
-    function dailyAgg(list){
-      const m = new Map();
-      for(const t of list){
-        const k = t.date; // already dd-mm-yyyy
-        const v = m.get(k) || {count:0,total:0,trades:[]};
-        v.count++; v.total += t.netpl; v.trades.push(t);
-        m.set(k,v);
-      }
-      return m;
-    }
-
-    /* ---------- Rendering ---------- */
-    function render(){
-      const list = state.trades.slice().sort((a,b)=> parseDate(a.date) - parseDate(b.date));
-      const k = calcKPIs(list);
-
-      const totalEl = $('#kpi-total-pnl');
-      totalEl.textContent = (k.totalPL>=0? '+' : '-') + nf2.format(Math.abs(k.totalPL));
-      totalEl.className = 'kpi-value ' + (k.totalPL>=0? 'text-green':'text-red');
-      $('#avgWin').textContent = usd(k.avgWin);
-      $('#avgLoss').textContent = usd(k.avgLoss);
-      $('#winRatio').textContent = (k.winRate||0).toFixed(1)+'%';
-      $('#profitFactor').textContent = k.pf;
-
-      drawLineChart($('#lineChart'), $('#lineWrap'), buildPnlSeries(list));
-      drawBarChart($('#barChart'), $('#barWrap'), buildPLBySymbol(list));
-      renderCalendar();
-      renderTable(list);
-    }
-
-    function renderTable(list){
-      const tb = $('#tableBody');
-      if(!list.length){
-        tb.innerHTML = `<tr><td colspan="9" style="color:var(--muted)">No trades yet. Add your first trade above.</td></tr>`;
-        return;
-      }
-      tb.innerHTML = list.map(t=>{
-        const editing = state.editId===t.id;
-        if(!editing){
-          let notesHTML; try{ notesHTML = safeLinkify(t.notes); } catch(e){ notesHTML = escapeAndBreak(t.notes||''); }
-          return `
-          <tr data-id="${t.id}">
-            <td class="mono">${t.date}</td>
-            <td>${t.symbol}</td>
-            <td class="mono">${nf6.format(t.entry)}</td>
-            <td class="mono">${nf6.format(t.sl)}</td>
-            <td class="mono">${nf6.format(t.tp)}</td>
-            <td class="mono ${t.netpl>=0? 'pl-pos':'pl-neg'}">${usd(t.netpl)}</td>
-            <td class="mono">${usd(t.risk || 0)}</td>
-            <td class="notes">${notesHTML}</td>
-            <td>
-              <button class="btn sm btn-edit">Edit</button>
-              <button class="btn sm btn-del">Delete</button>
-            </td>
-          </tr>`;
-        }
+      const tbody = lbBody.querySelector('#lbTbody');
+      const topN = entries.slice(0, 20);
+      tbody.innerHTML = topN.map((e,i)=>{
+        const rank = i+1;
+        const badgeClass = rank===1?'g':rank===2?'s':rank===3?'b':'';
+        const meClass = e.uid===me ? ' lb-me' : '';
         return `
-          <tr data-id="${t.id}">
-            <td><input class="input mono" value="${escapeHtml(t.date)}"/></td>
-            <td><input class="input mono" value="${escapeHtml(t.symbol)}"/></td>
-            <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.entry}"/></td>
-            <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.sl}"/></td>
-            <td><input class="input mono" type="number" step="0.000001" inputmode="decimal" value="${t.tp}"/></td>
-            <td><input class="input mono" type="number" step="0.01" inputmode="decimal" min="-1000000000" max="1000000000" value="${t.netpl}"/></td>
-            <td><input class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.risk || 0}"/></td>
-            <td><textarea class="input mono" rows="2">${escapeHtml(t.notes||'')}</textarea></td>
-            <td>
-              <button class="btn primary btn-save">Save</button>
-              <button class="btn sm btn-cancel">Cancel</button>
-            </td>
+          <tr class="lb-row${meClass}">
+            <td class="lb-rank"><span class="lb-badge ${badgeClass}">${rank}</span></td>
+            <td><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(names[e.uid]||e.uid)}</div></td>
+            <td style="text-align:right"><span class="lb-pnl ${e.total>=0?'pos':'neg'}">${usd(e.total)}</span></td>
           </tr>`;
       }).join('');
+    } catch(err){
+      console.error(err);
+      lbBody.innerHTML = `<div style="color:var(--danger)">Failed to load leaderboard: ${escapeHtml(err.message || String(err))}</div>`;
     }
+  }
 
-    /* ---------- Charts ---------- */
-    function clearSVG(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
-    function elSVG(name, attrs={}, text){
-      const n=document.createElementNS('http://www.w3.org/2000/svg',name);
-      for(const k in attrs){ n.setAttribute(k, attrs[k]); }
-      if(text!=null) n.textContent=text;
-      return n;
-    }
+  function openLeaderboard(){ $('#leaderboardModal').classList.add('show'); buildLeaderboard(); }
+  function closeLeaderboard(){ $('#leaderboardModal').classList.remove('show'); }
 
-    // DD-MM label helper
-    function shortDM(s){ const m=/^([0-3]\d)-([01]\d)-(\d{4})$/.exec(s||''); return m?`${m[1]}-${m[2]}`:s; }
+  /* ---------- Pairs UI ---------- */
+  function allPairs(){
+    const user = Array.from(state.pairs.custom);
+    const defaults = DEFAULT_PAIRS.slice();
+    const set = new Set([...defaults, ...user]);
+    return Array.from(set).sort();
+  }
+  function renderSymbolSelect(){
+    const sel = $('#symbol'); if(!sel) return;
+    const favs = Array.from(state.pairs.favorites);
+    const every = allPairs();
+    const list = favs.length ? favs : every;
+    sel.innerHTML = list.map(s=>`<option value="${s}">${s}</option>`).join('');
+  }
 
-    function drawLineChart(svg, wrap, data){
-      clearSVG(svg);
-      const rect = wrap.getBoundingClientRect();
-      const width  = Math.max(300, rect.width);
-      const height = Math.max(220, rect.height);
-      svg.setAttribute('width', width);
-      svg.setAttribute('height', height);
+  function openPairs(){
+    $('#pairsModal').classList.add('show');
+    $('#pairsSearch').value = '';
+    drawPairsList();
+  }
+  function closePairs(){
+  $('#pairsModal').classList.remove('show');
+  // Flush any in-modal changes immediately
+  savePairs();           // persist to Firestore
+  renderSymbolSelect();  // refresh the Add Trade dropdown
+}
 
-      const rotateLabels = (width < 520) || (data.length > 8);
-      const pad = { top:20, right:64, bottom: rotateLabels ? 72 : 36, left:56 };
-      const w = width - pad.left - pad.right;
-      const h = height - pad.top - pad.bottom;
 
-      const xs = i => pad.left + (i/Math.max(1, data.length-1))*w;
-      const vals = data.map(d=>d.pnl);
-      const minV = Math.min(0, ...vals, 0);
-      const maxV = Math.max(0, ...vals, 0);
-      const rangePad = Math.max(10, (maxV - minV) * 0.1);
-      const yMin = minV - rangePad, yMax = maxV + rangePad;
-      const ys = v => pad.top + (1 - (v - yMin) / (yMax - yMin)) * h;
+  function drawPairsList(){
+    const wrap = $('#pairsList');
+    const q = ($('#pairsSearch').value || '').trim().toUpperCase();
+    const list = allPairs().filter(s=> s.includes(q));
+    wrap.innerHTML = list.map(sym=>{
+      const fav = state.pairs.favorites.has(sym);
+      return `
+        <div class="pair-chip" data-sym="${sym}">
+          <div class="sym">${sym}</div>
+          <div class="star ${fav?'fav':''}" title="${fav?'Unfavorite':'Favorite'}">★</div>
+        </div>`;
+    }).join('');
+  }
 
-      const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
+  /* ---------- Events ---------- */
+  function attach(){
+    // Default date today
+    const today = new Date();
+    const isoToday = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    $('#date').value = isoToday;
 
-      const ticks = 5;
-      for(let i=0;i<=ticks;i++){
-        const tv = yMin + (i/ticks) * (yMax - yMin);
-        const y = ys(tv);
-        svg.appendChild(elSVG('line',{x1:pad.left,x2:width-pad.right,y1:y,y2:y,stroke:'#e5e7eb'}));
-        svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
+    // Add Trade submit
+    $('#tradeForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if (!state.uid) { alert('Not authenticated yet.'); return; }
+      const btn = e.submitter; btn && (btn.disabled = true);
+      try {
+        const t = {
+          date: toDDMM($('#date').value),
+          symbol: $('#symbol').value.trim().toUpperCase(),
+          entry: $('#entry').value, sl: $('#sl').value, tp: $('#tp').value,
+          exit: $('#exit').value,
+          lot:  $('#lot').value,
+          netpl: $('#netpl').value, risk: $('#risk').value,
+          notes: $('#notes').value
+        };
+        if(!parseDate(t.date) || !t.symbol){ alert('Check date and pair'); return; }
+        await fbAddTrade(t);
+        e.target.reset();
+        $('#date').value = isoToday;
+      } catch(err){ console.error(err); alert('Could not save trade.'); }
+      finally { btn && (btn.disabled = false); }
+    });
+
+    // Calendar navigation
+    const ensureMonth = () => { if(!state.calMonth) state.calMonth = new Date(); };
+    document.getElementById('calPrev')?.addEventListener('click', ()=>{
+      ensureMonth(); state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()-1, 1);
+      renderCalendar();
+    });
+    document.getElementById('calNext')?.addEventListener('click', ()=>{
+      ensureMonth(); state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()+1, 1);
+      renderCalendar();
+    });
+    document.getElementById('calToday')?.addEventListener('click', ()=>{ state.calMonth = new Date(); renderCalendar(); });
+
+    // Open day summary modal
+    document.getElementById('calGrid')?.addEventListener('click', (e)=>{
+      const cell = e.target.closest('.cal-cell'); if(!cell) return;
+      const key = cell.getAttribute('data-date'); if(!key) return;
+      openDayModal(key);
+    });
+    document.getElementById('dayClose')?.addEventListener('click', closeDayModal);
+    document.querySelector('#dayModal .backdrop')?.addEventListener('click', closeDayModal);
+
+    // Table actions
+    $('#tradesTable').addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button'); if(!btn) return;
+      const tr = e.target.closest('tr[data-id]'); if(!tr) return;
+      const id = tr.dataset.id;
+
+      if(btn.classList.contains('btn-del')){ await fbDeleteTrade(id); return; }
+      if(btn.classList.contains('btn-edit')){ state.editId = id; render(); return; }
+      if(btn.classList.contains('btn-cancel')){ state.editId = null; render(); return; }
+      if(btn.classList.contains('btn-save')){
+        const dateEl  = tr.querySelector('td:nth-child(1) input');
+        const symEl   = tr.querySelector('td:nth-child(2) input');
+        const lotEl   = tr.querySelector('td:nth-child(3) input');
+        const entryEl = tr.querySelector('td:nth-child(4) input');
+        const slEl    = tr.querySelector('td:nth-child(5) input');
+        const tpEl    = tr.querySelector('td:nth-child(6) input');
+        const exitEl  = tr.querySelector('td:nth-child(7) input');
+        const netplEl = tr.querySelector('td:nth-child(8) input');
+        const riskEl  = tr.querySelector('td:nth-child(9) input');
+        const notesEl = tr.querySelector('td:nth-child(10) textarea');
+
+        const t = {
+          id,
+          date:  toDDMM(dateEl.value),
+          symbol: symEl.value.trim().toUpperCase(),
+          lot:  lotEl.value,
+          entry: entryEl.value, sl: slEl.value, tp: tpEl.value,
+          exit:  exitEl.value,
+          netpl: netplEl.value, risk: riskEl.value,
+          notes: notesEl.value
+        };
+        if(!parseDate(t.date) || !t.symbol){ alert('Check date format and pair'); return; }
+        await fbUpdateTrade(id, t); state.editId=null;
       }
+    });
 
-      const maxLabels = rotateLabels ? 12 : 8;
-      const step = Math.max(1, Math.ceil(data.length / maxLabels));
-      data.forEach((d,i)=>{
-        if (i % step) return;
-        const label = shortDM(d.t);
-        const rawX = xs(i);
-        const x = Math.min(width - pad.right - 6, Math.max(pad.left + 6, rawX));
-        if (rotateLabels){
-          const t = elSVG('text',{transform:`translate(${x},${height - pad.bottom + 14}) rotate(-55)`,fill:'#6b7280','font-size':12,'text-anchor':'end'}, label);
-          svg.appendChild(t);
-        } else {
-          const anchor = i===0 ? 'start' : (i===data.length-1 ? 'end' : 'middle');
-          svg.appendChild(elSVG('text',{x, y:height-12, fill:'#6b7280','font-size':12,'text-anchor':anchor}, label));
-        }
-      });
+    // Export
+    $('#btnExportCSV').addEventListener('click', exportCSV);
+    $('#btnExportJSON').addEventListener('click', exportJSON);
 
-      if(data.length){
-        let dAttr = '';
-        data.forEach((d,i)=>{ const x=xs(i), y=ys(d.pnl); dAttr += (i?` L ${x} ${y}`:`M ${x} ${y}`); });
-        svg.appendChild(elSVG('path',{d:dAttr,fill:'none',stroke:varColor('--blue'),'stroke-width':3,'vector-effect':'non-scaling-stroke'}));
-      }
+    // Auth buttons
+    $('#btnSignOut').addEventListener('click', async ()=>{ await signOut(auth); location.href = 'index.html'; });
 
-      const tooltip = wrap.querySelector('#tooltipLine');
-      let dot = elSVG('circle',{r:4,fill:varColor('--blue')}); dot.style.display='none'; svg.appendChild(dot);
-      function showAt(clientX){
-        if(!data.length) return;
-        const bb = svg.getBoundingClientRect();
-        const rx = clientX - bb.left;
-        const idx = Math.max(0, Math.min(data.length-1, Math.round((rx - pad.left)/w*(data.length-1))));
-        const d = data[idx];
-        const x = xs(idx), y = ys(d.pnl);
-        dot.style.display=''; dot.setAttribute('cx',x); dot.setAttribute('cy',y);
-        tooltip.style.display='block';
-        tooltip.textContent = `${shortDM(d.t)} · Cumulative PnL ${signed(d.pnl)}`;
-        tooltip.style.left = (bb.left + x + 8) + 'px';
-        tooltip.style.top  = (bb.top + y - 28) + 'px';
-      }
-      svg.onmousemove = e => showAt(e.clientX);
-      svg.onmouseleave = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
-      svg.ontouchstart = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
-      svg.ontouchmove  = e=>{ if(e.touches[0]) showAt(e.touches[0].clientX); };
-      svg.ontouchend   = ()=>{ dot.style.display='none'; tooltip.style.display='none'; };
-    }
+    // Leaderboard
+    $('#btnLeaderboard').addEventListener('click', openLeaderboard);
+    $('#lbClose').addEventListener('click', closeLeaderboard);
+    $('#leaderboardModal .backdrop').addEventListener('click', closeLeaderboard);
 
-    function drawBarChart(svg, wrap, agg){
-      clearSVG(svg);
-      const rect = wrap.getBoundingClientRect();
-      const width = Math.max(300, rect.width);
-      const height = Math.max(220, rect.height);
-      svg.setAttribute('width', width);
-      svg.setAttribute('height', height);
-
-      const pad = { top:20, right:64, bottom:36, left:56 };
-      const w = width - pad.left - pad.right;
-      const h = height - pad.top - pad.bottom;
-
-      const labels = (agg.labels && agg.labels.length) ? agg.labels : ['—'];
-      const values = (agg.values && agg.values.length) ? agg.values : [0];
-
-      const n = Math.max(1, labels.length);
-      const band = w / n;
-      const barW = Math.max(22, band * 0.6);
-      const xs = i => pad.left + band*i + (band - barW)/2;
-
-      const minV = Math.min(0, ...values);
-      const maxV = Math.max(0, ...values);
-      const rangePad = Math.max(10, (maxV - minV) * 0.1);
-      const yMin = minV - rangePad, yMax = maxV + rangePad;
-      const ys = v => pad.top + (1 - (v - yMin) / (yMax - yMin)) * (h);
-
-      const fmtAxis = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
-
-      const ticks = 5;
-      for(let i=0;i<=ticks;i++){
-        const tv = yMin + (i/ticks) * (yMax - yMin);
-        const y = ys(tv);
-        svg.appendChild(elSVG('line',{x1:pad.left,x2:width-pad.right,y1:y,y2:y,stroke:'#e5e7eb'}));
-        svg.appendChild(elSVG('text',{x:pad.left-10,y,fill:'#6b7280','font-size':12,'text-anchor':'end','dominant-baseline':'middle'}, fmtAxis(tv)));
-      }
-      labels.forEach((lab,i)=>{
-  const cx = xs(i) + barW/2; // center of the bar
-  svg.appendChild(elSVG('text',{x: cx, y: height - 12, fill:'#6b7280', 'font-size':12, 'text-anchor':'middle'}, lab));
+    // Pairs manager
+    $('#btnManagePairs').addEventListener('click', openPairs);
+    $('#pairsClose').addEventListener('click', closePairs);
+    $('#pairsModal .backdrop').addEventListener('click', closePairs);
+    $('#pairsSearch').addEventListener('input', drawPairsList);
+    $('#btnPairsSave').addEventListener('click', async ()=>{ await savePairs(); closePairs(); });
+    $('#btnPairsReset').addEventListener('click', async ()=>{
+  state.pairs.favorites = new Set(DEFAULT_PAIRS.slice(0,12));
+  state.pairs.custom = new Set();
+  drawPairsList();
+  renderSymbolSelect();   // reflect immediately
+  await savePairs();      // <-- save immediately
 });
 
 
-      const tooltip = wrap.querySelector('#tooltipBar');
-      const zeroY = ys(0);
-      values.forEach((v,i)=>{
-        const x = xs(i);
-        const y = v>=0 ? ys(v) : zeroY;
-        const bh = Math.abs(ys(v) - zeroY);
-        const color = v>=0 ? varColor('--ok') : varColor('--danger');
-        const r = elSVG('rect',{x, y, width:barW, height:bh, fill:color, rx:6, ry:6, 'vector-effect':'non-scaling-stroke'});
-        svg.appendChild(r);
+    $('#btnAddPair').addEventListener('click', async ()=>{
+  const raw = ($('#newPair').value||'').trim().toUpperCase();
+  if(!raw) return;
+  const sym = raw.replace(/\s+/g,'');
+  if(!sym) return;
+  state.pairs.custom.add(sym);
+  state.pairs.favorites.add(sym);
+  $('#newPair').value='';
+  drawPairsList();
+  renderSymbolSelect();   // reflect immediately
+  await savePairs();      // <-- save immediately
+});
 
-        function showAt(clientX, clientY){
-          tooltip.style.display='block';
-          tooltip.textContent = `${labels[i]} · ${v>=0?'+':'-'}$${Math.abs(v).toFixed(2)}`;
-          tooltip.style.left = (clientX + 8) + 'px';
-          tooltip.style.top = (clientY - 28) + 'px';
-        }
-        r.addEventListener('mousemove', (e)=>{ showAt(e.clientX, e.clientY); });
-        r.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
-        r.addEventListener('touchstart', (e)=>{ if(e.touches[0]) showAt(e.touches[0].clientX, e.touches[0].clientY); });
-        r.addEventListener('touchmove', (e)=>{ if(e.touches[0]) showAt(e.touches[0].clientX, e.touches[0].clientY); });
-        r.addEventListener('touchend', ()=>{ tooltip.style.display='none'; });
-      });
-    }
 
-    /* ---------- Calendar ---------- */
-    function renderCalendar(){
-      const grid = document.getElementById('calGrid');
-      const title = document.getElementById('calTitle');
-      const pill  = document.getElementById('calMonthPill')?.querySelector('.val');
-      if(!grid || !title) return;
+  $('#pairsList').addEventListener('click', async (e)=>{
+  const chip = e.target.closest('.pair-chip'); if(!chip) return;
+  if(e.target.classList.contains('star')){
+    const sym = chip.dataset.sym;
+    if(state.pairs.favorites.has(sym)) state.pairs.favorites.delete(sym);
+    else state.pairs.favorites.add(sym);
+    drawPairsList();
+    renderSymbolSelect();   // reflect immediately
+    await savePairs();      // <-- save immediately, no debounce
+  }
+});
 
-      const month = state.calMonth || new Date();
-      const first = new Date(month.getFullYear(), month.getMonth(), 1);
-      const start = new Date(first); start.setDate(first.getDate() - first.getDay()); // Sunday start
-      const days = Array.from({length:42}, (_,i)=>{ const d=new Date(start); d.setDate(start.getDate()+i); return d; });
 
-      title.textContent = first.toLocaleString('en-US', { month:'long', year:'numeric' });
 
-      const agg = dailyAgg(state.trades);
+  }
 
-      // Month total PnL for pill
-      let monthPnl = 0;
-      for(const t of state.trades){
-        const d = parseDate(t.date); if(!d) continue;
-        if (d.getFullYear()===first.getFullYear() && d.getMonth()===first.getMonth()) monthPnl += t.netpl;
-      }
-      if(pill){
-        pill.textContent = (monthPnl>=0?'+':'-') + usd(Math.abs(monthPnl)).replace('$','');
-        pill.classList.toggle('pos', monthPnl>=0);
-        pill.classList.toggle('neg', monthPnl<0);
-      }
+  /* ---------- Export ---------- */
+  function exportJSON(){
+    const payload = state.trades.map(({date,symbol,lot,entry,sl,tp,exit,netpl,risk,notes})=>({date,symbol,lot,entry,sl,tp,exit,netpl,risk,notes}));
+    downloadBlob(JSON.stringify(payload, null, 2), 'trades.json', 'application/json');
+  }
+  function exportCSV(){
+    const header = ['Date','Pair','Lot','Entry','SL','TP','Exit','NetPL','Risk','Notes'];
+    const rows = state.trades.map(t=> [
+      t.date, t.symbol, (t.lot ?? ''), t.entry, t.sl, t.tp, (t.exit ?? ''), t.netpl, t.risk, escapeCSV(t.notes)
+    ]);
+    const csv = [header.join(','), ...rows.map(r=> r.map((v,i)=> i===9 ? `"${String(v).replace(/"/g,'""')}"` : v).join(','))].join('\n');
+    downloadBlob(csv, 'trades.csv', 'text/csv');
+  }
+  function escapeCSV(s){ return String(s||'').replace(/\r?\n/g,' '); }
+  function downloadBlob(content, filename, type){
+    const blob = new Blob([content], {type});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=filename; a.click();
+    setTimeout(()=> URL.revokeObjectURL(url), 1000);
+  }
 
-      grid.innerHTML = days.map(d=>{
-        const key = keyFromDate(d);
-        const data = agg.get(key);
-        const inMonth = d.getMonth() === first.getMonth();
-        const cls = ['cal-cell']; 
-        if(!inMonth) cls.push('muted');
-        if(data){ if(data.total>0) cls.push('gain'); else if(data.total<0) cls.push('loss'); }
-        const info = data ? `
-          <div class="info">
-            <div>${data.count} trade${data.count>1?'s':''}</div>
-            <div class="pnl ${data.total>=0?'pos':'neg'}">${signed(data.total)}</div>
-          </div>` : '';
-        return `<div class="${cls.join(' ')}" data-date="${key}">
-          <div class="day">${d.getDate()}</div>
-          ${info}
-        </div>`;
-      }).join('');
-    }
+  /* ---------- Boot & auth gating ---------- */
+  attach();
+  render(); // placeholder until snapshot
 
-    function openDayModal(dateStr){
-      const modal = document.getElementById('dayModal');
-      const body  = document.getElementById('dayBody');
-      const title = document.getElementById('dayTitle');
-      if(!modal || !body || !title) return;
+  onAuthStateChanged(auth, async (user)=>{
+    const who = document.getElementById('whoami');
+    if (!user) { location.href = 'index.html'; return; }
+    who.textContent = user.email || user.uid;
 
-      // Collect trades for that date
-      const trades = state.trades.filter(t=> t.date === dateStr);
-      const total = trades.reduce((a,t)=> a + t.netpl, 0);
-      const d = parseDate(dateStr);
-      title.textContent = `Daily Summary – ${d ? d.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'}) : dateStr}`;
+    if (state.uid !== user.uid) {
+      state.uid = user.uid;
 
-      if(!trades.length){
-        body.innerHTML = `<div style="color:var(--muted)">No trades for this day.</div>`;
-      } else {
-        body.innerHTML = `
-          <div style="margin-bottom:8px;font-weight:600">
-            Total: <span class="${total>=0?'pl-pos':'pl-neg'}">${signed(total)}</span>
-          </div>
-          <ul class="dlist">
-            ${trades.map(t=>`
-              <li class="drow">
-                <div class="sym">${escapeHtml(t.symbol)}</div>
-                <div class="note">${escapeHtml(t.notes||'')}</div>
-                <div class="amt ${t.netpl>=0?'pos':'neg'}">${signed(t.netpl)}</div>
-              </li>
-            `).join('')}
-          </ul>`;
-      }
-      modal.classList.add('show');
-    }
-    function closeDayModal(){ document.getElementById('dayModal')?.classList.remove('show'); }
-
-    /* ---------- Leaderboard ---------- */
-    await ensureSignedIn();
-
-    function abbreviate(str){
-      if(!str) return '—';
-      if (str.includes('@')) return str;
-      if (str.length <= 10) return str;
-      return str.slice(0,4) + '...' + str.slice(-4);
-    }
-
-    async function upsertProfile(user){
-      try{
-        await setDoc(
-          doc(db,'users',user.uid),
-          { email: user.email || null, displayName: user.displayName || null, updatedAt: serverTimestamp() },
-          { merge: true }
-        );
-      }catch(e){ console.warn('profile upsert failed', e); }
-    }
-
-    async function fetchNames(uids){
-      const out = {};
-      await Promise.all(uids.map(async uid=>{
-        try{
-          const snap = await getDoc(doc(db,'users',uid));
-          if (snap.exists()) {
-            const d = snap.data() || {};
-            out[uid] = d.name || d.displayName || d.email || '';
-          } else {
-            out[uid] = '';
-          }
-        }catch(e){ out[uid] = ''; }
-      }));
-      return out;
-    }
-
-    async function ensureSignedIn() {
-      if (auth.currentUser) return auth.currentUser;
-      return await new Promise((resolve) => {
-        const off = onAuthStateChanged(auth, (u) => { if (u) { off(); resolve(u); } });
-      });
-    }
-
-    async function buildLeaderboard(){
-      const lbBody = $('#lbBody');
-      await ensureSignedIn();
-
-      lbBody.innerHTML = `<div style="color:var(--muted)">Loading…</div>`;
-      try{
-        const snap = await getDocs(collectionGroup(db,'trades'));
-        const totals = new Map();
-        snap.forEach(ds=>{
-          const data = ds.data() || {};
-          const uid = ds.ref.parent.parent ? ds.ref.parent.parent.id : null;
-          if (!uid) return;
-          const n = typeof data.netpl === 'number' ? data.netpl : parseFloat(data.netpl);
-          if (isNaN(n)) return;
-          totals.set(uid, (totals.get(uid) || 0) + n);
-        });
-
-        const entries = Array.from(totals, ([uid,total])=>({uid,total}));
-        entries.sort((a,b)=> b.total - a.total);
-
-        const names = await fetchNames(entries.map(e=>e.uid));
-
-        lbBody.innerHTML = `
-          <ul class="lb-list">
-            ${entries.map((e,i)=>{
-              const name = abbreviate(names[e.uid] || e.uid);
-              const cls = e.total>=0 ? 'lb-pnl pos' : 'lb-pnl neg';
-              const val = usd(e.total);
-              return `<li class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-user">${name}</div><div class="${cls}">${val}</div></li>`;
-            }).join('')}
-          </ul>`;
-      } catch(err){
-        console.error(err);
-        lbBody.innerHTML = `<div style="color:var(--danger)">Failed to load leaderboard: ${escapeHtml(err.message || String(err))}</div>`;
-      }
-    }
-
-    function openLeaderboard(){ $('#leaderboardModal').classList.add('show'); buildLeaderboard(); }
-    function closeLeaderboard(){ $('#leaderboardModal').classList.remove('show'); }
-
-    /* ---------- Events ---------- */
-    function attach(){
-      $('#symbol').addEventListener('input', e=> e.target.value=e.target.value.toUpperCase());
-
-      $('#tradeForm').addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        if (!state.uid) { alert('Not authenticated yet.'); return; }
-        const btn = e.submitter; btn && (btn.disabled = true);
-        try {
-          const t = normTrade({
-            date:$('#date').value.trim(),
-            symbol:$('#symbol').value.trim(),
-            entry:$('#entry').value, sl:$('#sl').value, tp:$('#tp').value,
-            netpl:$('#netpl').value, risk:$('#risk').value,
-            notes:$('#notes').value
+      // Ensure /users/{uid} exists (for leaderboard names)
+      try {
+        const uref = doc(db, 'users', user.uid);
+        const usnap = await getDoc(uref);
+        if (!usnap.exists()) {
+          await setDoc(uref, {
+            email: user.email || null,
+            displayName: user.displayName || null,
+            createdAt: serverTimestamp()
           });
-          if(!parseDate(t.date) || !t.symbol){ alert('Check date format and symbol'); return; }
-          await fbAddTrade(t);
-          e.target.reset();
-        } catch(err){ console.error(err); alert('Could not save trade.'); }
-        finally { btn && (btn.disabled = false); }
-      });
-
-      // Calendar navigation (FIX: outside of submit handler)
-      const ensureMonth = () => { if(!state.calMonth) state.calMonth = new Date(); };
-      document.getElementById('calPrev')?.addEventListener('click', ()=>{
-        ensureMonth(); state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()-1, 1);
-        renderCalendar();
-      });
-      document.getElementById('calNext')?.addEventListener('click', ()=>{
-        ensureMonth(); state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()+1, 1);
-        renderCalendar();
-      });
-      document.getElementById('calToday')?.addEventListener('click', ()=>{
-        state.calMonth = new Date(); renderCalendar();
-      });
-
-      // Open day summary modal on cell click
-      document.getElementById('calGrid')?.addEventListener('click', (e)=>{
-        const cell = e.target.closest('.cal-cell'); if(!cell) return;
-        const key = cell.getAttribute('data-date'); if(!key) return;
-        openDayModal(key);
-      });
-      document.getElementById('dayClose')?.addEventListener('click', closeDayModal);
-      document.querySelector('#dayModal .backdrop')?.addEventListener('click', closeDayModal);
-
-      $('#tradesTable').addEventListener('click', async (e)=>{
-        const btn = e.target.closest('button'); if(!btn) return;
-        const tr = e.target.closest('tr[data-id]'); if(!tr) return;
-        const id = tr.dataset.id;
-
-        if(btn.classList.contains('btn-del')){ await fbDeleteTrade(id); return; }
-        if(btn.classList.contains('btn-edit')){ state.editId = id; render(); return; }
-        if(btn.classList.contains('btn-cancel')){ state.editId = null; render(); return; }
-        if(btn.classList.contains('btn-save')){
-          const dateEl   = tr.querySelector('td:nth-child(1) input');
-          const symEl    = tr.querySelector('td:nth-child(2) input');
-          const entryEl  = tr.querySelector('td:nth-child(3) input');
-          const slEl     = tr.querySelector('td:nth-child(4) input');
-          const tpEl     = tr.querySelector('td:nth-child(5) input');
-          const netplEl  = tr.querySelector('td:nth-child(6) input');
-          const riskEl   = tr.querySelector('td:nth-child(7) input');
-          const notesEl  = tr.querySelector('td:nth-child(8) textarea');
-
-          const t = normTrade({
-            id,
-            date:dateEl.value.trim(),
-            symbol:symEl.value.trim(),
-            entry:entryEl.value, sl:slEl.value, tp:tpEl.value,
-            netpl:netplEl.value, risk:riskEl.value, notes:notesEl.value
-          });
-          if(!parseDate(t.date) || !t.symbol){ alert('Check date format and symbol'); return; }
-          await fbUpdateTrade(id, t); state.editId=null;
+        } else if ((usnap.data().email ?? null) !== (user.email ?? null)) {
+          await setDoc(uref, { email: user.email || null }, { merge: true });
         }
-      });
+      } catch (e) { console.error('profile upsert failed', e); }
 
-      $('#btnExportCSV').addEventListener('click', exportCSV);
-      $('#btnExportJSON').addEventListener('click', exportJSON);
-
-      $('#btnSignOut').addEventListener('click', async ()=>{ await signOut(auth); location.href = 'index.html'; });
-
-      // Leaderboard events
-      $('#btnLeaderboard').addEventListener('click', openLeaderboard);
-      $('#lbClose').addEventListener('click', closeLeaderboard);
-      $('#leaderboardModal .backdrop').addEventListener('click', closeLeaderboard);
+      await loadPairs();  // load favorites/custom, then render selector
+      startRealtime();    // start trades stream
     }
+  });
+</script>
 
-    /* ---------- Export ---------- */
-    function exportJSON(){
-      const payload = state.trades.map(({date,symbol,entry,sl,tp,netpl,risk,notes})=>({date,symbol,entry,sl,tp,netpl,risk,notes}));
-      downloadBlob(JSON.stringify(payload, null, 2), 'trades.json', 'application/json');
-    }
-    function exportCSV(){
-      const header = ['Date','Symbol','Entry','SL','TP','NetPL','Risk','Notes'];
-      const rows = state.trades.map(t=> [t.date,t.symbol,t.entry,t.sl,t.tp,t.netpl,t.risk,escapeCSV(t.notes)]);
-      const csv = [header.join(','), ...rows.map(r=> r.map((v,i)=> i===7 ? `"${String(v).replace(/"/g,'""')}"` : v).join(','))].join('\n');
-      downloadBlob(csv, 'trades.csv', 'text/csv');
-    }
-    function escapeCSV(s){ return String(s||'').replace(/\r?\n/g,' '); }
-    function downloadBlob(content, filename, type){
-      const blob = new Blob([content], {type});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download=filename; a.click();
-      setTimeout(()=> URL.revokeObjectURL(url), 1000);
-    }
-
-    /* ---------- Boot & auth gating ---------- */
-    attach();
-    render(); // placeholder until snapshot
-
-    onAuthStateChanged(auth, async (user)=>{
-      const who = document.getElementById('whoami');
-      if (!user) { location.href = 'index.html'; return; }
-      who.textContent = user.email || user.uid;
-
-      if (state.uid !== user.uid) {
-        state.uid = user.uid;
-
-        // Ensure /users/{uid} exists with email for the leaderboard
-        try {
-          const uref = doc(db, 'users', user.uid);
-          const usnap = await getDoc(uref);
-          if (!usnap.exists()) {
-            await setDoc(uref, {
-              email: user.email || null,
-              displayName: user.displayName || null,
-              createdAt: serverTimestamp()
-            });
-          } else if ((usnap.data().email ?? null) !== (user.email ?? null)) {
-            await setDoc(uref, { email: user.email || null }, { merge: true });
-          }
-        } catch (e) {
-          console.error('profile upsert failed', e);
-        }
-
-        startRealtime();
-      }
-    });
-  </script>
 </body>
 </html>
