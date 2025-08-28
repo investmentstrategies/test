@@ -189,7 +189,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 .more-panel.show{display:block}
 .more-grid{display:grid;gap:16px;grid-template-columns:repeat(2,minmax(0,1fr))}
 @media (max-width:980px){.more-grid{grid-template-columns:1fr}}
-.progress{height:12px;border:1px solid var(--border);border-radius:999px;overflow:hidden;background:#f1f5f9}
+.progress{display:flex;height:12px;border:1px solid var(--border);border-radius:999px;overflow:hidden;background:#f1f5f9}
 .progress .seg{height:100%}
 .seg.green{background:var(--ok)}
 .seg.red{background:var(--danger)}
@@ -1155,15 +1155,17 @@ function drawDonut(svgEl, win, loss){
   svgEl.appendChild(wins);
 }
 
- function renderTopInstruments(container, rows){
+function renderTopInstruments(container, rows){
   container.innerHTML = rows.map(r=>{
     const total = Math.max(1, r.w + r.l);
-    const gw = Math.round((r.w / total) * 100);
+    const winPct  = Math.round((r.w / total) * 100);
+    const lossPct = Math.max(0, 100 - winPct);
     return `
       <div class="progress-row" style="margin:8px 0">
         <div class="lbl">${r.sym}</div>
         <div class="progress ti" style="flex:1">
-          <div class="seg green" style="width:${gw}%"></div>
+          <div class="seg green" style="width:${winPct}%"></div>
+          <div class="seg red"   style="width:${lossPct}%"></div>
         </div>
         <div class="val">${r.w}W / ${r.l}L</div>
       </div>`;
