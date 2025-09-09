@@ -100,7 +100,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
   #tradeForm{grid-template-columns:repeat(3,minmax(160px,1fr));}
 }
 @media (min-width:980px){
-  #tradeForm{grid-template-columns:repeat(6,minmax(140px,1fr));}
+  #tradeForm{grid-template-columns:repeat(7,minmax(140px,1fr));} /* +1 column for BE */
 }
 .field.notes{grid-column:1 / -1}
 .actions{display:flex;gap:10px;align-items:center}
@@ -114,6 +114,8 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
   .card-c.table-wrap{max-height:60vh}
   .chart-body{height:300px}
   #whoami{display:none !important}
+  /* Mobile: give Week/Month buttons some top margin */
+  .filters{ margin-top:10px; }
 }
 
 /* ===== Leaderboard ===== */
@@ -149,6 +151,7 @@ td.notes a{color:var(--blue);text-decoration:underline;word-break:break-word}
 
 .pill{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:6px 10px;font-size:12px;box-shadow:var(--shadow)}
 .pill .val.pos{color:var(--ok)} .pill .val.neg{color:var(--danger)}
+.pill .val.be{color:var(--muted)}
 
 /* Day modal list */
 .dlist{list-style:none;margin:8px 0 0;padding:0}
@@ -216,26 +219,21 @@ svg.donut{width:100%;height:100%}
   .edit-form{ grid-template-columns:repeat(3,minmax(160px,1fr)); }
 }
 @media (min-width:980px){
-  .edit-form{ grid-template-columns:repeat(6,minmax(140px,1fr)); }
+  .edit-form{ grid-template-columns:repeat(7,minmax(140px,1fr)); } /* +1 column for BE */
 }
 .edit-form .field.notes{ grid-column:1 / -1; }
 
-/* === Mobile: stack all form fields in one column === */
+/* === Mobile: one-column forms === */
 @media (max-width: 640px){
-  #tradeForm,
-  .edit-form{
-    grid-template-columns: 1fr !important;
-    gap: 10px;
-  }
-  .field,
-  .field.small{ min-width: 0 !important; }
+  #tradeForm, .edit-form{ grid-template-columns: 1fr !important; gap: 10px; }
+  .field, .field.small{ min-width: 0 !important; }
   .field.notes{ grid-column: 1 / -1; }
   .edit-row td{ padding: 12px; }
   #tradesTable{ table-layout: fixed; }
   #tradesTable th, #tradesTable td{ white-space: normal; }
 }
 
-/* === Mobile fixes (form stacks; table stays scrollable & readable) === */
+/* === Mobile table tweaks === */
 @media (max-width: 640px){
   .card-c.table-wrap{ overflow-x: auto; }
   #tradesTable{ table-layout: auto !important; }
@@ -244,7 +242,7 @@ svg.donut{width:100%;height:100%}
   #tradesTable td:last-child{ white-space: nowrap !important; }
 }
 
-/* Mobile: when editing, make the inline editor full-width and hide the rest */
+/* Mobile: inline editor focus */
 @media (max-width: 640px){
   #tradesTable.editing thead{ display:none; }
   #tradesTable.editing tbody tr:not(.edit-row){ display:none; }
@@ -359,6 +357,7 @@ svg.donut{width:100%;height:100%}
             <div class="row" style="gap:16px;justify-content:center">
               <div class="pill"><span>Won</span> <span id="wonCount" class="val pos">0</span></div>
               <div class="pill"><span>Lost</span> <span id="lostCount" class="val neg">0</span></div>
+              <div class="pill"><span>Breakeven</span> <span id="beCount" class="val be">0</span></div>
             </div>
           </div>
         </div>
@@ -463,6 +462,12 @@ svg.donut{width:100%;height:100%}
             <input id="risk" class="input mono" type="number" step="0.01" inputmode="decimal" placeholder="optional" />
           </div>
 
+          <div class="field small">
+            <label for="breakeven">Breakeven</label>
+            <input id="breakeven" type="checkbox" />
+            <div class="help">Does not count as a win</div>
+          </div>
+
           <div class="field notes">
             <label for="notes">Notes</label>
             <textarea id="notes" class="input mono" rows="3" placeholder="Optional"></textarea>
@@ -492,11 +497,11 @@ svg.donut{width:100%;height:100%}
           <thead>
             <tr>
               <th>Date</th><th>Pair</th><th>Lot</th><th>Entry</th><th>SL</th><th>TP</th><th>Exit</th>
-              <th>Net P/L ($)</th><th>Risk ($)</th><th>Session</th><th>Notes</th><th>Actions</th>
+              <th>Net P/L ($)</th><th>Risk ($)</th><th>BE</th><th>Session</th><th>Notes</th><th>Actions</th>
             </tr>
           </thead>
           <tbody id="tableBody">
-            <tr><td colspan="12" style="color:var(--muted)">Loading…</td></tr>
+            <tr><td colspan="13" style="color:var(--muted)">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -597,8 +602,7 @@ svg.donut{width:100%;height:100%}
     "GBPJPY","GBPCHF","GBPCAD","GBPAUD","GBPNZD",
     "AUDJPY","AUDCHF","AUDCAD","AUDNZD",
     "NZDJPY","NZDCHF","NZDCAD",
-    "CADJPY","CADCHF",
-    "CHFJPY",
+    "CADJPY","CADCHF","CHFJPY",
     "XAUUSD","XAGUSD","US30","US100","US500","UK100","DE40"
   ];
   const SESSIONS = ["New York","London","Asia","Sydney"];
@@ -722,6 +726,7 @@ svg.donut{width:100%;height:100%}
       entry: t.entry, sl: t.sl, tp: t.tp, exit: t.exit ?? null,
       lot:  t.lot ?? null,
       netpl: t.netpl, risk: t.risk, notes: t.notes||'',
+      breakeven: !!t.breakeven,
       session: SESSIONS.includes(t.session) ? t.session : "New York",
       createdAt: serverTimestamp()
     });
@@ -733,6 +738,7 @@ svg.donut{width:100%;height:100%}
       entry: t.entry, sl: t.sl, tp: t.tp, exit: t.exit ?? null,
       lot:  t.lot ?? null,
       netpl: t.netpl, risk: t.risk, notes: t.notes||'',
+      breakeven: !!t.breakeven,
       session: SESSIONS.includes(t.session) ? t.session : "New York"
     });
   }
@@ -744,7 +750,6 @@ svg.donut{width:100%;height:100%}
     state.unsub = onSnapshot(qy, (snap) => {
       state.trades = snap.docs.map(d => {
         const x = d.data() || {};
-        // normalize date to DD-MM-YYYY if ISO slipped in
         let dateStr = String(x.date || '');
         if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) dateStr = toDDMM(dateStr);
         const ts = (typeof x.dateTS === 'number') ? x.dateTS : (parseDate(dateStr)?.getTime() || 0);
@@ -756,6 +761,7 @@ svg.donut{width:100%;height:100%}
           entry: +x.entry, sl: +x.sl, tp: +x.tp, exit: numOrNull(x.exit),
           lot:  numOrNull(x.lot),
           netpl: +x.netpl, risk: Math.abs(+x.risk || 0), notes: String(x.notes||''),
+          breakeven: !!x.breakeven,
           session: typeof x.session === 'string' ? x.session : ''
         };
       });
@@ -764,23 +770,37 @@ svg.donut{width:100%;height:100%}
     });
   }
 
+  /* ---------- Outcome helpers ---------- */
+  function classify(t){
+    if (t.breakeven) return 'b';
+    const n = +t.netpl;
+    if (!Number.isFinite(n) || n === 0) return 'b';
+    return n > 0 ? 'w' : 'l';
+  }
+
   /* ---------- KPIs & aggregations ---------- */
   function calcKPIs(list){
-    const totalPL = list.reduce((a,t)=>a+t.netpl,0);
-    const wins = list.filter(t=>t.netpl>0);
-    const losses = list.filter(t=>t.netpl<0);
-    const winRate = (wins.length/(wins.length+losses.length)||0)*100;
-    const avgWin = wins.length ? wins.reduce((a,t)=>a+t.netpl,0)/wins.length : 0;
-    const avgLoss = losses.length ? losses.reduce((a,t)=>a+t.netpl,0)/losses.length : 0;
-    const winSum = wins.reduce((a,t)=>a+t.netpl,0);
-    const lossSum = Math.abs(losses.reduce((a,t)=>a+t.netpl,0));
-    const pf = lossSum===0 ? (winSum>0 ? '∞' : '0.00') : (winSum/lossSum).toFixed(2);
-    return { totalPL, winRate, avgWin, avgLoss, pf };
+    const totalPL = list.reduce((a,t)=>a + (+t.netpl||0),0);
+
+    const wins   = list.filter(t=> classify(t) === 'w');
+    const losses = list.filter(t=> classify(t) === 'l');
+    const be     = list.filter(t=> classify(t) === 'b');
+
+    const winRate = (wins.length / Math.max(1, wins.length + losses.length)) * 100;
+
+    const avgWin = wins.length ? wins.reduce((a,t)=>a+(+t.netpl||0),0)/wins.length : 0;
+    const avgLoss= losses.length? losses.reduce((a,t)=>a+(+t.netpl||0),0)/losses.length : 0;
+
+    const winSum = wins.reduce((a,t)=>a+(+t.netpl||0),0);
+    const lossSumAbs = Math.abs(losses.reduce((a,t)=>a+(+t.netpl||0),0));
+    const pf = lossSumAbs===0 ? (winSum>0 ? '∞' : '0.00') : (winSum/lossSumAbs).toFixed(2);
+
+    return { totalPL, winRate, avgWin, avgLoss, pf, wins: wins.length, losses: losses.length, be: be.length };
   }
 
   function buildPnlSeries(list){
     const byDate = new Map();
-    for(const t of list){ byDate.set(t.date, (byDate.get(t.date)||0) + t.netpl); }
+    for(const t of list){ byDate.set(t.date, (byDate.get(t.date)||0) + (+t.netpl||0)); }
     const dates = Array.from(byDate.keys()).sort((a,b)=> (parseDate(a)?.getTime()||0) - (parseDate(b)?.getTime()||0));
     let cum = 0; const out=[];
     for(const d of dates){ cum += byDate.get(d); out.push({ t:d, pnl:cum }); }
@@ -789,7 +809,7 @@ svg.donut{width:100%;height:100%}
 
   function buildPLBySymbol(list){
     const map = new Map();
-    for(const t of list){ map.set(t.symbol, (map.get(t.symbol)||0) + t.netpl); }
+    for(const t of list){ map.set(t.symbol, (map.get(t.symbol)||0) + (+t.netpl||0)); }
     const labels = Array.from(map.keys()).sort();
     const values = labels.map(l=> map.get(l));
     return { labels, values };
@@ -803,26 +823,33 @@ svg.donut{width:100%;height:100%}
     const bestIdx = sums.reduce((bi,v,i)=> v>(sums[bi]??-Infinity)?i:bi,0);
     return { labels, values:sums, best: labels[bestIdx] };
   }
-  function countWinsLosses(list){
-    let w=0,l=0; for(const t of list){ (+t.netpl||0) >= 0 ? w++ : l++; } return {w,l};
+  function countOutcomes(list){
+    let w=0,l=0,b=0;
+    for(const t of list){
+      const c = classify(t);
+      if(c==='w') w++; else if(c==='l') l++; else b++;
+    }
+    return {w,l,b};
   }
   function top3Symbols(list){
     const bySym = new Map();
     for(const t of list){
       const s = t.symbol||'';
-      const x = bySym.get(s) || {sym:s,w:0,l:0};
-      if ((+t.netpl||0) >= 0) x.w++; else x.l++;
-      bySym.set(s,x);
+      const curr = bySym.get(s) || {sym:s,w:0,l:0};
+      const c = classify(t);
+      if (c==='w') curr.w++; else if (c==='l') curr.l++;
+      bySym.set(s,curr);
     }
     return Array.from(bySym.values()).sort((a,b)=> (b.w+b.l)-(a.w+a.l)).slice(0,3);
   }
   function sessionStats(list){
-    const stats = new Map(); for (const s of SESSIONS) stats.set(s, { w:0, l:0 });
+    const stats = new Map(); for (const s of SESSIONS) stats.set(s, { w:0, l:0, b:0 });
     for (const t of list){
       const s = SESSIONS.includes(t.session) ? t.session : null;
       if (!s) continue;
       const x = stats.get(s);
-      (+t.netpl || 0) >= 0 ? x.w++ : x.l++;
+      const c = classify(t);
+      if(c==='w') x.w++; else if(c==='l') x.l++; else x.b++;
     }
     return stats;
   }
@@ -835,7 +862,7 @@ svg.donut{width:100%;height:100%}
 
     const totalEl = $('#kpi-total-pnl');
     totalEl.textContent = (k.totalPL>=0? '+' : '-') + nf2.format(Math.abs(k.totalPL));
-    totalEl.className = 'kpi-value ' + (k.totalPL>=0? 'text-green':'text-red');
+    totalEl.className = 'kpi-value ' + (k.totalPL>0? 'text-green': (k.totalPL<0 ? 'text-red' : '') );
     $('#avgWin').textContent = usd(k.avgWin);
     $('#avgLoss').textContent = usd(k.avgLoss);
     $('#winRatio').textContent = (k.winRate||0).toFixed(1)+'%';
@@ -852,12 +879,13 @@ svg.donut{width:100%;height:100%}
       drawBarChart($('#dowChart'), $('#dowWrap'), { labels: dowAgg.labels, values: dowAgg.values });
       $('#bestDay').textContent = dowAgg.best;
     }
-    const wl = countWinsLosses(list);
+    const ol = countOutcomes(list);
     if($('#donutChart')) {
-      drawDonut($('#donutChart'), wl.w, wl.l);
+      drawDonut3($('#donutChart'), ol.w, ol.l, ol.b);
       $('#donutTrades').textContent = list.length;
-      $('#donutWinrate').textContent = `Winrate: ${((wl.w/Math.max(1,list.length))*100).toFixed(1)}%`;
-      $('#wonCount').textContent = wl.w; $('#lostCount').textContent = wl.l;
+      const denom = Math.max(1, ol.w + ol.l);
+      $('#donutWinrate').textContent = `Winrate: ${((ol.w/denom)*100).toFixed(1)}%`;
+      $('#wonCount').textContent = ol.w; $('#lostCount').textContent = ol.l; $('#beCount').textContent = ol.b;
     }
     if($('#topInstruments')) renderTopInstruments($('#topInstruments'), top3Symbols(list));
     if($('#sessionRates')) renderSessionRates($('#sessionRates'), sessionStats(list));
@@ -866,7 +894,7 @@ svg.donut{width:100%;height:100%}
   function renderTable(list){
     const tb = $('#tableBody');
     if(!list.length){
-      tb.innerHTML = `<tr><td colspan="12" style="color:var(--muted)">No trades yet. Add your first trade above.</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="13" style="color:var(--muted)">No trades yet. Add your first trade above.</td></tr>`;
       return;
     }
 
@@ -885,9 +913,10 @@ svg.donut{width:100%;height:100%}
             <td class="mono">${fmt6(t.sl)}</td>
             <td class="mono">${fmt6(t.tp)}</td>
             <td class="mono">${fmt6(t.exit)}</td>
-            <td class="mono ${t.netpl>=0? 'pl-pos':'pl-neg'}">${usd(t.netpl)}</td>
+            <td class="mono ${(+t.netpl>0)? 'pl-pos': ((+t.netpl<0)?'pl-neg':'')}">${usd(+t.netpl||0)}</td>
             <td class="mono">${usd(t.risk || 0)}</td>
             <td>${escapeHtml(t.session || '—')}</td>
+            <td class="mono">${t.breakeven ? '✓' : '—'}</td>
             <td class="notes">${notesHTML}</td>
             <td>
               <button class="btn sm btn-edit">Edit</button>
@@ -898,7 +927,7 @@ svg.donut{width:100%;height:100%}
 
       return `
         <tr data-id="${t.id}" class="edit-row">
-          <td colspan="12">
+          <td colspan="13">
             <div class="edit-form">
               <div class="field">
                 <label>Date</label>
@@ -941,6 +970,10 @@ svg.donut{width:100%;height:100%}
                 <select data-role="session" class="input mono">
                   ${SESSIONS.map(s=>`<option ${s===(t.session||'New York')?'selected':''}>${s}</option>`).join('')}
                 </select>
+              </div>
+              <div class="field small">
+                <label>Breakeven</label>
+                <input data-role="breakeven" type="checkbox" ${t.breakeven?'checked':''}/>
               </div>
               <div class="field notes">
                 <label>Notes</label>
@@ -1112,13 +1145,12 @@ svg.donut{width:100%;height:100%}
     });
   }
 
-  // Donut & progress renderers
-  function drawDonut(svgEl, win, loss){
+  // Donut with 3 segments: win / loss / breakeven
+  function drawDonut3(svgEl, win, loss, be){
     while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
-    const total = Math.max(1, win + loss);
+    const total = Math.max(1, win + loss + be);
     const w = 300, h = 300, r = 110, cx = w/2, cy = h/2, stroke = 28;
     svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
-
     const circ = 2 * Math.PI * r;
 
     const base = document.createElementNS('http://www.w3.org/2000/svg','circle');
@@ -1126,16 +1158,27 @@ svg.donut{width:100%;height:100%}
     base.setAttribute('fill','none'); base.setAttribute('stroke','#e5e7eb'); base.setAttribute('stroke-width',stroke);
     svgEl.appendChild(base);
 
-    const aWins = (win/total) * circ;
-    const wins = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    wins.setAttribute('cx',cx); wins.setAttribute('cy',cy); wins.setAttribute('r',r);
-    wins.setAttribute('fill','none');
-    wins.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--ok').trim());
-    wins.setAttribute('stroke-width',stroke);
-    wins.setAttribute('stroke-dasharray', `${aWins} ${circ - aWins}`);
-    wins.setAttribute('transform', `rotate(-90 ${cx} ${cy})`);
-    wins.setAttribute('stroke-linecap','round');
-    svgEl.appendChild(wins);
+    const segs = [
+      { len: (win/total)*circ, color: getComputedStyle(document.documentElement).getPropertyValue('--ok').trim() },
+      { len: (loss/total)*circ, color: getComputedStyle(document.documentElement).getPropertyValue('--danger').trim() },
+      { len: (be/total)*circ,   color: getComputedStyle(document.documentElement).getPropertyValue('--muted').trim() }
+    ];
+
+    let offset = 0;
+    for(const s of segs){
+      if (s.len <= 0) { offset += s.len; continue; }
+      const arc = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      arc.setAttribute('cx',cx); arc.setAttribute('cy',cy); arc.setAttribute('r',r);
+      arc.setAttribute('fill','none');
+      arc.setAttribute('stroke', s.color || '#94a3b8');
+      arc.setAttribute('stroke-width', stroke);
+      arc.setAttribute('stroke-dasharray', `${s.len} ${circ - s.len}`);
+      arc.setAttribute('stroke-dashoffset', String(-offset));
+      arc.setAttribute('transform', `rotate(-90 ${cx} ${cy})`);
+      arc.setAttribute('stroke-linecap','round');
+      svgEl.appendChild(arc);
+      offset += s.len;
+    }
   }
 
   function renderTopInstruments(container, rows){
@@ -1158,7 +1201,7 @@ svg.donut{width:100%;height:100%}
   function renderSessionRates(container, stats){
     const rows = SESSIONS.map(s=>{
       const { w, l } = stats.get(s);
-      const total = w + l;
+      const total = w + l; // exclude BE from denominator
       const pct = total ? Math.round((w/total)*1000)/10 : 0;
       const bar = total ? `<div class="seg blue" style="width:${pct}%"></div>` : '';
       const val = total ? `${pct}%` : '—';
@@ -1178,7 +1221,7 @@ svg.donut{width:100%;height:100%}
     for(const t of list){
       const k = t.date;
       const v = m.get(k) || {count:0,total:0,trades:[]};
-      v.count++; v.total += t.netpl; v.trades.push(t);
+      v.count++; v.total += (+t.netpl||0); v.trades.push(t);
       m.set(k,v);
     }
     return m;
@@ -1201,7 +1244,7 @@ svg.donut{width:100%;height:100%}
     let monthPnl = 0;
     for(const t of state.trades){
       const d = t.dateTS ? new Date(t.dateTS) : parseDate(t.date); if(!d) continue;
-      if (d.getFullYear()===first.getFullYear() && d.getMonth()===first.getMonth()) monthPnl += t.netpl;
+      if (d.getFullYear()===first.getFullYear() && d.getMonth()===first.getMonth()) monthPnl += (+t.netpl||0);
     }
     if(pill){
       pill.textContent = (monthPnl>=0?'+':'-') + usd(Math.abs(monthPnl)).replace('$','');
@@ -1234,7 +1277,7 @@ svg.donut{width:100%;height:100%}
     if(!modal || !body || !title) return;
 
     const trades = state.trades.filter(t=> t.date === dateStr);
-    const total = trades.reduce((a,t)=> a + t.netpl, 0);
+    const total = trades.reduce((a,t)=> a + (+t.netpl||0), 0);
     const dd = parseDate(dateStr);
     title.textContent = `Daily Summary – ${dd ? dd.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'}) : dateStr}`;
 
@@ -1250,7 +1293,7 @@ svg.donut{width:100%;height:100%}
             <li class="drow">
               <div class="sym">${escapeHtml(t.symbol)}</div>
               <div class="note">${escapeHtml(t.notes||'')}</div>
-              <div class="amt ${t.netpl>=0?'pos':'neg'}">${signed(t.netpl)}</div>
+              <div class="amt ${(+t.netpl>0)?'pos':((+t.netpl<0)?'neg':'') }">${signed(+t.netpl||0)}</div>
             </li>
           `).join('')}
         </ul>`;
@@ -1426,6 +1469,32 @@ svg.donut{width:100%;height:100%}
     document.getElementById('dayClose')?.addEventListener('click', closeDayModal);
     document.querySelector('#dayModal .backdrop')?.addEventListener('click', closeDayModal);
 
+    // Add Trade submit
+    $('#tradeForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if (!state.uid) { alert('Not authenticated yet.'); return; }
+      const btn = e.submitter; btn && (btn.disabled = true);
+      try {
+        const t = {
+          date: toDDMM($('#date').value),
+          symbol: $('#symbol').value.trim().toUpperCase(),
+          entry: $('#entry').value, sl: $('#sl').value, tp: $('#tp').value,
+          exit: $('#exit').value,
+          lot:  $('#lot').value,
+          netpl: $('#netpl').value, risk: $('#risk').value,
+          notes: $('#notes').value,
+          breakeven: $('#breakeven').checked,
+          session: $('#session').value
+        };
+        if(!parseDate(t.date) || !t.symbol){ alert('Check date and pair'); return; }
+        await fbAddTrade(t);
+        e.target.reset();
+        $('#date').value = isoToday;
+        $('#session').value = 'New York';
+      } catch(err){ console.error(err); alert('Could not save trade.'); }
+      finally { btn && (btn.disabled = false); }
+    });
+
     // Table actions
     $('#tradesTable').addEventListener('click', async (e)=>{
       const btn = e.target.closest('button'); if(!btn) return;
@@ -1445,6 +1514,7 @@ svg.donut{width:100%;height:100%}
         const exitEl    = tr.querySelector('[data-role="exit"]');
         const netplEl   = tr.querySelector('[data-role="netpl"]');
         const riskEl    = tr.querySelector('[data-role="risk"]');
+        const beEl      = tr.querySelector('[data-role="breakeven"]');
         const sessionEl = tr.querySelector('[data-role="session"]');
         const notesEl   = tr.querySelector('[data-role="notes"]');
 
@@ -1456,6 +1526,7 @@ svg.donut{width:100%;height:100%}
           entry: entryEl.value, sl: slEl.value, tp: tpEl.value,
           exit:  exitEl.value,
           netpl: netplEl.value, risk: riskEl.value,
+          breakeven: beEl ? beEl.checked : false,
           session: sessionEl ? sessionEl.value : 'New York',
           notes: notesEl.value
         };
@@ -1506,16 +1577,16 @@ svg.donut{width:100%;height:100%}
 
   /* ---------- Export ---------- */
   function exportJSON(){
-    const payload = state.trades.map(({date,symbol,lot,entry,sl,tp,exit,netpl,risk,notes,session})=>
-      ({date,symbol,lot,entry,sl,tp,exit,netpl,risk,notes,session}));
+    const payload = state.trades.map(({date,symbol,lot,entry,sl,tp,exit,netpl,risk,notes,session,breakeven})=>
+      ({date,symbol,lot,entry,sl,tp,exit,netpl,risk,notes,session,breakeven}));
     downloadBlob(JSON.stringify(payload, null, 2), 'trades.json', 'application/json');
   }
   function exportCSV(){
-    const header = ['Date','Pair','Lot','Entry','SL','TP','Exit','NetPL','Risk','Session','Notes'];
+    const header = ['Date','Pair','Lot','Entry','SL','TP','Exit','NetPL','Risk','Breakeven','Session','Notes'];
     const rows = state.trades.map(t=> [
-      t.date, t.symbol, (t.lot ?? ''), t.entry, t.sl, t.tp, (t.exit ?? ''), t.netpl, t.risk, (t.session||''), escapeCSV(t.notes)
+      t.date, t.symbol, (t.lot ?? ''), t.entry, t.sl, t.tp, (t.exit ?? ''), t.netpl, t.risk, t.breakeven ? 'TRUE' : 'FALSE', (t.session||''), escapeCSV(t.notes)
     ]);
-    const csv = [header.join(','), ...rows.map(r=> r.map((v,i)=> i===10 ? `"${String(v).replace(/"/g,'""')}"` : v).join(','))].join('\n');
+    const csv = [header.join(','), ...rows.map(r=> r.map((v,i)=> i===11 ? `"${String(v).replace(/"/g,'""')}"` : v).join(','))].join('\n');
     downloadBlob(csv, 'trades.csv', 'text/csv');
   }
   function escapeCSV(s){ return String(s||'').replace(/\r?\n/g,' '); }
