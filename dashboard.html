@@ -222,89 +222,45 @@ svg.donut{width:100%;height:100%}
 
 /* === Mobile: stack all form fields in one column === */
 @media (max-width: 640px){
-  /* Add Trade form + inline Edit form */
-  #tradeForm,
-  .edit-form{
-    grid-template-columns: 1fr !important; /* one column */
-    gap: 10px;
-  }
-
-  /* Let fields shrink so nothing forces horizontal scroll */
-  .field,
-  .field.small{
-    min-width: 0 !important;
-  }
-
-  /* Notes still spans full width */
-  .field.notes{
-    grid-column: 1 / -1;
-  }
-
-  /* Slightly tighter padding in the inline editor row */
-  .edit-row td{
-    padding: 12px;
-  }
-
-  /* Keep table from blowing wider than the viewport */
-  #tradesTable{
-    table-layout: fixed;
-  }
-  #tradesTable th,
-  #tradesTable td{
-    white-space: normal;
-  }
-}
-
-/* === Mobile fixes (form stacks; table stays scrollable & readable) === */
-@media (max-width: 640px){
-  /* Forms: one column */
   #tradeForm,
   .edit-form{
     grid-template-columns: 1fr !important;
     gap: 10px;
   }
-  .field, .field.small{ min-width: 0 !important; }
+  .field,
+  .field.small{ min-width: 0 !important; }
   .field.notes{ grid-column: 1 / -1; }
   .edit-row td{ padding: 12px; }
+  #tradesTable{ table-layout: fixed; }
+  #tradesTable th, #tradesTable td{ white-space: normal; }
+}
 
-  /* Table: no wrapping in numeric cells; allow horizontal scroll in wrapper */
+/* === Mobile fixes (form stacks; table stays scrollable & readable) === */
+@media (max-width: 640px){
   .card-c.table-wrap{ overflow-x: auto; }
   #tradesTable{ table-layout: auto !important; }
-
-  /* Keep numbers/dates on one line */
-  #tradesTable th,
-  #tradesTable td,
-  .mono{
-    white-space: nowrap !important;
-  }
-
-  /* Notes can wrap; keep actions on one line */
+  #tradesTable th, #tradesTable td, .mono{ white-space: nowrap !important; }
   td.notes{ white-space: normal !important; }
   #tradesTable td:last-child{ white-space: nowrap !important; }
 }
 
 /* Mobile: when editing, make the inline editor full-width and hide the rest */
 @media (max-width: 640px){
-  /* Hide header and non-edit rows */
   #tradesTable.editing thead{ display:none; }
   #tradesTable.editing tbody tr:not(.edit-row){ display:none; }
-
-  /* Keep the edit UI within the viewport */
   .card-c.table-wrap.editing{ overflow-x:hidden; }
-  #tradesTable.editing{
-    width:100% !important;
-    table-layout:auto !important;
-  }
+  #tradesTable.editing{ width:100% !important; table-layout:auto !important; }
   #tradesTable.editing .edit-row td{ padding:12px; }
-
-  /* Make the edit form a single column on phones (redundant with your rule, but explicit here) */
-  #tradesTable.editing .edit-form{
-    grid-template-columns: 1fr !important;
-    gap:10px;
-  }
+  #tradesTable.editing .edit-form{ grid-template-columns: 1fr !important; gap:10px; }
 }
 
+/* View filter tweaks */
+.filters .btn.primary{ background:var(--ink); color:#fff; border-color:var(--ink); }
 
+/* Keep header tidy on phones */
+@media (max-width:640px){
+  .header.row.between{ flex-direction:column; align-items:flex-start; gap:8px; }
+}
 </style>
 </head>
 <body>
@@ -326,6 +282,12 @@ svg.donut{width:100%;height:100%}
           <div style="font-weight:600;font-size:18px">Trading Journal</div>
           <small>Synced with Firestore</small>
         </div>
+      </div>
+
+      <!-- View filters -->
+      <div class="filters row" style="gap:8px;flex-wrap:wrap">
+        <button class="btn sm" id="viewWeek"  aria-pressed="false">Week</button>
+        <button class="btn sm" id="viewMonth" aria-pressed="false">Month</button>
       </div>
     </div>
 
@@ -644,8 +606,10 @@ svg.donut{width:100%;height:100%}
   /* ---------- State & utils ---------- */
   const state = {
     trades: [], editId: null, uid: null, unsub: null, calMonth: new Date(),
+    viewMode: null, // 'week' | 'month' | null
     pairs: { favorites: new Set(DEFAULT_PAIRS.slice(0,12)), custom: new Set() }
   };
+
   const $   = s => document.querySelector(s);
   const nf2 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const nf6 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 6 });
@@ -687,6 +651,23 @@ svg.donut{width:100%;height:100%}
     }
     parts.push(escapeAndBreak(text.slice(last)));
     return parts.join('');
+  }
+
+  function startOfWeek(d){ const x=new Date(d); const day=x.getDay(); x.setHours(0,0,0,0); x.setDate(x.getDate()-day); return x; }
+  function endOfWeek(d){ const x=startOfWeek(d); x.setDate(x.getDate()+6); x.setHours(23,59,59,999); return x; }
+  function startOfMonth(d){ const x=new Date(d.getFullYear(), d.getMonth(), 1); x.setHours(0,0,0,0); return x; }
+  function endOfMonth(d){ const x=new Date(d.getFullYear(), d.getMonth()+1, 0); x.setHours(23,59,59,999); return x; }
+
+  function filterForView(list){
+    const today = new Date();
+    let from=null, to=null;
+    if(state.viewMode==='week'){ from=startOfWeek(today); to=endOfWeek(today); }
+    else if(state.viewMode==='month'){ from=startOfMonth(today); to=endOfMonth(today); }
+    if(!from) return list;
+    return list.filter(t=>{
+      const d = t.dateTS ? new Date(t.dateTS) : parseDate(t.date);
+      return d && d>=from && d<=to;
+    });
   }
 
   /* ---------- Firestore helpers ---------- */
@@ -763,14 +744,19 @@ svg.donut{width:100%;height:100%}
     state.unsub = onSnapshot(qy, (snap) => {
       state.trades = snap.docs.map(d => {
         const x = d.data() || {};
+        // normalize date to DD-MM-YYYY if ISO slipped in
+        let dateStr = String(x.date || '');
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) dateStr = toDDMM(dateStr);
+        const ts = (typeof x.dateTS === 'number') ? x.dateTS : (parseDate(dateStr)?.getTime() || 0);
         return {
           id: d.id,
-          date: x.date, symbol: String(x.symbol||'').toUpperCase(),
+          date: dateStr,
+          dateTS: ts,
+          symbol: String(x.symbol||'').toUpperCase(),
           entry: +x.entry, sl: +x.sl, tp: +x.tp, exit: numOrNull(x.exit),
           lot:  numOrNull(x.lot),
           netpl: +x.netpl, risk: Math.abs(+x.risk || 0), notes: String(x.notes||''),
           session: typeof x.session === 'string' ? x.session : ''
-
         };
       });
       state.editId = null;
@@ -795,7 +781,7 @@ svg.donut{width:100%;height:100%}
   function buildPnlSeries(list){
     const byDate = new Map();
     for(const t of list){ byDate.set(t.date, (byDate.get(t.date)||0) + t.netpl); }
-    const dates = Array.from(byDate.keys()).sort((a,b)=> parseDate(a) - parseDate(b));
+    const dates = Array.from(byDate.keys()).sort((a,b)=> (parseDate(a)?.getTime()||0) - (parseDate(b)?.getTime()||0));
     let cum = 0; const out=[];
     for(const d of dates){ cum += byDate.get(d); out.push({ t:d, pnl:cum }); }
     return out;
@@ -813,7 +799,7 @@ svg.donut{width:100%;height:100%}
   function aggByDOW(list){
     const labels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const sums = Array(7).fill(0);
-    for(const t of list){ const d = parseDate(t.date); if(d) sums[d.getDay()] += +t.netpl || 0; }
+    for(const t of list){ const d = t.dateTS ? new Date(t.dateTS) : parseDate(t.date); if(d) sums[d.getDay()] += +t.netpl || 0; }
     const bestIdx = sums.reduce((bi,v,i)=> v>(sums[bi]??-Infinity)?i:bi,0);
     return { labels, values:sums, best: labels[bestIdx] };
   }
@@ -830,19 +816,21 @@ svg.donut{width:100%;height:100%}
     }
     return Array.from(bySym.values()).sort((a,b)=> (b.w+b.l)-(a.w+a.l)).slice(0,3);
   }
-function sessionStats(list){
-  const stats = new Map(); for (const s of SESSIONS) stats.set(s, { w:0, l:0 });
-  for (const t of list){
-    const s = SESSIONS.includes(t.session) ? t.session : null;
-    if (!s) continue; // ignore trades with no session set
-    const x = stats.get(s);
-    (+t.netpl || 0) >= 0 ? x.w++ : x.l++;
+  function sessionStats(list){
+    const stats = new Map(); for (const s of SESSIONS) stats.set(s, { w:0, l:0 });
+    for (const t of list){
+      const s = SESSIONS.includes(t.session) ? t.session : null;
+      if (!s) continue;
+      const x = stats.get(s);
+      (+t.netpl || 0) >= 0 ? x.w++ : x.l++;
+    }
+    return stats;
   }
-  return stats;
-}
+
   /* ---------- Rendering ---------- */
   function render(){
-    const list = state.trades.slice().sort((a,b)=> parseDate(a.date) - parseDate(b.date));
+    const base = state.trades.slice().sort((a,b)=> (a.dateTS||0) - (b.dateTS||0));
+    const list = filterForView(base);
     const k = calcKPIs(list);
 
     const totalEl = $('#kpi-total-pnl');
@@ -875,110 +863,105 @@ function sessionStats(list){
     if($('#sessionRates')) renderSessionRates($('#sessionRates'), sessionStats(list));
   }
 
-function renderTable(list){
-  const tb = $('#tableBody');
-  if(!list.length){
-    tb.innerHTML = `<tr><td colspan="12" style="color:var(--muted)">No trades yet. Add your first trade above.</td></tr>`;
-    return;
-  }
-
-  tb.innerHTML = list.map(t=>{
-    const editing = state.editId === t.id;
-
-    // --- when NOT editing: show the regular read-only row
-    if(!editing){
-      let notesHTML;
-      try { notesHTML = safeLinkify(t.notes); } catch(e){ notesHTML = escapeAndBreak(t.notes||''); }
-
-      return `
-        <tr data-id="${t.id}">
-          <td class="mono">${t.date}</td>
-          <td>${t.symbol}</td>
-          <td class="mono">${t.lot==null?'—':nf2.format(+t.lot)}</td>
-          <td class="mono">${fmt6(t.entry)}</td>
-          <td class="mono">${fmt6(t.sl)}</td>
-          <td class="mono">${fmt6(t.tp)}</td>
-          <td class="mono">${fmt6(t.exit)}</td>
-          <td class="mono ${t.netpl>=0? 'pl-pos':'pl-neg'}">${usd(t.netpl)}</td>
-          <td class="mono">${usd(t.risk || 0)}</td>
-          <td>${escapeHtml(t.session || '—')}</td>
-          <td class="notes">${notesHTML}</td>
-          <td>
-            <button class="btn sm btn-edit">Edit</button>
-            <button class="btn sm btn-del">Delete</button>
-          </td>
-        </tr>`;
+  function renderTable(list){
+    const tb = $('#tableBody');
+    if(!list.length){
+      tb.innerHTML = `<tr><td colspan="12" style="color:var(--muted)">No trades yet. Add your first trade above.</td></tr>`;
+      return;
     }
 
-    // --- when editing: show the full-width editor row
-    return `
-      <tr data-id="${t.id}" class="edit-row">
-        <td colspan="12">
-          <div class="edit-form">
-            <div class="field">
-              <label>Date</label>
-              <input data-role="date" class="input mono" type="date" value="${toISO(t.date)}"/>
-            </div>
-            <div class="field">
-              <label>Pair</label>
-              <input data-role="symbol" class="input mono" value="${escapeHtml(t.symbol)}"/>
-            </div>
-            <div class="field small">
-              <label>Lot</label>
-              <input data-role="lot" class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.lot??''}"/>
-            </div>
-            <div class="field small">
-              <label>Entry</label>
-              <input data-role="entry" class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.entry)?t.entry:''}"/>
-            </div>
-            <div class="field small">
-              <label>SL</label>
-              <input data-role="sl" class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.sl)?t.sl:''}"/>
-            </div>
-            <div class="field small">
-              <label>TP</label>
-              <input data-role="tp" class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.tp)?t.tp:''}"/>
-            </div>
-            <div class="field small">
-              <label>Exit</label>
-              <input data-role="exit" class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.exit)?t.exit:''}"/>
-            </div>
-            <div class="field small">
-              <label>Net P/L ($)</label>
-              <input data-role="netpl" class="input mono" type="number" step="0.01" inputmode="decimal" min="-1000000000" max="1000000000" value="${t.netpl}"/>
-            </div>
-            <div class="field small">
-              <label>Risk ($)</label>
-              <input data-role="risk" class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.risk || 0}"/>
-            </div>
-            <div class="field small">
-              <label>Session</label>
-              <select data-role="session" class="input mono">
-                ${SESSIONS.map(s=>`<option ${s===(t.session||'New York')?'selected':''}>${s}</option>`).join('')}
-              </select>
-            </div>
-            <div class="field notes">
-              <label>Notes</label>
-              <textarea data-role="notes" class="input mono" rows="2">${escapeHtml(t.notes||'')}</textarea>
-            </div>
-            <div class="field" style="min-width:120px;">
-              <label>&nbsp;</label>
-              <button class="btn primary btn-save">Save</button>
-              <button class="btn sm btn-cancel">Cancel</button>
-            </div>
-          </div>
-        </td>
-      </tr>`;
-  }).join('');
-    // >>> Add this at the very end of renderTable:
-  const wrap = document.querySelector('.card-c.table-wrap');
-  const tbl  = document.getElementById('tradesTable');
-  const isEditing = !!state.editId;
-  wrap && wrap.classList.toggle('editing', isEditing);
-  tbl  && tbl.classList.toggle('editing', isEditing);
-}
+    tb.innerHTML = list.map(t=>{
+      const editing = state.editId === t.id;
 
+      if(!editing){
+        let notesHTML;
+        try { notesHTML = safeLinkify(t.notes); } catch(e){ notesHTML = escapeAndBreak(t.notes||''); }
+        return `
+          <tr data-id="${t.id}">
+            <td class="mono">${t.date}</td>
+            <td>${t.symbol}</td>
+            <td class="mono">${t.lot==null?'—':nf2.format(+t.lot)}</td>
+            <td class="mono">${fmt6(t.entry)}</td>
+            <td class="mono">${fmt6(t.sl)}</td>
+            <td class="mono">${fmt6(t.tp)}</td>
+            <td class="mono">${fmt6(t.exit)}</td>
+            <td class="mono ${t.netpl>=0? 'pl-pos':'pl-neg'}">${usd(t.netpl)}</td>
+            <td class="mono">${usd(t.risk || 0)}</td>
+            <td>${escapeHtml(t.session || '—')}</td>
+            <td class="notes">${notesHTML}</td>
+            <td>
+              <button class="btn sm btn-edit">Edit</button>
+              <button class="btn sm btn-del">Delete</button>
+            </td>
+          </tr>`;
+      }
 
+      return `
+        <tr data-id="${t.id}" class="edit-row">
+          <td colspan="12">
+            <div class="edit-form">
+              <div class="field">
+                <label>Date</label>
+                <input data-role="date" class="input mono" type="date" value="${toISO(t.date)}"/>
+              </div>
+              <div class="field">
+                <label>Pair</label>
+                <input data-role="symbol" class="input mono" value="${escapeHtml(t.symbol)}"/>
+              </div>
+              <div class="field small">
+                <label>Lot</label>
+                <input data-role="lot" class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.lot??''}"/>
+              </div>
+              <div class="field small">
+                <label>Entry</label>
+                <input data-role="entry" class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.entry)?t.entry:''}"/>
+              </div>
+              <div class="field small">
+                <label>SL</label>
+                <input data-role="sl" class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.sl)?t.sl:''}"/>
+              </div>
+              <div class="field small">
+                <label>TP</label>
+                <input data-role="tp" class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.tp)?t.tp:''}"/>
+              </div>
+              <div class="field small">
+                <label>Exit</label>
+                <input data-role="exit" class="input mono" type="number" step="0.000001" inputmode="decimal" value="${Number.isFinite(t.exit)?t.exit:''}"/>
+              </div>
+              <div class="field small">
+                <label>Net P/L ($)</label>
+                <input data-role="netpl" class="input mono" type="number" step="0.01" inputmode="decimal" min="-1000000000" max="1000000000" value="${t.netpl}"/>
+              </div>
+              <div class="field small">
+                <label>Risk ($)</label>
+                <input data-role="risk" class="input mono" type="number" step="0.01" inputmode="decimal" value="${t.risk || 0}"/>
+              </div>
+              <div class="field small">
+                <label>Session</label>
+                <select data-role="session" class="input mono">
+                  ${SESSIONS.map(s=>`<option ${s===(t.session||'New York')?'selected':''}>${s}</option>`).join('')}
+                </select>
+              </div>
+              <div class="field notes">
+                <label>Notes</label>
+                <textarea data-role="notes" class="input mono" rows="2">${escapeHtml(t.notes||'')}</textarea>
+              </div>
+              <div class="field" style="min-width:120px;">
+                <label>&nbsp;</label>
+                <button class="btn primary btn-save">Save</button>
+                <button class="btn sm btn-cancel">Cancel</button>
+              </div>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+    const wrap = document.querySelector('.card-c.table-wrap');
+    const tbl  = document.getElementById('tradesTable');
+    const isEditing = !!state.editId;
+    wrap && wrap.classList.toggle('editing', isEditing);
+    tbl  && tbl.classList.toggle('editing', isEditing);
+  }
 
   /* ---------- Charts ---------- */
   function clearSVG(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
@@ -1130,64 +1113,64 @@ function renderTable(list){
   }
 
   // Donut & progress renderers
-function drawDonut(svgEl, win, loss){
-  while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
-  const total = Math.max(1, win + loss);
-  const w = 300, h = 300, r = 110, cx = w/2, cy = h/2, stroke = 28;
-  svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  function drawDonut(svgEl, win, loss){
+    while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+    const total = Math.max(1, win + loss);
+    const w = 300, h = 300, r = 110, cx = w/2, cy = h/2, stroke = 28;
+    svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
 
-  const circ = 2 * Math.PI * r;
+    const circ = 2 * Math.PI * r;
 
-  const base = document.createElementNS('http://www.w3.org/2000/svg','circle');
-  base.setAttribute('cx',cx); base.setAttribute('cy',cy); base.setAttribute('r',r);
-  base.setAttribute('fill','none'); base.setAttribute('stroke','#e5e7eb'); base.setAttribute('stroke-width',stroke);
-  svgEl.appendChild(base);
+    const base = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    base.setAttribute('cx',cx); base.setAttribute('cy',cy); base.setAttribute('r',r);
+    base.setAttribute('fill','none'); base.setAttribute('stroke','#e5e7eb'); base.setAttribute('stroke-width',stroke);
+    svgEl.appendChild(base);
 
-  const aWins = (win/total) * circ;
-  const wins = document.createElementNS('http://www.w3.org/2000/svg','circle');
-  wins.setAttribute('cx',cx); wins.setAttribute('cy',cy); wins.setAttribute('r',r);
-  wins.setAttribute('fill','none');
-  wins.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--ok').trim());
-  wins.setAttribute('stroke-width',stroke);
-  wins.setAttribute('stroke-dasharray', `${aWins} ${circ - aWins}`);
-  wins.setAttribute('transform', `rotate(-90 ${cx} ${cy})`);
-  wins.setAttribute('stroke-linecap','round');
-  svgEl.appendChild(wins);
-}
+    const aWins = (win/total) * circ;
+    const wins = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    wins.setAttribute('cx',cx); wins.setAttribute('cy',cy); wins.setAttribute('r',r);
+    wins.setAttribute('fill','none');
+    wins.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--ok').trim());
+    wins.setAttribute('stroke-width',stroke);
+    wins.setAttribute('stroke-dasharray', `${aWins} ${circ - aWins}`);
+    wins.setAttribute('transform', `rotate(-90 ${cx} ${cy})`);
+    wins.setAttribute('stroke-linecap','round');
+    svgEl.appendChild(wins);
+  }
 
-function renderTopInstruments(container, rows){
-  container.innerHTML = rows.map(r=>{
-    const total = Math.max(1, r.w + r.l);
-    const winPct  = Math.round((r.w / total) * 100);
-    const lossPct = Math.max(0, 100 - winPct);
-    return `
-      <div class="progress-row" style="margin:8px 0">
-        <div class="lbl">${r.sym}</div>
-        <div class="progress ti" style="flex:1">
-          <div class="seg green" style="width:${winPct}%"></div>
-          <div class="seg red"   style="width:${lossPct}%"></div>
-        </div>
-        <div class="val">${r.w}W / ${r.l}L</div>
-      </div>`;
-  }).join('');
-}
+  function renderTopInstruments(container, rows){
+    container.innerHTML = rows.map(r=>{
+      const total = Math.max(1, r.w + r.l);
+      const winPct  = Math.round((r.w / total) * 100);
+      const lossPct = Math.max(0, 100 - winPct);
+      return `
+        <div class="progress-row" style="margin:8px 0">
+          <div class="lbl">${r.sym}</div>
+          <div class="progress ti" style="flex:1">
+            <div class="seg green" style="width:${winPct}%"></div>
+            <div class="seg red"   style="width:${lossPct}%"></div>
+          </div>
+          <div class="val">${r.w}W / ${r.l}L</div>
+        </div>`;
+    }).join('');
+  }
 
-function renderSessionRates(container, stats){
-  const rows = SESSIONS.map(s=>{
-    const { w, l } = stats.get(s);
-    const total = w + l;
-    const pct = total ? Math.round((w/total)*1000)/10 : 0;
-    const bar = total ? `<div class="seg blue" style="width:${pct}%"></div>` : '';
-    const val = total ? `${pct}%` : '—';
-    return `
-      <div class="progress-row" style="margin:8px 0">
-        <div class="lbl">${s}</div>
-        <div class="progress" style="flex:1">${bar}</div>
-        <div class="val">${val}</div>
-      </div>`;
-  }).join('');
-  container.innerHTML = rows;
-}
+  function renderSessionRates(container, stats){
+    const rows = SESSIONS.map(s=>{
+      const { w, l } = stats.get(s);
+      const total = w + l;
+      const pct = total ? Math.round((w/total)*1000)/10 : 0;
+      const bar = total ? `<div class="seg blue" style="width:${pct}%"></div>` : '';
+      const val = total ? `${pct}%` : '—';
+      return `
+        <div class="progress-row" style="margin:8px 0">
+          <div class="lbl">${s}</div>
+          <div class="progress" style="flex:1">${bar}</div>
+          <div class="val">${val}</div>
+        </div>`;
+    }).join('');
+    container.innerHTML = rows;
+  }
 
   /* ---------- Calendar ---------- */
   function dailyAgg(list){
@@ -1217,7 +1200,7 @@ function renderSessionRates(container, stats){
 
     let monthPnl = 0;
     for(const t of state.trades){
-      const d = parseDate(t.date); if(!d) continue;
+      const d = t.dateTS ? new Date(t.dateTS) : parseDate(t.date); if(!d) continue;
       if (d.getFullYear()===first.getFullYear() && d.getMonth()===first.getMonth()) monthPnl += t.netpl;
     }
     if(pill){
@@ -1392,38 +1375,35 @@ function renderSessionRates(container, stats){
 
     // More Data toggle
     $('#btnMoreData').addEventListener('click', ()=>{
-  const panel = $('#morePanel');
-  panel.classList.toggle('show');
-  if (panel.classList.contains('show')) {
-    // re-measure & redraw now that it's visible
-    requestAnimationFrame(render);
-  }
-});
-
-    // Add Trade submit
-    $('#tradeForm').addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      if (!state.uid) { alert('Not authenticated yet.'); return; }
-      const btn = e.submitter; btn && (btn.disabled = true);
-      try {
-        const t = {
-          date: toDDMM($('#date').value),
-          symbol: $('#symbol').value.trim().toUpperCase(),
-          entry: $('#entry').value, sl: $('#sl').value, tp: $('#tp').value,
-          exit: $('#exit').value,
-          lot:  $('#lot').value,
-          netpl: $('#netpl').value, risk: $('#risk').value,
-          notes: $('#notes').value,
-          session: $('#session').value
-        };
-        if(!parseDate(t.date) || !t.symbol){ alert('Check date and pair'); return; }
-        await fbAddTrade(t);
-        e.target.reset();
-        $('#date').value = isoToday;
-        $('#session').value = 'New York';
-      } catch(err){ console.error(err); alert('Could not save trade.'); }
-      finally { btn && (btn.disabled = false); }
+      const panel = $('#morePanel');
+      panel.classList.toggle('show');
+      if (panel.classList.contains('show')) {
+        requestAnimationFrame(render);
+      }
     });
+
+    // View filter buttons
+    const weekBtn  = document.getElementById('viewWeek');
+    const monthBtn = document.getElementById('viewMonth');
+
+    function updateViewButtons(){
+      weekBtn?.classList.toggle('primary', state.viewMode==='week');
+      weekBtn?.setAttribute('aria-pressed', state.viewMode==='week' ? 'true' : 'false');
+      monthBtn?.classList.toggle('primary', state.viewMode==='month');
+      monthBtn?.setAttribute('aria-pressed', state.viewMode==='month' ? 'true' : 'false');
+    }
+
+    weekBtn?.addEventListener('click', ()=>{
+      state.viewMode = (state.viewMode==='week') ? null : 'week';
+      updateViewButtons(); render();
+    });
+    monthBtn?.addEventListener('click', ()=>{
+      state.viewMode = (state.viewMode==='month') ? null : 'month';
+      updateViewButtons(); render();
+    });
+
+    // init button state
+    updateViewButtons();
 
     // Calendar navigation
     const ensureMonth = () => { if(!state.calMonth) state.calMonth = new Date(); };
@@ -1456,33 +1436,32 @@ function renderSessionRates(container, stats){
       if(btn.classList.contains('btn-edit')){ state.editId = id; render(); return; }
       if(btn.classList.contains('btn-cancel')){ state.editId = null; render(); return; }
       if(btn.classList.contains('btn-save')){
-  const dateEl    = tr.querySelector('[data-role="date"]');
-  const symEl     = tr.querySelector('[data-role="symbol"]');
-  const lotEl     = tr.querySelector('[data-role="lot"]');
-  const entryEl   = tr.querySelector('[data-role="entry"]');
-  const slEl      = tr.querySelector('[data-role="sl"]');
-  const tpEl      = tr.querySelector('[data-role="tp"]');
-  const exitEl    = tr.querySelector('[data-role="exit"]');
-  const netplEl   = tr.querySelector('[data-role="netpl"]');
-  const riskEl    = tr.querySelector('[data-role="risk"]');
-  const sessionEl = tr.querySelector('[data-role="session"]');
-  const notesEl   = tr.querySelector('[data-role="notes"]');
+        const dateEl    = tr.querySelector('[data-role="date"]');
+        const symEl     = tr.querySelector('[data-role="symbol"]');
+        const lotEl     = tr.querySelector('[data-role="lot"]');
+        const entryEl   = tr.querySelector('[data-role="entry"]');
+        const slEl      = tr.querySelector('[data-role="sl"]');
+        const tpEl      = tr.querySelector('[data-role="tp"]');
+        const exitEl    = tr.querySelector('[data-role="exit"]');
+        const netplEl   = tr.querySelector('[data-role="netpl"]');
+        const riskEl    = tr.querySelector('[data-role="risk"]');
+        const sessionEl = tr.querySelector('[data-role="session"]');
+        const notesEl   = tr.querySelector('[data-role="notes"]');
 
-  const t = {
-    id,
-    date:  toDDMM(dateEl.value),
-    symbol: symEl.value.trim().toUpperCase(),
-    lot:  lotEl.value,
-    entry: entryEl.value, sl: slEl.value, tp: tpEl.value,
-    exit:  exitEl.value,
-    netpl: netplEl.value, risk: riskEl.value,
-    session: sessionEl ? sessionEl.value : 'New York',
-    notes: notesEl.value
-  };
-  if(!parseDate(t.date) || !t.symbol){ alert('Check date format and pair'); return; }
-  await fbUpdateTrade(id, t); state.editId=null;
-}
-
+        const t = {
+          id,
+          date:  toDDMM(dateEl.value),
+          symbol: symEl.value.trim().toUpperCase(),
+          lot:  lotEl.value,
+          entry: entryEl.value, sl: slEl.value, tp: tpEl.value,
+          exit:  exitEl.value,
+          netpl: netplEl.value, risk: riskEl.value,
+          session: sessionEl ? sessionEl.value : 'New York',
+          notes: notesEl.value
+        };
+        if(!parseDate(t.date) || !t.symbol){ alert('Check date format and pair'); return; }
+        await fbUpdateTrade(id, t); state.editId=null;
+      }
     });
 
     // Export
