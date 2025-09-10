@@ -738,8 +738,8 @@ svg.donut{width:100%;height:100%}
       entry: t.entry, sl: t.sl, tp: t.tp, exit: t.exit ?? null,
       lot:  t.lot ?? null,
       netpl: t.netpl, risk: t.risk, notes: t.notes||'',
-      breakeven: !!t.breakeven,
-      session: SESSIONS.includes(t.session) ? t.session : "New York"
+      session: SESSIONS.includes(t.session) ? t.session : "New York",
+      breakeven: !!t.breakeven
     });
   }
   async function fbDeleteTrade(id) { await deleteDoc(doc(db,'users',state.uid,'trades',id)); }
