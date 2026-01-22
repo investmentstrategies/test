@@ -57,9 +57,66 @@
       justify-content: center;
     }
     
-    /* Auth & Modal Overlays */
+ /* Auth & Modal Overlays */
     .modal-overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; background: rgba(248, 250, 252, 0.9); backdrop-blur: 4px; }
     .modal-overlay.active { display: flex; }
+
+    /* DARK MODE OVERRIDES */
+    /* Fix the background and the "squished" buttons */
+   /* Complete Dark Theme Overhaul */
+    [data-theme="dark"], [data-theme="dark"] body { background-color: #020617 !important; color: #f8fafc; }
+    
+    /* Target Containers & Cards */
+    [data-theme="dark"] .bg-white, 
+    [data-theme="dark"] .week-stat-card { 
+        background-color: #0f172a !important; 
+        border-color: #1e293b !important; 
+    }
+
+    /* Target Headers & Sub-sections (History header & Table headers) */
+    [data-theme="dark"] .bg-slate-50,
+    [data-theme="dark"] .bg-slate-50\/20, 
+    [data-theme="dark"] .bg-slate-50\/50,
+    [data-theme="dark"] .bg-slate-100 { 
+        background-color: #1e293b !important; 
+        border-color: #334155 !important; 
+    }
+
+    /* Fix Session Badges and Image Buttons */
+    [data-theme="dark"] .bg-indigo-50 { background-color: #2e1065 !important; color: #a5b4fc !important; }
+    [data-theme="dark"] .text-slate-500 { color: #94a3b8 !important; }
+    [data-theme="dark"] .text-slate-400 { color: #64748b !important; }
+    [data-theme="dark"] .text-slate-300 { color: #475569 !important; }
+
+    /* Fix Table Borders and Dividers */
+    [data-theme="dark"] .divide-slate-50 > * + * { border-color: #1e293b !important; }
+    [data-theme="dark"] .border-slate-50 { border-color: #1e293b !important; }
+
+    /* Monthly/Calendar Tweaks */
+    [data-theme="dark"] .cal-day { border-color: #1e293b !important; }
+    [data-theme="dark"] .bg-slate-50\/10 { background-color: rgba(30, 41, 59, 0.5) !important; }
+
+    /* Fix for the Analytics button looking weird */
+    [data-theme="dark"] button, [data-theme="dark"] #btnOpenAnalytics { 
+        display: inline-flex !important; 
+        align-items: center !important; 
+        justify-content: center !important;
+        white-space: nowrap !important;
+    }
+
+    /* Keep the header sticky and dark */
+    [data-theme="dark"] header { background-color: rgba(15, 23, 42, 0.8) !important; border-color: #1e293b !important; }
+    
+    /* Ensure charts have a clean container */
+    [data-theme="dark"] canvas { filter: drop-shadow(0 0 10px rgba(0,0,0,0.1)); }
+    [data-theme="dark"] .bg-slate-50 { background-color: #1e293b !important; border-color: #334155 !important; }
+    [data-theme="dark"] .text-slate-900 { color: #f8fafc !important; }
+    [data-theme="dark"] .text-slate-400 { color: #64748b !important; }
+    [data-theme="dark"] .border-slate-100, [data-theme="dark"] .border-slate-50, [data-theme="dark"] .divide-slate-50 { border-color: #1e293b !important; }
+    [data-theme="dark"] input, [data-theme="dark"] select { background-color: #1e293b !important; color: #f8fafc !important; border-color: #334155 !important; }
+    [data-theme="dark"] .modal-overlay { background: rgba(2, 6, 23, 0.85); }
+    [data-theme="dark"] .week-stat-card { background-color: #1e293b !important; }
+    [data-theme="dark"] .cal-day:not(.gain):not(.loss):not(.be) { border-color: #1e293b !important; }
 
     /* Input focus styles */
     input:focus, select:focus { border-color: #10b981; outline: none; }
@@ -202,10 +259,18 @@
         </div>
         
         <div class="flex items-center gap-4">
-          <button id="btnOpenAnalytics" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-black shadow-sm hover:bg-slate-100 transition-all uppercase tracking-widest text-slate-600 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            Analytics
+          <!-- Dark Mode Toggle -->
+          <button id="btnThemeToggle" class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100 transition-all">
+            <svg id="sunIcon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <svg id="moonIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
           </button>
+          
+         <button id="btnOpenAnalytics" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-black shadow-sm hover:bg-slate-100 transition-all uppercase tracking-widest text-slate-600">
+    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+    </svg>
+    <span>Analytics</span>
+</button>
           <button id="btnOpenAccounts" class="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-black shadow-sm hover:bg-slate-50 transition-all uppercase tracking-widest text-slate-600">Accounts</button>
           <select id="accountFilter" class="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-black shadow-sm outline-none cursor-pointer text-slate-600 transition-all">
             <option value="all">All Accounts</option>
@@ -484,12 +549,15 @@
 
     /* --- CHARTS --- */
     const initCharts = () => {
+   const getThemeColor = () => document.documentElement.getAttribute('data-theme') === 'dark' ? '#475569' : '#cbd5e1';
+      const getGridColor = () => document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e293b' : '#f1f5f9';
+
       const commonOpts = {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: { 
-          x: { grid: { display: false }, ticks: { font: { weight: '800', size: 8 }, color: '#cbd5e1' } }, 
-          y: { grid: { color: '#f1f5f9' }, ticks: { font: { weight: '800', size: 8 }, color: '#cbd5e1', callback: v => `$${v/1000}k` } } 
+          x: { grid: { display: false }, ticks: { font: { weight: '800', size: 8 }, color: getThemeColor } }, 
+          y: { grid: { color: getGridColor }, ticks: { font: { weight: '800', size: 8 }, color: getThemeColor, callback: v => `$${v/1000}k` } } 
         }
       };
       state.charts.line = new Chart($('#lineChart').getContext('2d'), {
@@ -946,6 +1014,50 @@
       a.click();
       document.body.removeChild(a);
     };
+      
+      $('#btnThemeToggle').onclick = () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      
+      // Update Icons
+      $('#sunIcon').classList.toggle('hidden', newTheme !== 'dark');
+      $('#moonIcon').classList.toggle('hidden', newTheme === 'dark');
+
+      // Update Charts
+      Object.values(state.charts).forEach(chart => {
+        if(chart) {
+            if(chart.options.scales) {
+                Object.values(state.charts).forEach(chart => {
+        if(chart) {
+            const isDark = newTheme === 'dark';
+            if(chart.options.scales) {
+                // Ticks (Text)
+                chart.options.scales.x.ticks.color = isDark ? '#94a3b8' : '#cbd5e1';
+                chart.options.scales.y.ticks.color = isDark ? '#94a3b8' : '#cbd5e1';
+                // Grid Lines
+                if(chart.options.scales.y.grid) chart.options.scales.y.grid.color = isDark ? '#1e293b' : '#f1f5f9';
+                if(chart.options.scales.x.grid) chart.options.scales.x.grid.color = isDark ? '#1e293b' : '#f1f5f9';
+            }
+            chart.update('none'); // Update without animation for instant feel
+        }
+      });
+                chart.options.scales.y.ticks.color = newTheme === 'dark' ? '#64748b' : '#cbd5e1';
+                if(chart.options.scales.y.grid) chart.options.scales.y.grid.color = newTheme === 'dark' ? '#1e293b' : '#f1f5f9';
+            }
+            chart.update();
+        }
+      });
+      localStorage.setItem('tradingJournalTheme', newTheme);
+    };
+
+    // Auto-load saved theme
+    const savedTheme = localStorage.getItem('tradingJournalTheme');
+    if(savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        $('#sunIcon').classList.remove('hidden');
+        $('#moonIcon').classList.add('hidden');
+    }
   </script>
 </body>
 </html>
