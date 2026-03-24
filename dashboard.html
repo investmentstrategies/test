@@ -427,10 +427,18 @@
             </div>
           </div>
           <!-- ADDED: Screenshot Input -->
-          <div class="flex flex-col gap-2">
-            <label class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Image URL</label>
-            <input type="url" id="tradeScreenshot" placeholder="https://" class="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold shadow-sm outline-none transition-all" />
-          </div>
+       <!-- Screenshot -->
+<div class="flex flex-col gap-2">
+  <label class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Image URL</label>
+  <input type="url" id="tradeScreenshot" placeholder="https://" class="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold shadow-sm outline-none transition-all" />
+</div>
+
+<!-- NEW: Note -->
+<div class="flex flex-col gap-2 col-span-2">
+  <label class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Note</label>
+  <textarea id="tradeNote" placeholder="What happened in this trade..." 
+    class="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold shadow-sm outline-none transition-all resize-none h-[42px]"></textarea>
+</div>
           
           <div class="flex flex-col justify-end">
             <button type="submit" class="bg-slate-900 text-white rounded-xl py-3 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all">Log</button>
@@ -454,7 +462,8 @@
                 <th class="px-8 py-5 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Risk</th>
                 <th class="px-8 py-5 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Session</th>
                 <th class="px-8 py-5 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">BE</th>
-                <th class="px-8 py-5 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Img</th> <!-- ADDED -->
+                <th class="px-8 py-5 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Img</th>
+<th class="px-8 py-5 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Note</th>
                 <th class="px-8 py-5 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Actions</th>
               </tr>
             </thead>
@@ -833,7 +842,13 @@
             </td>
             <td class="px-8 py-4"><input type="checkbox" id="editBE" ${t.breakeven?'checked':''} class="w-4 h-4"></td>
             <!-- ADDED: Edit Screenshot URL -->
-            <td class="px-8 py-4"><input type="text" id="editScreenshot" value="${t.screenshot || ''}" placeholder="URL" class="bg-white border rounded-lg p-2 text-xs w-full"></td>
+            <td class="px-8 py-4">
+  <input type="text" id="editScreenshot" value="${t.screenshot || ''}" placeholder="URL" class="bg-white border rounded-lg p-2 text-xs w-full">
+</td>
+
+<td class="px-8 py-4">
+  <input type="text" id="editNote" value="${t.note || ''}" placeholder="Note" class="bg-white border rounded-lg p-2 text-xs w-full">
+</td>
             
             <td class="px-8 py-4 flex gap-2">
               <button class="save-edit text-emerald-500 font-black uppercase text-[10px]" data-id="${t.id}">Save</button>
@@ -853,6 +868,9 @@
             <td class="px-8 py-5">
               ${t.screenshot ? `<a href="${t.screenshot}" target="_blank" class="bg-indigo-50 text-indigo-500 hover:bg-indigo-100 p-2 rounded-lg inline-flex transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg></a>` : '<span class="text-slate-300 font-black text-[10px]">—</span>'}
             </td>
+<td class="px-8 py-5 text-slate-500 text-[10px] font-bold max-w-[200px] truncate">
+  ${t.note || '—'}
+</td>
 
             <td class="px-8 py-5 flex gap-4">
               <button class="btn-edit text-slate-300 hover:text-slate-900" data-id="${t.id}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
@@ -877,7 +895,8 @@
           risk: parseFloat(tr.querySelector('#editRisk').value) || 0,
           session: tr.querySelector('#editSession').value,
           breakeven: tr.querySelector('#editBE').checked,
-          screenshot: tr.querySelector('#editScreenshot').value // ADDED
+          screenshot: tr.querySelector('#editScreenshot').value,
+note: tr.querySelector('#editNote').value
         });
         state.editId = null;
         render();
@@ -991,8 +1010,9 @@
         risk: parseFloat($('#tradeRisk').value) || 0,
         session: $('#tradeSession').value,
         breakeven: $('#tradeBreakeven').checked,
-        screenshot: $('#tradeScreenshot').value, // ADDED
-        accountId: $('#tradeAccount').value,
+        screenshot: $('#tradeScreenshot').value,
+note: $('#tradeNote').value, // NEW
+accountId: $('#tradeAccount').value,
         createdAt: serverTimestamp()
       });
       e.target.reset(); $('#date').value = getISO(new Date());
