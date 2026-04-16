@@ -171,9 +171,10 @@
         <!-- Accounts injected here -->
       </div>
       <div class="pt-6 border-t border-slate-50">
-        <label class="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-2 block">New Account Name</label>
-        <div class="flex gap-3">
-          <input id="newAccountName" type="text" placeholder="e.g. FTMO 100K" class="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-4 ring-emerald-400/10">
+        <label class="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-2 block">New Account</label>
+        <div class="flex gap-3 flex-wrap">
+          <input id="newAccountName" type="text" placeholder="e.g. FTMO 100K" class="flex-1 min-w-[220px] bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-4 ring-emerald-400/10">
+          <input id="newAccountSize" type="number" step="0.01" placeholder="Account size" class="w-[160px] bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-4 ring-emerald-400/10">
           <button id="btnAddAccount" class="bg-slate-900 text-white px-6 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all">Add</button>
         </div>
       </div>
@@ -200,7 +201,31 @@
         </div>
       </div>
 
+        
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white border border-slate-100 rounded-[1.5rem] p-5 shadow-sm">
+          <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Avg Win</div>
+          <div id="analyticsAvgWin" class="text-2xl font-black tracking-tighter text-emerald-500">$0.00</div>
+        </div>
+
+        <div class="bg-white border border-slate-100 rounded-[1.5rem] p-5 shadow-sm">
+          <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Avg Loss</div>
+          <div id="analyticsAvgLoss" class="text-2xl font-black tracking-tighter text-rose-500">$0.00</div>
+        </div>
+
+        <div class="bg-white border border-slate-100 rounded-[1.5rem] p-5 shadow-sm">
+          <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Avg Win %</div>
+          <div id="analyticsAvgWinPct" class="text-2xl font-black tracking-tighter text-emerald-500">0.00%</div>
+        </div>
+
+        <div class="bg-white border border-slate-100 rounded-[1.5rem] p-5 shadow-sm">
+          <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Avg Loss %</div>
+          <div id="analyticsAvgLossPct" class="text-2xl font-black tracking-tighter text-rose-500">0.00%</div>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Day of Week Performance -->
         <!-- Day of Week Performance -->
         <div class="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm">
             <div class="flex justify-between items-start mb-6">
@@ -518,21 +543,31 @@
     const getISO = date => date.toISOString().split('T')[0];
 
     /* --- DATA MANAGEMENT --- */
-    async function loadUserData(){
-      if(!state.uid) return;
-      const uref = doc(db, 'users', state.uid);
-      const snap = await getDoc(uref);
-      if (snap.exists()){
-        const d = snap.data();
-        state.accounts = d.accounts || [{id: 'main', name: 'Main Account'}];
-      } else {
-        state.accounts = [{id: 'main', name: 'Main Account'}];
-        await setDoc(uref, { email: auth.currentUser.email, accounts: state.accounts, pairsFavorites: Array.from(state.pairs.favorites), createdAt: serverTimestamp() });
-      }
-      renderAccountSelects();
-      renderSymbolSelect();
-    }
+async function loadUserData(){
+  if(!state.uid) return;
+  const uref = doc(db, 'users', state.uid);
+  const snap = await getDoc(uref);
 
+  if (snap.exists()){
+    const d = snap.data();
+    const rawAccounts = d.accounts || [{ id: 'main', name: 'Main Account', size: 50000 }];
+    state.accounts = rawAccounts.map(acc => ({
+      ...acc,
+      size: parseFloat(acc.size) || 50000
+    }));
+  } else {
+    state.accounts = [{ id: 'main', name: 'Main Account', size: 50000 }];
+    await setDoc(uref, { 
+      email: auth.currentUser.email, 
+      accounts: state.accounts, 
+      pairsFavorites: Array.from(state.pairs.favorites), 
+      createdAt: serverTimestamp() 
+    });
+  }
+
+  renderAccountSelects();
+  renderSymbolSelect();
+}
     function startSync() {
       if (state.unsubTrades) state.unsubTrades();
       const q = query(collection(db, 'users', state.uid, 'trades'), orderBy('dateTS', 'asc'));
@@ -544,7 +579,11 @@
       if (state.unsubAccounts) state.unsubAccounts();
       state.unsubAccounts = onSnapshot(doc(db, 'users', state.uid), (snap) => {
         if(snap.exists()) {
-          state.accounts = snap.data().accounts || [];
+          const rawAccounts = snap.data().accounts || [];
+          state.accounts = rawAccounts.map(acc => ({
+            ...acc,
+            size: parseFloat(acc.size) || 50000
+          }));
           renderAccountSelects();
           renderAccountsList();
         }
@@ -733,89 +772,123 @@
       state.charts.bar.data.labels = labs; state.charts.bar.data.datasets[0].data = dD; state.charts.bar.data.datasets[0].backgroundColor = clrs; state.charts.bar.update();
     }
 
-    function updateAnalytics(list) {
-      // Respect Analytics Time Filter
-      const start = $('#analyticsStart').value ? new Date($('#analyticsStart').value) : null;
-      const end = $('#analyticsEnd').value ? new Date($('#analyticsEnd').value) : null;
-      if(end) end.setHours(23, 59, 59);
+function updateAnalytics(list) {
+  const start = $('#analyticsStart').value ? new Date($('#analyticsStart').value) : null;
+  const end = $('#analyticsEnd').value ? new Date($('#analyticsEnd').value) : null;
+  if (end) end.setHours(23, 59, 59);
 
-      const filtered = list.filter(t => {
-        const d = parseDate(t.date);
-        if(!d) return false;
-        if(start && d < start) return false;
-        if(end && d > end) return false;
-        return true;
-      });
+  const filtered = list.filter(t => {
+    const d = parseDate(t.date);
+    if (!d) return false;
+    if (start && d < start) return false;
+    if (end && d > end) return false;
+    return true;
+  });
 
-      $('#analyticsTotalTrades').textContent = filtered.length;
+  $('#analyticsTotalTrades').textContent = filtered.length;
 
-      // 1. Day of Week P/L
-      const dowPnl = [0,0,0,0,0,0,0];
-      filtered.forEach(t => {
-        const d = parseDate(t.date);
-        if(d) dowPnl[d.getDay()] += t.netpl;
-      });
-      state.charts.dayOfWeek.data.datasets[0].data = dowPnl;
-      state.charts.dayOfWeek.data.datasets[0].backgroundColor = dowPnl.map(v => v >= 0 ? '#10b981' : '#f43f5e');
-      state.charts.dayOfWeek.update();
+  const accountMap = new Map(state.accounts.map(acc => [acc.id, acc]));
+  const getTradeAccountSize = (trade) => {
+    const acc = accountMap.get(trade.accountId);
+    return acc && acc.size ? parseFloat(acc.size) : 0;
+  };
 
-      // 2. Profitability Doughnut
-      const w = filtered.filter(t => t.netpl > 0).length;
-      const l = filtered.filter(t => t.netpl < 0).length;
-      const be = filtered.filter(t => t.netpl === 0).length;
-      state.charts.profitability.data.datasets[0].data = [w, l, be];
-      state.charts.profitability.update();
+  const wins = filtered.filter(t => t.netpl > 0);
+  const losses = filtered.filter(t => t.netpl < 0);
 
-      // 3. Top Instruments
-      const pairs = {};
-      filtered.forEach(t => {
-          if(!pairs[t.symbol]) pairs[t.symbol] = { w:0, l:0, total:0 };
-          pairs[t.symbol].total++;
-          if(t.netpl > 0) pairs[t.symbol].w++;
-          else if(t.netpl < 0) pairs[t.symbol].l++;
-      });
-      const top3 = Object.entries(pairs).sort((a,b) => b[1].total - a[1].total).slice(0, 3);
-      $('#topInstrumentsList').innerHTML = top3.map(([sym, stats]) => {
-          const wPct = (stats.w / stats.total) * 100;
-          const lPct = (stats.l / stats.total) * 100;
-          return `
-            <div class="space-y-2">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs font-black text-slate-900">${sym}</span>
-                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${stats.w}W / ${stats.l}L</span>
-                </div>
-                <div class="flex h-1.5 rounded-full overflow-hidden bg-slate-100">
-                    <div style="width: ${wPct}%" class="bg-emerald-500"></div>
-                    <div style="width: ${lPct}%" class="bg-rose-500"></div>
-                </div>
-            </div>
-          `;
-      }).join('') || '<p class="text-[10px] text-slate-300 font-bold uppercase text-center py-4">No trade data</p>';
+  const avgWin = wins.length ? wins.reduce((sum, t) => sum + t.netpl, 0) / wins.length : 0;
+  const avgLossAbs = losses.length ? Math.abs(losses.reduce((sum, t) => sum + t.netpl, 0) / losses.length) : 0;
 
-      // 4. Session Performance
-      const sessions = { "New York": {w:0, total:0}, "London": {w:0, total:0}, "Asia": {w:0, total:0}, "Sydney": {w:0, total:0} };
-      filtered.forEach(t => {
-          const s = t.session || 'New York';
-          if(sessions[s]) {
-              sessions[s].total++;
-              if(t.netpl > 0) sessions[s].w++;
-          }
-      });
-      $('#sessionPerformanceList').innerHTML = Object.entries(sessions).map(([name, stats]) => {
-          const wr = stats.total > 0 ? Math.round((stats.w / stats.total) * 100) : 0;
-          const color = wr >= 50 ? 'bg-indigo-500' : 'bg-slate-300';
-          return `
-            <div class="flex items-center gap-4">
-                <span class="text-[10px] font-black text-slate-900 w-20">${name}</span>
-                <div class="flex-1 session-bar-bg">
-                    <div class="session-bar-fill ${color}" style="width: ${wr}%"></div>
-                </div>
-                <span class="text-[10px] font-black text-slate-400 w-8 text-right">${stats.total > 0 ? wr + '%' : '—'}</span>
-            </div>
-          `;
-      }).join('');
+  const winPctValues = wins
+    .map(t => {
+      const size = getTradeAccountSize(t);
+      return size > 0 ? (t.netpl / size) * 100 : null;
+    })
+    .filter(v => v !== null);
+
+  const lossPctValues = losses
+    .map(t => {
+      const size = getTradeAccountSize(t);
+      return size > 0 ? Math.abs((t.netpl / size) * 100) : null;
+    })
+    .filter(v => v !== null);
+
+  const avgWinPct = winPctValues.length ? winPctValues.reduce((a,b) => a + b, 0) / winPctValues.length : 0;
+  const avgLossPct = lossPctValues.length ? lossPctValues.reduce((a,b) => a + b, 0) / lossPctValues.length : 0;
+
+  $('#analyticsAvgWin').textContent = nf.format(avgWin);
+  $('#analyticsAvgLoss').textContent = nf.format(avgLossAbs);
+  $('#analyticsAvgWinPct').textContent = `${avgWinPct.toFixed(2)}%`;
+  $('#analyticsAvgLossPct').textContent = `${avgLossPct.toFixed(2)}%`;
+
+  // 1. Day of Week P/L
+  const dowPnl = [0,0,0,0,0,0,0];
+  filtered.forEach(t => {
+    const d = parseDate(t.date);
+    if (d) dowPnl[d.getDay()] += t.netpl;
+  });
+  state.charts.dayOfWeek.data.datasets[0].data = dowPnl;
+  state.charts.dayOfWeek.data.datasets[0].backgroundColor = dowPnl.map(v => v >= 0 ? '#10b981' : '#f43f5e');
+  state.charts.dayOfWeek.update();
+
+  // 2. Profitability Doughnut
+  const w = wins.length;
+  const l = losses.length;
+  const be = filtered.filter(t => t.netpl === 0).length;
+  state.charts.profitability.data.datasets[0].data = [w, l, be];
+  state.charts.profitability.update();
+
+  // 3. Top Instruments
+  const pairs = {};
+  filtered.forEach(t => {
+    if (!pairs[t.symbol]) pairs[t.symbol] = { w:0, l:0, total:0 };
+    pairs[t.symbol].total++;
+    if (t.netpl > 0) pairs[t.symbol].w++;
+    else if (t.netpl < 0) pairs[t.symbol].l++;
+  });
+
+  const top3 = Object.entries(pairs).sort((a,b) => b[1].total - a[1].total).slice(0, 3);
+  $('#topInstrumentsList').innerHTML = top3.map(([sym, stats]) => {
+    const wPct = (stats.w / stats.total) * 100;
+    const lPct = (stats.l / stats.total) * 100;
+    return `
+      <div class="space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-black text-slate-900">${sym}</span>
+          <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${stats.w}W / ${stats.l}L</span>
+        </div>
+        <div class="flex h-1.5 rounded-full overflow-hidden bg-slate-100">
+          <div style="width: ${wPct}%" class="bg-emerald-500"></div>
+          <div style="width: ${lPct}%" class="bg-rose-500"></div>
+        </div>
+      </div>
+    `;
+  }).join('') || '<p class="text-[10px] text-slate-300 font-bold uppercase text-center py-4">No trade data</p>';
+
+  // 4. Session Performance
+  const sessions = { "New York": {w:0, total:0}, "London": {w:0, total:0}, "Asia": {w:0, total:0}, "Sydney": {w:0, total:0} };
+  filtered.forEach(t => {
+    const s = t.session || 'New York';
+    if (sessions[s]) {
+      sessions[s].total++;
+      if (t.netpl > 0) sessions[s].w++;
     }
+  });
 
+  $('#sessionPerformanceList').innerHTML = Object.entries(sessions).map(([name, stats]) => {
+    const wr = stats.total > 0 ? Math.round((stats.w / stats.total) * 100) : 0;
+    const color = wr >= 50 ? 'bg-indigo-500' : 'bg-slate-300';
+    return `
+      <div class="flex items-center gap-4">
+        <span class="text-[10px] font-black text-slate-900 w-20">${name}</span>
+        <div class="flex-1 session-bar-bg">
+          <div class="session-bar-fill ${color}" style="width: ${wr}%"></div>
+        </div>
+        <span class="text-[10px] font-black text-slate-400 w-8 text-right">${stats.total > 0 ? wr + '%' : '—'}</span>
+      </div>
+    `;
+  }).join('');
+}
     function renderTable(list){
       const tb = $('#tableBody'); tb.innerHTML = '';
       if(!list.length) { tb.innerHTML = '<tr><td colspan="7" class="py-20 text-center text-slate-300 font-black uppercase tracking-[0.2em] text-[10px]">No execution data</td></tr>'; return; }
@@ -903,36 +976,99 @@ note: tr.querySelector('#editNote').value
       });
     }
 
-    function renderAccountSelects(){
-      const f = $('#accountFilter'); const formAcc = $('#tradeAccount');
-      const current = f.value;
-      f.innerHTML = '<option value="all">All Accounts</option>';
-      formAcc.innerHTML = '';
-      state.accounts.forEach(a => { 
-        const opt = `<option value="${a.id}">${a.name}</option>`; 
-        f.innerHTML += opt; 
-        formAcc.innerHTML += opt; 
-      });
-      if (state.accounts.find(a => a.id === current) || current === 'all') f.value = current;
-    }
+function renderAccountSelects(){
+  const f = $('#accountFilter');
+  const formAcc = $('#tradeAccount');
+  const current = f.value;
 
-    function renderAccountsList() {
-      const list = $('#accountsList');
-      list.innerHTML = state.accounts.map(a => `
-        <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
-          <span class="text-sm font-bold text-slate-700">${a.name}</span>
-          ${state.accounts.length > 1 ? `<button class="del-account text-rose-400 hover:text-rose-600" data-id="${a.id}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}
+  f.innerHTML = '<option value="all">All Accounts</option>';
+  formAcc.innerHTML = '';
+
+  state.accounts.forEach(a => {
+    const label = `${a.name} (${nf.format(a.size || 0)})`;
+    const opt = `<option value="${a.id}">${label}</option>`;
+    f.innerHTML += opt;
+    formAcc.innerHTML += opt;
+  });
+
+  if (state.accounts.find(a => a.id === current) || current === 'all') {
+    f.value = current;
+  }
+}
+
+function renderAccountsList() {
+  const list = $('#accountsList');
+  list.innerHTML = state.accounts.map(a => `
+    <div class="bg-slate-50 p-4 rounded-xl space-y-3">
+      <div class="grid grid-cols-1 md:grid-cols-[1fr_160px_auto_auto] gap-3 items-end">
+        <div>
+          <label class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] block mb-2">Account Name</label>
+          <input 
+            type="text" 
+            class="edit-account-name w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" 
+            data-id="${a.id}" 
+            value="${a.name}"
+          >
         </div>
-      `).join('');
-      
-      list.querySelectorAll('.del-account').forEach(b => b.onclick = async () => {
-        if(confirm('Delete account? Trades linked to this ID will remain but might not show in filtered view.')) {
-          state.accounts = state.accounts.filter(acc => acc.id !== b.dataset.id);
-          await updateAccountsInDB();
-        }
-      });
-    }
 
+        <div>
+          <label class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] block mb-2">Account Size</label>
+          <input 
+            type="number" 
+            step="0.01" 
+            class="edit-account-size w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" 
+            data-id="${a.id}" 
+            value="${a.size || 0}"
+          >
+        </div>
+
+        <button class="save-account bg-slate-900 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all" data-id="${a.id}">
+          Save
+        </button>
+
+        ${state.accounts.length > 1 ? `
+          <button class="del-account text-rose-400 hover:text-rose-600 px-3 py-3" data-id="${a.id}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        ` : `<div></div>`}
+      </div>
+
+      <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+        Current Size: ${nf.format(a.size || 0)}
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.save-account').forEach(b => b.onclick = async () => {
+    const id = b.dataset.id;
+    const nameInput = list.querySelector(`.edit-account-name[data-id="${id}"]`);
+    const sizeInput = list.querySelector(`.edit-account-size[data-id="${id}"]`);
+
+    const newName = nameInput.value.trim();
+    const newSize = parseFloat(sizeInput.value);
+
+    if (!newName) return alert('Enter a valid account name');
+    if (!newSize || newSize <= 0) return alert('Enter a valid account size');
+
+    state.accounts = state.accounts.map(acc =>
+      acc.id === id ? { ...acc, name: newName, size: newSize } : acc
+    );
+
+    await updateAccountsInDB();
+    renderAccountSelects();
+    renderAccountsList();
+    render();
+  });
+
+  list.querySelectorAll('.del-account').forEach(b => b.onclick = async () => {
+    if(confirm('Delete account? Trades linked to this ID will remain but might not show in filtered view.')) {
+      state.accounts = state.accounts.filter(acc => acc.id !== b.dataset.id);
+      await updateAccountsInDB();
+    }
+  });
+}
     function renderSymbolSelect(){
       $('#symbol').innerHTML = Array.from(state.pairs.favorites).map(p => `<option value="${p}">${p}</option>`).join('');
     }
@@ -986,11 +1122,21 @@ note: tr.querySelector('#editNote').value
 
     $('#btnAddAccount').onclick = async () => {
       const name = $('#newAccountName').value.trim();
+      const size = parseFloat($('#newAccountSize').value);
+
       if(!name) return;
-      const newAcc = { id: 'acc_' + Math.random().toString(36).substr(2, 9), name };
+      if(!size || size <= 0) return alert('Enter a valid account size');
+
+      const newAcc = { 
+        id: 'acc_' + Math.random().toString(36).substr(2, 9), 
+        name,
+        size
+      };
+
       state.accounts.push(newAcc);
       await updateAccountsInDB();
       $('#newAccountName').value = '';
+      $('#newAccountSize').value = '';
     };
 
     $('#calPrev').onclick = () => { state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()-1, 1); render(); };
