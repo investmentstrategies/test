@@ -181,7 +181,7 @@
     </div>
   </div>
 
-  <!-- ANALYTICS MODAL -->
+    <!-- ANALYTICS MODAL -->
   <div id="analyticsModal" class="modal-overlay">
     <div class="bg-white p-8 rounded-[3rem] shadow-2xl border border-slate-100 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto no-scrollbar">
       <div class="flex justify-between items-center mb-8">
@@ -190,19 +190,33 @@
           <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Deeper insights into your executions</p>
         </div>
         <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                <input type="date" id="analyticsStart" class="bg-transparent text-[10px] font-bold text-slate-600 outline-none">
-                <span class="text-slate-300 text-[10px] font-black">TO</span>
-                <input type="date" id="analyticsEnd" class="bg-transparent text-[10px] font-bold text-slate-600 outline-none">
-            </div>
-            <button id="btnCloseAnalytics" class="text-slate-400 hover:text-slate-900">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+          <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
+            <select id="analyticsSessionFilter" class="text-[10px] font-bold bg-transparent outline-none">
+              <option value="all">All Sessions</option>
+              <option value="New York">New York</option>
+              <option value="London">London</option>
+              <option value="Asia">Asia</option>
+              <option value="Sydney">Sydney</option>
+            </select>
+
+            <select id="analyticsPairFilter" class="text-[10px] font-bold bg-transparent outline-none">
+              <option value="all">All Pairs</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
+            <input type="date" id="analyticsStart" class="bg-transparent text-[10px] font-bold text-slate-600 outline-none">
+            <span class="text-slate-300 text-[10px] font-black">TO</span>
+            <input type="date" id="analyticsEnd" class="bg-transparent text-[10px] font-bold text-slate-600 outline-none">
+          </div>
+
+          <button id="btnCloseAnalytics" class="text-slate-400 hover:text-slate-900">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
         </div>
       </div>
 
-        
-              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <div class="bg-white border border-slate-100 rounded-[1.5rem] p-5 shadow-sm">
           <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Avg Win</div>
           <div id="analyticsAvgWin" class="text-2xl font-black tracking-tighter text-emerald-500">$0.00</div>
@@ -224,48 +238,78 @@
         </div>
       </div>
 
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div class="bg-white border border-slate-100 rounded-[1.5rem] p-6 shadow-sm min-h-[120px] flex flex-col justify-center">
+          <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Best Day</div>
+          <div id="bestDay" class="text-2xl md:text-3xl font-black tracking-tighter text-emerald-500 leading-tight">—</div>
+        </div>
+
+        <div class="bg-white border border-slate-100 rounded-[1.5rem] p-6 shadow-sm min-h-[120px] flex flex-col justify-center">
+          <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Worst Day</div>
+          <div id="worstDay" class="text-2xl md:text-3xl font-black tracking-tighter text-rose-500 leading-tight">—</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white border border-slate-100 rounded-[1.5rem] p-5 shadow-sm">
+          <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Current Win Streak</div>
+          <div id="currentWinStreak" class="text-2xl font-black tracking-tighter text-emerald-500">0</div>
+        </div>
+
+        <div class="bg-white border border-slate-100 rounded-[1.5rem] p-5 shadow-sm">
+          <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Current Loss Streak</div>
+          <div id="currentLossStreak" class="text-2xl font-black tracking-tighter text-rose-500">0</div>
+        </div>
+
+        <div class="bg-white border border-slate-100 rounded-[1.5rem] p-5 shadow-sm">
+          <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Max Win Streak</div>
+          <div id="maxWinStreak" class="text-2xl font-black tracking-tighter text-emerald-500">0</div>
+        </div>
+
+        <div class="bg-white border border-slate-100 rounded-[1.5rem] p-5 shadow-sm">
+          <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Max Loss Streak</div>
+          <div id="maxLossStreak" class="text-2xl font-black tracking-tighter text-rose-500">0</div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-100 rounded-[1.5rem] p-5 shadow-sm mb-8">
+        <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Expectancy</div>
+        <div id="expectancyValue" class="text-2xl font-black tracking-tighter text-slate-900">$0.00</div>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Day of Week Performance -->
-        <!-- Day of Week Performance -->
         <div class="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm">
-            <div class="flex justify-between items-start mb-6">
-                <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Trading Day Performance</h4>
-                <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total P/L by Day</div>
-            </div>
-            <div class="h-64 relative">
-                <canvas id="dayOfWeekChart"></canvas>
-            </div>
+          <div class="flex justify-between items-start mb-6">
+            <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Trading Day Performance</h4>
+            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total P/L by Day</div>
+          </div>
+          <div class="h-64 relative">
+            <canvas id="dayOfWeekChart"></canvas>
+          </div>
         </div>
 
-        <!-- Profitability Breakdown -->
         <div class="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm">
-            <div class="flex justify-between items-start mb-6">
-                <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Profitability</h4>
-                <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Outcome Breakdown</div>
+          <div class="flex justify-between items-start mb-6">
+            <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Profitability</h4>
+            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Outcome Breakdown</div>
+          </div>
+          <div class="h-64 relative flex items-center justify-center">
+            <canvas id="profitabilityDoughnut"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span id="analyticsTotalTrades" class="text-2xl font-black text-slate-900 leading-none">0</span>
+              <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Trades Taken</span>
             </div>
-            <div class="h-64 relative flex items-center justify-center">
-                <canvas id="profitabilityDoughnut"></canvas>
-                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span id="analyticsTotalTrades" class="text-2xl font-black text-slate-900 leading-none">0</span>
-                    <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Trades Taken</span>
-                </div>
-            </div>
+          </div>
         </div>
 
-        <!-- Most Traded Instruments -->
         <div class="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm">
-            <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-6">Top Instruments</h4>
-            <div id="topInstrumentsList" class="space-y-4">
-                <!-- Injected via JS -->
-            </div>
+          <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-6">Top Instruments</h4>
+          <div id="topInstrumentsList" class="space-y-4"></div>
         </div>
 
-        <!-- Session Performance -->
         <div class="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm">
-            <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-6">Session Win Rates</h4>
-            <div id="sessionPerformanceList" class="space-y-5">
-                <!-- Injected via JS -->
-            </div>
+          <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-6">Session Win Rates</h4>
+          <div id="sessionPerformanceList" class="space-y-5"></div>
         </div>
       </div>
     </div>
@@ -674,6 +718,13 @@ async function loadUserData(){
       const losses = list.filter(t=> t.netpl < 0);
       const wr = (wins.length + losses.length) > 0 ? (wins.length / (wins.length + losses.length)) * 100 : 0;
       const pf = losses.length === 0 ? (wins.length > 0 ? 10 : 0) : (wins.reduce((a,t)=>a+t.netpl,0) / Math.abs(losses.reduce((a,t)=>a+t.netpl,0)));
+      const pairSet = new Set(state.trades.map(t => t.symbol));
+      const currentPairFilter = $('#analyticsPairFilter').value;
+      $('#analyticsPairFilter').innerHTML = '<option value="all">All Pairs</option>' +
+        Array.from(pairSet).map(p => `<option value="${p}">${p}</option>`).join('');
+      if (Array.from(pairSet).includes(currentPairFilter) || currentPairFilter === 'all') {
+        $('#analyticsPairFilter').value = currentPairFilter;
+      }
 
       $('#kpi-total-pnl').textContent = nf.format(totalPnl);
       $('#kpi-total-pnl').className = `text-[32px] font-black tracking-tighter leading-none ${totalPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`;
@@ -777,11 +828,16 @@ function updateAnalytics(list) {
   const end = $('#analyticsEnd').value ? new Date($('#analyticsEnd').value) : null;
   if (end) end.setHours(23, 59, 59);
 
+  const sessionFilter = $('#analyticsSessionFilter').value;
+  const pairFilter = $('#analyticsPairFilter').value;
+
   const filtered = list.filter(t => {
     const d = parseDate(t.date);
     if (!d) return false;
     if (start && d < start) return false;
     if (end && d > end) return false;
+    if (sessionFilter !== 'all' && t.session !== sessionFilter) return false;
+    if (pairFilter !== 'all' && t.symbol !== pairFilter) return false;
     return true;
   });
 
@@ -821,7 +877,61 @@ function updateAnalytics(list) {
   $('#analyticsAvgWinPct').textContent = `${avgWinPct.toFixed(2)}%`;
   $('#analyticsAvgLossPct').textContent = `${avgLossPct.toFixed(2)}%`;
 
-  // 1. Day of Week P/L
+  const dayMap = {};
+  filtered.forEach(t => {
+    if (!dayMap[t.date]) dayMap[t.date] = 0;
+    dayMap[t.date] += t.netpl;
+  });
+
+  const dayEntries = Object.entries(dayMap);
+  if (dayEntries.length) {
+    const best = dayEntries.reduce((a, b) => b[1] > a[1] ? b : a);
+    const worst = dayEntries.reduce((a, b) => b[1] < a[1] ? b : a);
+    $('#bestDay').innerHTML = `
+      <div>${nf.format(best[1])}</div>
+      <div class="text-sm md:text-base text-slate-400 font-black mt-1">${best[0]}</div>
+    `;
+    $('#worstDay').innerHTML = `
+      <div>${nf.format(worst[1])}</div>
+      <div class="text-sm md:text-base text-slate-400 font-black mt-1">${worst[0]}</div>
+    `;
+  } else {
+    $('#bestDay').innerHTML = '—';
+    $('#worstDay').innerHTML = '—';
+  }
+
+
+  let currentWin = 0, currentLoss = 0;
+  let maxWin = 0, maxLoss = 0;
+
+  filtered
+    .slice()
+    .sort((a, b) => parseDate(a.date) - parseDate(b.date))
+    .forEach(t => {
+      if (t.netpl > 0) {
+        currentWin++;
+        currentLoss = 0;
+      } else if (t.netpl < 0) {
+        currentLoss++;
+        currentWin = 0;
+      }
+
+      maxWin = Math.max(maxWin, currentWin);
+      maxLoss = Math.max(maxLoss, currentLoss);
+    });
+
+  $('#currentWinStreak').textContent = currentWin;
+  $('#currentLossStreak').textContent = currentLoss;
+  $('#maxWinStreak').textContent = maxWin;
+  $('#maxLossStreak').textContent = maxLoss;
+
+  const totalTrades = wins.length + losses.length;
+  const winRate = totalTrades ? wins.length / totalTrades : 0;
+  const lossRate = totalTrades ? losses.length / totalTrades : 0;
+  const expectancy = (winRate * avgWin) - (lossRate * avgLossAbs);
+
+  $('#expectancyValue').textContent = nf.format(expectancy);
+
   const dowPnl = [0,0,0,0,0,0,0];
   filtered.forEach(t => {
     const d = parseDate(t.date);
@@ -831,14 +941,12 @@ function updateAnalytics(list) {
   state.charts.dayOfWeek.data.datasets[0].backgroundColor = dowPnl.map(v => v >= 0 ? '#10b981' : '#f43f5e');
   state.charts.dayOfWeek.update();
 
-  // 2. Profitability Doughnut
   const w = wins.length;
   const l = losses.length;
   const be = filtered.filter(t => t.netpl === 0).length;
   state.charts.profitability.data.datasets[0].data = [w, l, be];
   state.charts.profitability.update();
 
-  // 3. Top Instruments
   const pairs = {};
   filtered.forEach(t => {
     if (!pairs[t.symbol]) pairs[t.symbol] = { w:0, l:0, total:0 };
@@ -865,7 +973,6 @@ function updateAnalytics(list) {
     `;
   }).join('') || '<p class="text-[10px] text-slate-300 font-bold uppercase text-center py-4">No trade data</p>';
 
-  // 4. Session Performance
   const sessions = { "New York": {w:0, total:0}, "London": {w:0, total:0}, "Asia": {w:0, total:0}, "Sydney": {w:0, total:0} };
   filtered.forEach(t => {
     const s = t.session || 'New York';
@@ -889,6 +996,7 @@ function updateAnalytics(list) {
     `;
   }).join('');
 }
+
     function renderTable(list){
       const tb = $('#tableBody'); tb.innerHTML = '';
       if(!list.length) { tb.innerHTML = '<tr><td colspan="7" class="py-20 text-center text-slate-300 font-black uppercase tracking-[0.2em] text-[10px]">No execution data</td></tr>'; return; }
@@ -941,10 +1049,17 @@ function updateAnalytics(list) {
             <td class="px-8 py-5">
               ${t.screenshot ? `<a href="${t.screenshot}" target="_blank" class="bg-indigo-50 text-indigo-500 hover:bg-indigo-100 p-2 rounded-lg inline-flex transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg></a>` : '<span class="text-slate-300 font-black text-[10px]">—</span>'}
             </td>
-<td class="px-8 py-5 text-slate-500 text-[10px] font-bold max-w-[200px] truncate">
-  ${t.note || '—'}
+<td class="px-8 py-5 text-slate-500 text-[10px] font-bold max-w-[200px]">
+  ${t.note ? `
+    <button
+      type="button"
+      class="note-preview text-left w-full truncate hover:text-slate-900 transition-all"
+      data-note="${String(t.note).replace(/"/g, '&quot;')}"
+    >
+      ${t.note}
+    </button>
+  ` : '—'}
 </td>
-
             <td class="px-8 py-5 flex gap-4">
               <button class="btn-edit text-slate-300 hover:text-slate-900" data-id="${t.id}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
               <button class="btn-del text-rose-200 hover:text-rose-500" data-id="${t.id}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
@@ -1119,6 +1234,8 @@ function renderAccountsList() {
     $('#btnCloseAnalytics').onclick = () => $('#analyticsModal').classList.remove('active');
     $('#analyticsStart').onchange = render;
     $('#analyticsEnd').onchange = render;
+    $('#analyticsSessionFilter').onchange = render;
+    $('#analyticsPairFilter').onchange = render;
 
     $('#btnAddAccount').onclick = async () => {
       const name = $('#newAccountName').value.trim();
@@ -1181,40 +1298,43 @@ accountId: $('#tradeAccount').value,
       document.body.removeChild(a);
     };
       
-      $('#btnThemeToggle').onclick = () => {
+    $('#btnThemeToggle').onclick = () => {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const newTheme = isDark ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', newTheme);
-      
-      // Update Icons
+
       $('#sunIcon').classList.toggle('hidden', newTheme !== 'dark');
       $('#moonIcon').classList.toggle('hidden', newTheme === 'dark');
 
-      // Update Charts
+      const darkMode = newTheme === 'dark';
+
       Object.values(state.charts).forEach(chart => {
-        if(chart) {
-            if(chart.options.scales) {
-                Object.values(state.charts).forEach(chart => {
-        if(chart) {
-            const isDark = newTheme === 'dark';
-            if(chart.options.scales) {
-                // Ticks (Text)
-                chart.options.scales.x.ticks.color = isDark ? '#94a3b8' : '#cbd5e1';
-                chart.options.scales.y.ticks.color = isDark ? '#94a3b8' : '#cbd5e1';
-                // Grid Lines
-                if(chart.options.scales.y.grid) chart.options.scales.y.grid.color = isDark ? '#1e293b' : '#f1f5f9';
-                if(chart.options.scales.x.grid) chart.options.scales.x.grid.color = isDark ? '#1e293b' : '#f1f5f9';
-            }
-            chart.update('none'); // Update without animation for instant feel
+        if (!chart) return;
+
+        if (chart.options.scales) {
+          if (chart.options.scales.x?.ticks) chart.options.scales.x.ticks.color = darkMode ? '#94a3b8' : '#cbd5e1';
+          if (chart.options.scales.y?.ticks) chart.options.scales.y.ticks.color = darkMode ? '#94a3b8' : '#cbd5e1';
+          if (chart.options.scales.x?.grid) chart.options.scales.x.grid.color = darkMode ? '#1e293b' : '#f1f5f9';
+          if (chart.options.scales.y?.grid) chart.options.scales.y.grid.color = darkMode ? '#1e293b' : '#f1f5f9';
         }
+
+        chart.update('none');
       });
-                chart.options.scales.y.ticks.color = newTheme === 'dark' ? '#64748b' : '#cbd5e1';
-                if(chart.options.scales.y.grid) chart.options.scales.y.grid.color = newTheme === 'dark' ? '#1e293b' : '#f1f5f9';
-            }
-            chart.update();
-        }
-      });
+
       localStorage.setItem('tradingJournalTheme', newTheme);
+    };
+    // Auto-load saved theme
+    // Note Modal
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.note-preview');
+      if (!btn) return;
+      $('#noteModalContent').textContent = btn.dataset.note || '';
+      $('#noteModal').classList.add('active');
+    });
+
+    $('#btnCloseNoteModal').onclick = () => $('#noteModal').classList.remove('active');
+    $('#noteModal').onclick = (e) => {
+      if (e.target.id === 'noteModal') $('#noteModal').classList.remove('active');
     };
 
     // Auto-load saved theme
@@ -1225,5 +1345,18 @@ accountId: $('#tradeAccount').value,
         $('#moonIcon').classList.add('hidden');
     }
   </script>
+  <div id="noteModal" class="modal-overlay">
+    <div class="bg-white p-8 rounded-[2rem] shadow-2xl border border-slate-100 max-w-xl w-full mx-4">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-black text-slate-900 tracking-tight">Trade Note</h3>
+        <button id="btnCloseNoteModal" class="text-slate-400 hover:text-slate-900">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="noteModalContent" class="text-sm font-medium text-slate-600 whitespace-pre-wrap break-words"></div>
+    </div>
+  </div>
 </body>
 </html>
