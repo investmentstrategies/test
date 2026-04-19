@@ -812,10 +812,33 @@ async function saveAccountsToDB(){if(!state.uid)return;await updateDoc(doc(db,'u
 function initCharts(){
   const { G, R, A, Y, GRID, TICK } = themeColors();
 
-  const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
-    x:{grid:{display:false},ticks:{font:{weight:'700',size:9,family:'Space Mono'},color:TICK}},
-    y:{grid:{color:GRID},ticks:{font:{weight:'700',size:9,family:'Space Mono'},color:TICK,callback:v=>`$${Math.abs(v)>=1000?(v/1000).toFixed(1)+'k':v}`}}
-  }};
+const co = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false }
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      ticks: {
+        font: { weight: '700', size: 9, family: 'Space Mono' },
+        color: TICK
+      }
+    },
+    y: {
+      grid: { color: GRID },
+      ticks: {
+        font: { weight: '700', size: 9, family: 'Space Mono' },
+        color: TICK,
+        callback: v => {
+          const val = Math.round(v * 100) / 100;
+          return `$${Math.abs(val) >= 1000 ? (val / 1000).toFixed(1) + 'k' : val.toFixed(2)}`;
+        }
+      }
+    }
+  }
+};
 
   state.charts.line=new Chart($('#chartLine').getContext('2d'),{
     type:'line',
@@ -1026,15 +1049,20 @@ function updateMainCharts(list){
   const sorted=Array.from(map.keys()).sort((a,b)=>parseDate(a)-parseDate(b));
 
   let labs=[],cum=[],daily=[],clrs=[],c=0;
-  sorted.forEach(k=>{
-    const p=map.get(k);
-    c+=p;
-    labs.push(k.substring(0,5));
-    cum.push(c);
-    daily.push(p);
-    clrs.push(p>=0?G:R);
-  });
+sorted.forEach(k=>{
+  const p = map.get(k);
 
+  c += p;
+
+  // ✅ FIX FLOATING PRECISION
+  const roundedCum = Math.round(c * 100) / 100;
+  const roundedDaily = Math.round(p * 100) / 100;
+
+  labs.push(k.substring(0,5));
+  cum.push(roundedCum);
+  daily.push(roundedDaily);
+  clrs.push(p >= 0 ? G : R);
+});
   state.charts.line.data.labels=labs;
   state.charts.line.data.datasets[0].data=cum;
   state.charts.line.update();
@@ -1617,7 +1645,7 @@ $('tradeFormModal').onsubmit=async e=>{
   await addDoc(collection(db,'users',state.uid,'trades'),{
     date:`${d}-${mo}-${y}`,dateTS:new Date(y,mo-1,d).getTime(),
     symbol:$('mSymbol').value,direction:$('mDirection').value,
-    netpl:parseFloat($('mNetpl').value),risk:parseFloat($('mRisk').value)||0,
+   netpl: Math.round(parseFloat($('mNetpl').value) * 100) / 100,risk:parseFloat($('mRisk').value)||0,
     lot:parseFloat($('mLot').value)||0,session:$('mSession').value,
     setup:$('mSetup').value,execScore:parseInt($('mExecScore').value)||null,
     entryType:$('mEntryType').value,breakeven:$('mBreakeven').checked,
@@ -1687,7 +1715,7 @@ $('csvImportInput').onchange=async(e)=>{
       dateTS: parsedDate.getTime(),
       symbol: (rawSymbol || '').trim(),
       direction: (rawDirection || '').trim() || 'LONG',
-      netpl: parseFloat(rawPnl) || 0,
+      netpl: Math.round((parseFloat(rawPnl) || 0) * 100) / 100,
       risk: parseFloat(rawRisk) || 0,
       lot: 0,
       session: (rawSession || '').trim() || 'New York',
