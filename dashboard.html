@@ -491,30 +491,40 @@ input[type="checkbox"]{width:14px;height:14px;accent-color:var(--g)}
 <div id="weeklyStats" style="display:flex;flex-direction:column;gap:3px;padding-top:29px"></div>          </div>
         </div>
 
-        <!-- Right column: charts + insights -->
+        <!-- Right column: charts + behavior insights -->
         <div style="display:flex;flex-direction:column;gap:12px">
-          <div class="card" style="padding:16px;flex:1;display:flex;flex-direction:column">
+          <div class="card" style="padding:16px;display:flex;flex-direction:column">
             <div class="sec-hdr" style="margin-bottom:10px">Cumulative P&amp;L</div>
-            <div style="flex:1;position:relative;min-height:140px"><canvas id="chartLine"></canvas></div>
+            <div style="position:relative;min-height:170px"><canvas id="chartLine"></canvas></div>
           </div>
-          <div class="card" style="padding:16px;flex:1;display:flex;flex-direction:column">
+
+          <div class="card" style="padding:16px;display:flex;flex-direction:column">
             <div class="sec-hdr" style="margin-bottom:10px">Daily Impact</div>
-            <div style="flex:1;position:relative;min-height:140px"><canvas id="chartBar"></canvas></div>
+            <div style="position:relative;min-height:150px"><canvas id="chartBar"></canvas></div>
+          </div>
+
+          <div class="card" style="padding:16px;display:flex;flex-direction:column">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <div class="sec-hdr">Behavior Insights</div>
+              <span style="font-size:10px;color:var(--t3)">Auto-detected</span>
+            </div>
+            <div id="behaviorInsightsList" style="display:flex;flex-direction:column;gap:10px"></div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- ===== TRADE LOG VIEW ===== -->
-    <div id="view-trades" class="view">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-  <div style="font-weight:700;font-size:15px">Trade History</div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <input id="csvImportInput" type="file" accept=".csv" style="display:none">
-    <button id="btnImportCSV" class="btn btn-ghost btn-sm">Import CSV</button>
-    <button id="btnExportCSV" class="btn btn-ghost btn-sm">Export CSV</button>
-  </div>
-</div>
+<div id="view-trades" class="view">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-weight:700;font-size:15px">Trade History</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="csvImportInput" type="file" accept=".csv" style="display:none">
+          <button id="btnImportCSV" class="btn btn-ghost btn-sm">Import CSV</button>
+          <button id="btnExportCSV" class="btn btn-ghost btn-sm">Export CSV</button>
+        </div>
+      </div>
+
       <div class="card" style="overflow:hidden">
         <div style="overflow-x:auto">
           <table class="tbl" id="tradesTable">
@@ -938,6 +948,7 @@ function render(){
   updateMainCharts(list);
   renderTable(list);
   updateAnalytics();
+  renderBehaviorInsights(list);
 }
 
 function renderThisWeek(list){
@@ -1046,10 +1057,9 @@ function getFilteredTrades(){
 
 function updateAnalytics(){
   if(!state.inited)return;
-
   const { G, R } = themeColors();
-
   const list=getFilteredTrades();
+
   const wins=list.filter(t=>t.netpl>0),losses=list.filter(t=>t.netpl<0),bes=list.filter(t=>t.netpl===0);
   const total=list.reduce((a,t)=>a+(+t.netpl||0),0);
   const wr=(wins.length+losses.length)>0?(wins.length/(wins.length+losses.length))*100:0;
@@ -1153,6 +1163,200 @@ function updateAnalytics(){
 function getBestDay(list){const m=getDayMap(list);if(!Object.keys(m).length)return'—';const b=Object.entries(m).reduce((a,e)=>e[1]>a[1]?e:a);return`${b[0]}: ${nf.format(b[1])}`}
 function getWorstDay(list){const m=getDayMap(list);if(!Object.keys(m).length)return'—';const w=Object.entries(m).reduce((a,e)=>e[1]<a[1]?e:a);return`${w[0]}: ${nf.format(w[1])}`}
 function getDayMap(list){const m={};list.forEach(t=>{m[t.date]=(m[t.date]||0)+t.netpl});return m}
+    
+function renderBehaviorInsights(list){
+  const box = $('behaviorInsightsList');
+  if(!box) return;
+
+  if(!list.length){
+    box.innerHTML = `
+      <div class="insight-card">
+        <div style="width:28px;height:28px;border-radius:8px;background:var(--ad);display:flex;align-items:center;justify-content:center;color:var(--a);flex-shrink:0">i</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;margin-bottom:3px">Not enough data yet</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.45">Log more trades and I’ll start showing behavioral patterns automatically.</div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const insights = [];
+  const closedTrades = list.filter(t => typeof t.netpl === 'number');
+
+  const overallWins = closedTrades.filter(t => t.netpl > 0).length;
+  const overallLosses = closedTrades.filter(t => t.netpl < 0).length;
+  const overallWR = (overallWins + overallLosses) ? (overallWins / (overallWins + overallLosses)) * 100 : 0;
+  const overallAvg = closedTrades.length ? closedTrades.reduce((a,t)=>a+t.netpl,0) / closedTrades.length : 0;
+
+  // 1) Session edge
+  const sessionStats = {};
+  SESSIONS.forEach(s => sessionStats[s] = { total:0, wins:0, pnl:0 });
+
+  closedTrades.forEach(t => {
+    const s = t.session || 'New York';
+    if(!sessionStats[s]) sessionStats[s] = { total:0, wins:0, pnl:0 };
+    sessionStats[s].total++;
+    if(t.netpl > 0) sessionStats[s].wins++;
+    sessionStats[s].pnl += t.netpl;
+  });
+
+  const viableSessions = Object.entries(sessionStats)
+    .filter(([,s]) => s.total >= 3)
+    .map(([name,s]) => ({
+      name,
+      total: s.total,
+      wr: s.total ? (s.wins / s.total) * 100 : 0,
+      avg: s.total ? s.pnl / s.total : 0,
+      pnl: s.pnl
+    }))
+    .sort((a,b) => (b.avg + b.wr) - (a.avg + a.wr));
+
+  if(viableSessions.length){
+    const best = viableSessions[0];
+    insights.push({
+      type: 'a',
+      title: `${best.name} session edge`,
+      body: `${best.name} is currently your strongest session with a ${best.wr.toFixed(0)}% win rate over ${best.total} trades and an average of ${nf.format(best.avg)} per trade.`
+    });
+  }
+
+  // 2) Direction edge
+  const longTrades = closedTrades.filter(t => t.direction === 'LONG');
+  const shortTrades = closedTrades.filter(t => t.direction === 'SHORT');
+
+  const longAvg = longTrades.length ? longTrades.reduce((a,t)=>a+t.netpl,0) / longTrades.length : 0;
+  const shortAvg = shortTrades.length ? shortTrades.reduce((a,t)=>a+t.netpl,0) / shortTrades.length : 0;
+
+  if(longTrades.length >= 3 && shortTrades.length >= 3){
+    if(longAvg > shortAvg + 50){
+      insights.push({
+        type: 'g',
+        title: `Longs outperform shorts`,
+        body: `Your long trades average ${nf.format(longAvg)} while your shorts average ${nf.format(shortAvg)}. Long-side execution currently looks cleaner.`
+      });
+    } else if(shortAvg > longAvg + 50){
+      insights.push({
+        type: 'r',
+        title: `Shorts outperform longs`,
+        body: `Your short trades average ${nf.format(shortAvg)} while your longs average ${nf.format(longAvg)}. Shorts currently seem to fit your execution better.`
+      });
+    }
+  }
+
+  // 3) After-loss behavior
+  const sorted = [...closedTrades].sort((a,b)=>parseDate(a.date)-parseDate(b.date));
+  const postLoss = [];
+  for(let i=1;i<sorted.length;i++){
+    if(sorted[i-1].netpl < 0) postLoss.push(sorted[i]);
+  }
+
+  if(postLoss.length >= 3){
+    const postLossAvg = postLoss.reduce((a,t)=>a+t.netpl,0) / postLoss.length;
+    if(postLossAvg < overallAvg - 40){
+      insights.push({
+        type: 'r',
+        title: `Performance drops after losses`,
+        body: `Trades taken right after a losing trade average ${nf.format(postLossAvg)}, compared with your overall average of ${nf.format(overallAvg)}. Slowing down after a loss may help.`
+      });
+    } else if(postLossAvg > overallAvg + 40){
+      insights.push({
+        type: 'g',
+        title: `You recover well after losses`,
+        body: `Trades taken immediately after a loss average ${nf.format(postLossAvg)}, better than your overall average of ${nf.format(overallAvg)}. You seem composed after setbacks.`
+      });
+    }
+  }
+
+  // 4) Setup insight
+  const setupStats = {};
+  closedTrades.forEach(t => {
+    const key = (t.setup || '').trim();
+    if(!key) return;
+    if(!setupStats[key]) setupStats[key] = { total:0, wins:0, pnl:0 };
+    setupStats[key].total++;
+    if(t.netpl > 0) setupStats[key].wins++;
+    setupStats[key].pnl += t.netpl;
+  });
+
+  const viableSetups = Object.entries(setupStats)
+    .filter(([,s]) => s.total >= 3)
+    .map(([name,s]) => ({
+      name,
+      total: s.total,
+      wr: (s.wins / s.total) * 100,
+      avg: s.pnl / s.total
+    }))
+    .sort((a,b)=>b.avg-a.avg);
+
+  if(viableSetups.length){
+    const bestSetup = viableSetups[0];
+    insights.push({
+      type: 'y',
+      title: `${bestSetup.name} works best`,
+      body: `${bestSetup.name} averages ${nf.format(bestSetup.avg)} per trade with a ${bestSetup.wr.toFixed(0)}% win rate across ${bestSetup.total} trades.`
+    });
+  }
+
+  // 5) Execution score insight
+  const scored = closedTrades.filter(t => Number.isFinite(t.execScore));
+  const highScore = scored.filter(t => t.execScore >= 7);
+  const lowScore  = scored.filter(t => t.execScore <= 4);
+
+  if(highScore.length >= 3 && lowScore.length >= 3){
+    const highAvg = highScore.reduce((a,t)=>a+t.netpl,0) / highScore.length;
+    const lowAvg = lowScore.reduce((a,t)=>a+t.netpl,0) / lowScore.length;
+
+    if(highAvg > lowAvg + 40){
+      insights.push({
+        type: 'a',
+        title: `High execution scores correlate`,
+        body: `Trades scored 7+ average ${nf.format(highAvg)}, while low-scored trades average ${nf.format(lowAvg)}. Your self-rating seems to reflect real quality.`
+      });
+    }
+  }
+
+  // Fallback insight
+  if(!insights.length){
+    insights.push({
+      type: 'a',
+      title: `Your data is building`,
+      body: `You have ${closedTrades.length} logged trades with a ${overallWR.toFixed(0)}% win rate and ${nf.format(overallAvg)} average P&L per trade. More data will unlock sharper insights.`
+    });
+  }
+
+  const unique = [];
+  const seen = new Set();
+  insights.forEach(item => {
+    if(seen.has(item.title)) return;
+    seen.add(item.title);
+    unique.push(item);
+  });
+
+  const top3 = unique.slice(0,3);
+
+  const typeStyle = {
+    g: { bg:'var(--gd)', color:'var(--g)', icon:'↗' },
+    r: { bg:'var(--rd)', color:'var(--r)', icon:'!' },
+    a: { bg:'var(--ad)', color:'var(--a)', icon:'≈' },
+    y: { bg:'var(--yd)', color:'var(--y)', icon:'★' }
+  };
+
+  box.innerHTML = top3.map(item => {
+    const s = typeStyle[item.type] || typeStyle.a;
+    return `
+      <div class="insight-card">
+        <div style="width:28px;height:28px;border-radius:8px;background:${s.bg};display:flex;align-items:center;justify-content:center;color:${s.color};font-size:12px;font-weight:700;flex-shrink:0">
+          ${s.icon}
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;margin-bottom:4px">${item.title}</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.5">${item.body}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}  
 
 function updatePerfTab(list,wins,losses,bes,total){
   const { G, R } = themeColors();
