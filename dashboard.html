@@ -216,6 +216,398 @@ input[type="checkbox"]{width:14px;height:14px;accent-color:var(--g)}
 
 /* RESPONSIVE chart containers */
 .chart-wrap{position:relative;width:100%;height:100%}
+    
+    
+    
+    
+    /* =========================
+   RESPONSIVE ADD-ON CSS
+   Add at very end of style
+   ========================= */
+
+/* Prevent overflow issues */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img, canvas, svg {
+  max-width: 100%;
+}
+
+/* Better flexible media */
+canvas {
+  display: block;
+}
+
+/* Make inline layout wrappers more flexible on smaller screens */
+@media (max-width: 1200px) {
+  #view-dash > div[style*="grid-template-columns:1fr 300px"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  #view-analytics #atab-overview > div[style*="grid-template-columns:repeat(4,1fr)"],
+  #view-analytics #atab-overview > div[style*="grid-template-columns:1fr 1fr"],
+  #view-analytics #atab-performance > div[style*="grid-template-columns:1fr 1fr"],
+  #view-analytics #atab-behavioral > div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  #sidebar {
+    width: 78px;
+    overflow: hidden;
+  }
+
+  .logo-text,
+  #whoami,
+  .nav-section,
+  .nav-item span {
+    display: none !important;
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding: 11px;
+    width: calc(100% - 12px);
+    margin: 4px 6px;
+  }
+
+  .nav-item svg {
+    width: 16px;
+    height: 16px;
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    padding: 10px 6px;
+  }
+
+  .acct-row {
+    justify-content: center;
+  }
+
+  .acct-row select {
+    display: none;
+  }
+
+  #btnSignOut {
+    padding: 8px !important;
+    font-size: 0 !important;
+  }
+
+  #btnSignOut::before {
+    content: "Out";
+    font-size: 11px;
+  }
+
+  body #app > div[style*="margin-left:200px"] {
+    margin-left: 78px !important;
+  }
+
+  #topbar {
+    padding: 10px 14px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .page-title {
+    font-size: 14px;
+  }
+
+  .page-sub {
+    font-size: 10px;
+  }
+
+  .view {
+    padding: 14px;
+  }
+
+  #view-dash > div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  #view-dash > div[style*="grid-template-columns:1fr 300px"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  #view-dash .card[style*="padding:18px"] {
+    padding: 14px !important;
+  }
+
+  #view-analytics #atab-overview > div[style*="grid-template-columns:repeat(4,1fr)"],
+  #view-analytics #atab-overview > div[style*="grid-template-columns:1fr 1fr"],
+  #view-analytics #atab-performance > div[style*="grid-template-columns:1fr 1fr"],
+  #view-analytics #atab-behavioral > div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  #tradeFormModal > div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .kpi-val {
+    font-size: 22px;
+  }
+
+  #weekDaysRow {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  #weeklyStats {
+    display: none !important;
+  }
+}
+
+/* Phone */
+@media (max-width: 768px) {
+  #sidebar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: 68px;
+    border-right: none;
+    border-top: 1px solid var(--b1);
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 6px;
+    z-index: 120;
+  }
+
+  .nav-logo,
+  #whoami,
+  .nav-section,
+  .sidebar-footer,
+  #navAccounts {
+    display: none !important;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .nav-item {
+    width: auto !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    border-radius: 10px;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 58px;
+    font-size: 10px;
+  }
+
+  .nav-item svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .nav-item span {
+    display: block !important;
+  }
+
+  body #app > div[style*="margin-left:200px"] {
+    margin-left: 0 !important;
+    padding-bottom: 78px;
+  }
+
+  #topbar {
+    position: sticky;
+    top: 0;
+    padding: 10px 12px;
+    align-items: flex-start;
+  }
+
+  #topbar > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  #btnThemeToggle,
+  #btnOpenLogModal {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .view {
+    padding: 12px;
+  }
+
+  #view-dash > div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  #view-dash > div[style*="grid-template-columns:1fr 300px"] {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  #view-dash .card,
+  #view-trades .card,
+  #view-analytics .card {
+    border-radius: 10px;
+  }
+
+  #tradeFormModal > div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  #view-analytics > div[style*="justify-content:space-between"] {
+    align-items: flex-start !important;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .tab {
+    flex: 0 0 auto;
+  }
+
+  .kpi-val {
+    font-size: 20px;
+  }
+
+  .sec-hdr {
+    font-size: 9px;
+  }
+
+  .tbl th,
+  .tbl td {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  #view-trades .card {
+    overflow: hidden;
+  }
+
+  #view-trades .card > div {
+    overflow-x: auto;
+  }
+
+  #weekDaysRow {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(52px, 1fr));
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .wk-card {
+    min-height: 66px;
+  }
+
+  .insight-card {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .streak-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .modal {
+    padding: 12px;
+  }
+
+  .modal .card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    max-height: 88vh !important;
+    border-radius: 12px;
+  }
+
+  #accountsModal .card,
+  #logModal .card,
+  #noteModal .card {
+    padding: 16px !important;
+  }
+
+  #view-analytics #atab-overview > div[style*="grid-template-columns:repeat(4,1fr)"],
+  #view-analytics #atab-overview > div[style*="grid-template-columns:1fr 1fr"],
+  #view-analytics #atab-performance > div[style*="grid-template-columns:1fr 1fr"],
+  #view-analytics #atab-behavioral > div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  #topbar {
+    padding: 10px;
+  }
+
+  .view {
+    padding: 10px;
+  }
+
+  .page-title {
+    font-size: 13px;
+  }
+
+  .page-sub {
+    font-size: 9px;
+  }
+
+  .kpi-val {
+    font-size: 18px;
+  }
+
+  .btn-primary,
+  .btn-ghost {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  #btnThemeToggle,
+  #btnOpenLogModal {
+    min-width: 0;
+  }
+
+  #weekDaysRow {
+    grid-template-columns: repeat(7, 50px);
+  }
+
+  .tbl th,
+  .tbl td {
+    font-size: 10px;
+    padding: 7px 8px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* avoids iphone zoom */
+  }
+
+  .insight-card div[style*="font-size:12px"] {
+    font-size: 11px !important;
+  }
+
+  .insight-card div[style*="font-size:11px"] {
+    font-size: 10px !important;
+  }
+}
 </style>
 </head>
 <body>
