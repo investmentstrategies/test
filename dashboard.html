@@ -303,9 +303,14 @@ canvas {
     font-size: 11px;
   }
 
-  body #app > div[style*="margin-left:200px"] {
-    margin-left: 78px !important;
-  }
+body #app > div[style*="margin-left:200px"] {
+  margin-left: 0 !important;
+  padding-bottom: 78px;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
 
   #topbar {
     padding: 10px 14px;
@@ -329,9 +334,18 @@ canvas {
     grid-template-columns: 1fr !important;
   }
 
-  #view-dash > div[style*="grid-template-columns:1fr 300px"] {
-    grid-template-columns: 1fr !important;
-  }
+ #view-dash > div[style*="grid-template-columns:1fr 300px"] {
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+#view-dash > div[style*="grid-template-columns:1fr 300px"] > * {
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
 
   #view-dash .card[style*="padding:18px"] {
     padding: 14px !important;
@@ -424,13 +438,26 @@ canvas {
     padding-bottom: 78px;
   }
 
-  #topbar {
-    position: sticky;
-    top: 0;
-    padding: 10px 12px;
-    align-items: flex-start;
-  }
+#view-dash .card[style*="padding:18px"] > div[style*="justify-content:space-between;align-items:center;margin-bottom:14px"] {
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
 
+#view-dash .card[style*="padding:18px"] > div[style*="justify-content:space-between;align-items:center;margin-bottom:14px"] > div {
+  min-width: 0 !important;
+}
+
+#calTitle {
+  min-width: 0 !important;
+  width: auto !important;
+  text-align: center !important;
+  font-size: 13px !important;
+}
+
+#calMonthPnl {
+  font-size: 12px !important;
+  word-break: break-word !important;
+}
   #topbar > div:last-child {
     width: 100%;
     justify-content: space-between;
@@ -549,6 +576,58 @@ canvas {
     grid-template-columns: 1fr !important;
     gap: 10px !important;
   }
+    
+    #view-dash .card {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+#view-dash .card > div {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+#view-dash .card[style*="padding:18px"] > div[style*="grid-template-columns:1fr 74px"] {
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+}
+
+#calGrid {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.cal-day {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+    
+    
+    #chartLine,
+#chartBar,
+#chartMonthly,
+#chartWLDist,
+#chartDOW,
+#chartDoughnut,
+#chartMC,
+#chartExecScore,
+#chartVolEdge {
+  max-width: 100% !important;
+}
+
+div[style*="position:relative;min-height:170px"],
+div[style*="position:relative;min-height:150px"],
+div[style*="height:180px;position:relative"],
+div[style*="height:160px;position:relative"],
+div[style*="height:200px;position:relative"],
+div[style*="height:220px;position:relative"] {
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
 }
 
 /* Small phones */
@@ -606,6 +685,22 @@ canvas {
 
   .insight-card div[style*="font-size:11px"] {
     font-size: 10px !important;
+  }
+}
+    
+    
+    @media (max-width: 768px) {
+  #view-dash,
+  #view-trades,
+  #view-analytics {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  #view-dash * {
+    box-sizing: border-box;
   }
 }
 </style>
