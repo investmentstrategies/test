@@ -8,16 +8,33 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{
-  --bg:#0a0a0f;
-  --s1:#111118;
-  --s2:#16161f;
-  --s3:#1c1c28;
-  --b1:#1e1e2e;
-  --b2:#252535;
-  --t1:#e8e8f0;
-  --t2:#9898b8;
-  --t3:#5a5a7a;
-  --g:#00d67a;
+  --bg:#060607;
+  --s1:#0b0b0d;
+  --s2:#111113;
+  --s3:#16161a;
+  --b1:#1f1f24;
+  --b2:#2a2a30;
+
+  --t1:#ffffff;
+  --t2:#a1a1aa;
+  --t3:#6b7280;
+
+  /* PRIMARY BRAND COLOR (GOLD) */
+  --g:#d4af37;
+  --gd:rgba(212,175,55,.12);
+  --gd2:rgba(212,175,55,.06);
+
+  /* KEEP RED */
+  --r:#ff4d6a;
+  --rd:rgba(255,77,106,.1);
+
+  /* REMOVE BLUE/PURPLE FEEL */
+  --a:#d4af37;
+  --ad:rgba(212,175,55,.12);
+
+  --y:#d4af37;
+  --yd:rgba(212,175,55,.12);
+}
   --gd:rgba(0,214,122,.12);
   --gd2:rgba(0,214,122,.06);
   --r:#ff4d6a;
@@ -36,20 +53,24 @@
   --s3:#eef2f7;
   --b1:#e8edf4;
   --b2:#cfd8e3;
+
   --t1:#0f172a;
   --t2:#64748b;
   --t3:#94a3b8;
+
   --g:#10b981;
   --gd:rgba(16,185,129,.12);
   --gd2:rgba(16,185,129,.08);
+
   --r:#f43f5e;
   --rd:rgba(244,63,94,.08);
+
   --a:#3b82f6;
   --ad:rgba(59,130,246,.08);
+
   --y:#f59e0b;
   --yd:rgba(245,158,11,.10);
 }
-
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--t1);overflow-x:hidden}
 .mono{font-family:'Space Mono',monospace}
@@ -64,9 +85,98 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--t1)
 [data-theme="light"] .nav-logo{border-bottom:1px solid #e8edf4}
 [data-theme="light"] #topbar{background:rgba(255,255,255,.78);border-bottom:1px solid #e8edf4;backdrop-filter:blur(12px)}
 [data-theme="light"] .nav-item:hover{background:#f8fafc;color:#0f172a}
-[data-theme="light"] .nav-item.active{background:rgba(16,185,129,.12);color:#10b981}
+[data-theme="light"] .nav-item.active{
+  background:rgba(212,175,55,.12);
+  color:#d4af37;
+  border:1px solid rgba(212,175,55,.2);
+}
 [data-theme="light"] .card,
 [data-theme="light"] .card2{box-shadow:0 1px 2px rgba(15,23,42,.04)}
+    [data-theme="light"] .card,
+[data-theme="light"] .card2{
+  background:#ffffff !important;
+  border:1px solid #e8edf4 !important;
+  box-shadow:0 1px 2px rgba(15,23,42,.04) !important;
+}
+
+[data-theme="light"] body{
+  background:#f8fafc !important;
+  color:#0f172a !important;
+}
+
+[data-theme="light"] #topbar{
+  background:rgba(255,255,255,.9) !important;
+  border-bottom:1px solid #e8edf4 !important;
+}
+
+[data-theme="light"] #sidebar{
+  background:#ffffff !important;
+  border-right:1px solid #e8edf4 !important;
+}
+
+[data-theme="light"] .nav-logo{
+  background:#ffffff !important;
+  border-bottom:1px solid #e8edf4 !important;
+}
+
+[data-theme="light"] .nav-item{
+  color:#64748b !important;
+}
+
+[data-theme="light"] .nav-item:hover{
+  background:#f8fafc !important;
+  color:#0f172a !important;
+}
+
+[data-theme="light"] .nav-item.active{
+  background:rgba(212,175,55,.12) !important;
+  color:#b89224 !important;
+  border:1px solid rgba(212,175,55,.25) !important;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea{
+  background:#ffffff !important;
+  border:1px solid #dbe3ee !important;
+  color:#0f172a !important;
+}
+
+[data-theme="light"] .cal-day{
+  background:#ffffff !important;
+  border:1px solid #e8edf4 !important;
+  color:#0f172a !important;
+}
+
+[data-theme="light"] .cal-day.gain{
+  background:rgba(16,185,129,.08) !important;
+  border-color:rgba(16,185,129,.25) !important;
+}
+
+[data-theme="light"] .cal-day.loss{
+  background:rgba(244,63,94,.06) !important;
+  border-color:rgba(244,63,94,.22) !important;
+}
+
+[data-theme="light"] .wk-card{
+  background:#f8fafc !important;
+  border:1px solid #e8edf4 !important;
+}
+
+[data-theme="light"] .insight-card{
+  background:#f8fafc !important;
+  border:1px solid #e8edf4 !important;
+}
+
+[data-theme="light"] .tbl th{
+  background:#f8fafc !important;
+  color:#64748b !important;
+}
+
+[data-theme="light"] .tbl td{
+  background:#ffffff !important;
+  color:#0f172a !important;
+}
 [data-theme="light"] .btn-ghost{background:#fff;color:#64748b;border:1px solid #dbe3ee}
 [data-theme="light"] .btn-ghost:hover{background:#f8fafc;color:#0f172a;border-color:#cfd8e3}
 [data-theme="light"] .pill-n{background:#f8fafc;color:#94a3b8;border:1px solid #e8edf4}
@@ -111,7 +221,11 @@ nav{padding:8px 0;flex:1;overflow-y:auto}
 .page-sub{font-size:10px;color:var(--t3);margin-top:1px;font-weight:500;letter-spacing:.04em}
 
 /* CARDS */
-.card{background:var(--s1);border:1px solid var(--b1);border-radius:12px}
+.card{
+  background:linear-gradient(180deg,#0b0b0d,#09090b);
+  border:1px solid rgba(212,175,55,.08);
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
 .card2{background:var(--s2);border:1px solid var(--b1);border-radius:9px}
 
 /* PILLS */
@@ -124,8 +238,25 @@ nav{padding:8px 0;flex:1;overflow-y:auto}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:7px;font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:all .15s;font-weight:600;white-space:nowrap}
-.btn-primary{background:var(--g);color:#000;font-size:12px;padding:8px 16px}
-.btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+.btn-primary{
+  background:linear-gradient(135deg,#d4af37,#b89224);
+  color:#050506;
+  font-size:12px;
+  padding:8px 16px;
+  border:1px solid rgba(255,224,138,.28);
+  border-radius:8px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 8px 22px rgba(212,175,55,.18);
+}
+
+.btn-primary:hover{
+  transform:translateY(-1px);
+  box-shadow:0 0 16px rgba(212,175,55,.4);
+}
+.btn-primary:hover{
+  opacity:1;
+  transform:translateY(-1px);
+  box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 10px 26px rgba(212,175,55,.28);
+}
 .btn-ghost{background:transparent;border:1px solid var(--b1);color:var(--t3);font-size:11px;padding:7px 13px}
 .btn-ghost:hover{border-color:var(--b2);color:var(--t1);background:var(--s2)}
 .btn-sm{padding:5px 10px;font-size:10px}
@@ -136,7 +267,25 @@ nav{padding:8px 0;flex:1;overflow-y:auto}
 input,select,textarea{background:var(--s2);border:1px solid var(--b1);border-radius:7px;color:var(--t1);font-family:'Space Grotesk',sans-serif;font-size:12px;outline:none;transition:border-color .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--g)}
 input::placeholder,textarea::placeholder{color:var(--b2)}
-select option{background:var(--s2)}
+select{
+  background:var(--s2);
+  color:var(--t1);
+  border:1px solid var(--b1);
+  border-radius:7px;
+  padding:9px 11px;
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg fill='%23a1a1aa' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  background-size:16px;
+}
+
+select option{
+  background:#0b0b0d;
+  color:#ffffff;
+}
 input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.4);cursor:pointer}
 input[type="checkbox"]{width:14px;height:14px;accent-color:var(--g)}
 
@@ -147,8 +296,13 @@ input[type="checkbox"]{width:14px;height:14px;accent-color:var(--g)}
 .sec-hdr{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.12em;text-transform:uppercase}
 
 /* KPI */
-.kpi-val{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1}
-
+.kpi-val{
+  font-family:'Space Mono',monospace;
+  font-size:34px;
+  font-weight:700;
+  letter-spacing:-.03em;
+  line-height:1;
+}
 /* CALENDAR */
 .cal-day{border:1px solid var(--b1);border-radius:7px;padding:7px;transition:all .15s;min-height:80px;display:flex;flex-direction:column}
 .cal-day.gain{border-color:rgba(0,214,122,.3);background:var(--gd2)}
@@ -175,15 +329,18 @@ input[type="checkbox"]{width:14px;height:14px;accent-color:var(--g)}
 
 /* WEEK CARD */
 /* WEEK CARD */
+/* WEEK CARD */
 .wk-card{
   background:var(--s2);
   border:1px solid var(--b1);
   border-radius:7px;
-  padding:8px 10px;
-  min-height:80px;
+  padding:9px 11px;
+  min-height:88px;
   display:flex;
   flex-direction:column;
   justify-content:center;
+  font-size:12.5px;
+  font-weight:700;
 }
 
 /* GAUGE */
@@ -511,9 +668,14 @@ body #app > div[style*="margin-left:200px"] {
     font-size: 20px;
   }
 
-  .sec-hdr {
-    font-size: 9px;
-  }
+/* SECTION HEADER */
+.sec-hdr{
+  font-size:11px;
+  font-weight:800;
+  color:var(--t3);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
 
   .tbl th,
   .tbl td {
@@ -600,9 +762,17 @@ body #app > div[style*="margin-left:200px"] {
   min-width: 0 !important;
 }
 
-.cal-day {
-  min-width: 0 !important;
-  width: 100% !important;
+/* CALENDAR */
+.cal-day{
+  border:1px solid var(--b1);
+  border-radius:7px;
+  padding:9px;
+  transition:all .15s;
+  min-height:88px;
+  display:flex;
+  flex-direction:column;
+  font-size:13px;
+  font-weight:700;
 }
     
     
@@ -713,27 +883,476 @@ div[style*="height:220px;position:relative"] {
 .cal-day > div{
   min-width:0;
 }
+    
+    
+    /* ===== GOMEZ TRADING CLEAN LOGIN ===== */
+#authOverlay{
+  background:
+    radial-gradient(circle at 50% 20%, rgba(212,175,55,.08), transparent 32%),
+    linear-gradient(180deg,#050506,#09090b);
+}
+
+.auth-shell{
+  width:100%;
+  max-width:420px;
+  padding:0 18px;
+}
+
+.auth-card{
+  background:linear-gradient(180deg,rgba(17,17,19,.96),rgba(8,8,10,.96));
+  border:1px solid rgba(212,175,55,.14);
+  border-radius:18px;
+  padding:34px;
+  box-shadow:0 24px 70px rgba(0,0,0,.75);
+}
+
+.auth-brand{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  margin-bottom:28px;
+}
+
+.auth-brand img{
+  height:52px;
+  width:auto;
+  object-fit:contain;
+  margin-bottom:18px;
+}
+
+.auth-title{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+
+.auth-title span{
+  color:#d4af37;
+}
+
+.auth-sub{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--t3);
+}
+
+.auth-fields{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  margin-bottom:22px;
+}
+
+.auth-fields input{
+  width:100%;
+  padding:14px 15px;
+  border-radius:10px;
+  background:#111113;
+  border:1px solid #26262c;
+  color:#fff;
+  font-size:13px;
+}
+
+.auth-fields input:focus{
+  border-color:#d4af37;
+  box-shadow:0 0 0 3px rgba(212,175,55,.12);
+}
+
+.auth-actions{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.auth-actions .btn-primary{
+  width:100%;
+  padding:13px;
+  justify-content:center;
+  border-radius:10px;
+  background:linear-gradient(135deg,#e0bd49,#b89224);
+  box-shadow:0 10px 26px rgba(212,175,55,.22);
+}
+
+.auth-actions .btn-ghost{
+  width:100%;
+  padding:13px;
+  justify-content:center;
+  border-radius:10px;
+  background:transparent;
+  border:1px solid #25252b;
+}
+    
+    /* FIX LIGHT MODE WEEK DAY BUTTONS */
+[data-theme="light"] #weekDaysRow > div{
+  background:#ffffff !important;
+  border:1px solid #e8edf4 !important;
+  color:#64748b !important;
+}
+
+[data-theme="light"] #weekDaysRow > div[style*="var(--g)"],
+[data-theme="light"] #weekDaysRow > div[style*="#d4af37"]{
+  background:rgba(212,175,55,.10) !important;
+  border-color:rgba(212,175,55,.45) !important;
+  color:#b89224 !important;
+}
+
+[data-theme="light"] #weekDaysRow > div[style*="var(--r)"],
+[data-theme="light"] #weekDaysRow > div[style*="#ff4d6a"]{
+  background:rgba(244,63,94,.08) !important;
+  border-color:rgba(244,63,94,.25) !important;
+  color:#f43f5e !important;
+}
+    
+    /* READABILITY FIX */
+.cal-day div{
+  font-size:12.5px !important;
+  line-height:1.35 !important;
+}
+
+.cal-day .mono,
+.cal-day [style*="color:var(--g)"],
+.cal-day [style*="color:var(--r)"]{
+  font-size:12.5px !important;
+  font-weight:800 !important;
+}
+
+#wk-card,
+.wk-card div,
+#weeklyStats div{
+  font-size:12px !important;
+  line-height:1.35 !important;
+}
+
+#weekPnl,
+#weekTrades,
+#weekWR,
+#calMonthPnl{
+  font-size:17px !important;
+  font-weight:800 !important;
+}
+
+.tbl td{
+  font-size:13px !important;
+}
+
+.tbl th{
+  font-size:10.5px !important;
+}
+/* ===== GOMEZ LOGIN TRANSITION ===== */
+/* ===== GOMEZ PREMIUM LOGIN TRANSITION ===== */
+#brandTransition{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:#050506;
+  overflow:hidden;
+}
+
+#brandTransition.active{
+  display:flex;
+}
+
+#brandTransition::before{
+  content:"";
+  position:absolute;
+  inset:-20%;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(212,175,55,.18), transparent 28%),
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,.05), transparent 20%),
+    linear-gradient(135deg,#050506,#0b0b0d 45%,#050506);
+  animation:brandGlowMove 2.2s ease-in-out infinite alternate;
+}
+
+#brandTransition::after{
+  content:"";
+  position:absolute;
+  width:140%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.9),transparent);
+  transform:rotate(-18deg) translateX(-100%);
+  animation:brandGoldSweep 1.35s ease forwards;
+}
+
+.brand-transition-inner{
+  position:relative;
+  z-index:2;
+  width:min(520px,90vw);
+  text-align:center;
+  padding:38px 34px;
+  border:1px solid rgba(212,175,55,.16);
+  border-radius:22px;
+  background:linear-gradient(180deg,rgba(18,18,20,.78),rgba(8,8,10,.72));
+  box-shadow:
+    0 30px 90px rgba(0,0,0,.75),
+    inset 0 1px 0 rgba(255,255,255,.04);
+  backdrop-filter:blur(16px);
+  animation:brandPanelIn .55s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.brand-mark{
+  width:74px;
+  height:74px;
+  margin:0 auto 22px;
+  border-radius:20px;
+  background:linear-gradient(180deg,#151518,#070708);
+  border:1px solid rgba(212,175,55,.22);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 0 35px rgba(212,175,55,.20);
+  animation:brandMarkPop .7s cubic-bezier(.2,.9,.2,1) forwards;
+}
+
+.brand-mark span{
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:-.08em;
+  color:#fff;
+}
+
+.brand-mark span b{
+  color:#d4af37;
+  font-weight:900;
+}
+
+.brand-transition-logo{
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:.18em;
+  color:#fff;
+  animation:brandTextReveal .7s ease forwards;
+}
+
+.brand-transition-logo span{
+  color:#d4af37;
+}
+
+.brand-transition-sub{
+  margin-top:12px;
+  font-size:12px;
+  color:#8b93a7;
+  letter-spacing:.08em;
+}
+
+.brand-status{
+  height:18px;
+  margin-top:24px;
+  font-size:11px;
+  color:#d4af37;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  animation:brandStatusPulse 1s ease-in-out infinite alternate;
+}
+
+.brand-loader{
+  width:100%;
+  height:4px;
+  margin:18px auto 0;
+  background:rgba(255,255,255,.08);
+  border-radius:99px;
+  overflow:hidden;
+}
+
+.brand-loader div{
+  width:0%;
+  height:100%;
+  border-radius:99px;
+  background:linear-gradient(90deg,#8a6a14,#d4af37,#ffe08a);
+  animation:brandLoadFill 1.45s ease forwards;
+}
+
+.brand-grid{
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size:42px 42px;
+  mask-image:radial-gradient(circle at center, black, transparent 70%);
+  opacity:.55;
+}
+
+#app.brand-enter{
+  animation:dashboardEnter 1s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+#app.brand-enter #sidebar{
+  animation:sidebarSlideIn .9s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+#app.brand-enter #topbar{
+  animation:topbarSlideIn .8s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+#app.brand-enter .view.active{
+  animation:contentSlideIn 1s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+@keyframes brandGlowMove{
+  from{transform:translate3d(-1%,0,0) scale(1)}
+  to{transform:translate3d(1%,1%,0) scale(1.04)}
+}
+
+@keyframes brandGoldSweep{
+  0%{transform:rotate(-18deg) translateX(-120%);opacity:0}
+  20%{opacity:1}
+  100%{transform:rotate(-18deg) translateX(120%);opacity:0}
+}
+
+@keyframes brandPanelIn{
+  from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(12px)}
+  to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+
+@keyframes brandMarkPop{
+  0%{opacity:0;transform:scale(.55) rotate(-8deg)}
+  70%{opacity:1;transform:scale(1.08) rotate(0)}
+  100%{opacity:1;transform:scale(1)}
+}
+
+@keyframes brandTextReveal{
+  from{opacity:0;letter-spacing:.32em;transform:translateY(8px)}
+  to{opacity:1;letter-spacing:.18em;transform:translateY(0)}
+}
+
+@keyframes brandStatusPulse{
+  from{opacity:.45}
+  to{opacity:1}
+}
+
+@keyframes brandLoadFill{
+  from{width:0%}
+  to{width:100%}
+}
+
+@keyframes dashboardEnter{
+  from{
+    opacity:0;
+    transform:scale(.985);
+    filter:blur(16px);
+  }
+  to{
+    opacity:1;
+    transform:scale(1);
+    filter:blur(0);
+  }
+}
+
+@keyframes sidebarSlideIn{
+  from{
+    opacity:0;
+    transform:translateX(-34px);
+    filter:blur(8px);
+  }
+  to{
+    opacity:1;
+    transform:translateX(0);
+    filter:blur(0);
+  }
+}
+
+@keyframes topbarSlideIn{
+  from{
+    opacity:0;
+    transform:translateY(-22px);
+    filter:blur(8px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+    filter:blur(0);
+  }
+}
+
+@keyframes contentSlideIn{
+  from{
+    opacity:0;
+    transform:translateY(26px) scale(.985);
+    filter:blur(10px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    filter:blur(0);
+  }
+}
+    
+    #btnOpenLogModal{
+  font-weight:800;
+  letter-spacing:.01em;
+}
+
+#btnOpenLogModal svg{
+  stroke-width:2.8;
+}
+    
+    [data-theme="light"] select{
+  background:#ffffff;
+  color:#0f172a;
+  border:1px solid #dbe3ee;
+  background-image:url("data:image/svg+xml;utf8,<svg fill='%2364748b' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+}
+
+[data-theme="light"] select option{
+  background:#ffffff;
+  color:#0f172a;
+}
 </style>
 </head>
 <body>
+<!-- GOMEZ LOGIN TRANSITION -->
+<div id="brandTransition">
+  <div class="brand-grid"></div>
+
+  <div class="brand-transition-inner">
+    <div class="brand-mark">
+      <span>G<b>T</b></span>
+    </div>
+
+    <div class="brand-transition-logo">GOMEZ <span>TRADING</span></div>
+    <div class="brand-transition-sub">Trade journal & performance dashboard</div>
+
+    <div id="brandStatus" class="brand-status">Authenticating account</div>
+
+    <div class="brand-loader">
+      <div></div>
+    </div>
+  </div>
+</div>
 
 <!-- AUTH -->
 <div id="authOverlay" class="active">
-  <div style="max-width:400px;width:100%;padding:0 16px">
-    <div class="card" style="padding:36px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
-        <div class="logo-box" style="width:34px;height:34px;font-size:12px">FP</div>
-        <div><div style="font-weight:700;font-size:16px">Trading Journal</div><div style="font-size:11px;color:var(--t3)">Sign in to continue</div></div>
+  <div class="auth-shell">
+    <div class="auth-card">
+
+      <div class="auth-brand">
+        <div class="auth-title">GOMEZ <span>TRADING</span></div>
+        <div class="auth-sub">Trade journal & performance dashboard</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
-        <div><span class="lbl">Email</span><input id="emailInput" type="email" placeholder="you@example.com" style="width:100%;padding:11px 13px"></div>
-        <div><span class="lbl">Password</span><input id="passwordInput" type="password" placeholder="••••••••" style="width:100%;padding:11px 13px"></div>
+
+      <div class="auth-fields">
+        <div>
+          <span class="lbl">Email</span>
+          <input id="emailInput" type="email" placeholder="you@example.com">
+        </div>
+
+        <div>
+          <span class="lbl">Password</span>
+          <input id="passwordInput" type="password" placeholder="••••••••">
+        </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:9px">
-        <button id="btnLogin" class="btn btn-primary" style="width:100%;padding:12px;justify-content:center">Login</button>
-        <button id="btnSignUp" class="btn btn-ghost" style="width:100%;padding:12px;justify-content:center">Create Account</button>
+
+      <div class="auth-actions">
+        <button id="btnLogin" class="btn btn-primary">Login</button>
+        <button id="btnSignUp" class="btn btn-ghost">Create Account</button>
       </div>
+
       <p id="authError" style="color:var(--r);font-size:11px;margin-top:14px;min-height:1em;text-align:center"></p>
+
     </div>
   </div>
 </div>
@@ -831,8 +1450,79 @@ div[style*="height:220px;position:relative"] {
 <style>
 .tag-toggle{cursor:pointer}
 .tag-toggle input{display:none}
-.tag-toggle span{display:inline-flex;align-items:center;padding:3px 9px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.05em;background:var(--s2);border:1px solid var(--b1);color:var(--t3);transition:all .15s;text-transform:uppercase}
-.tag-toggle input:checked + span{background:var(--gd);color:var(--g);border-color:rgba(0,214,122,.3)}
+.tag-toggle span{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 11px;
+  border-radius:7px;
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.05em;
+  background:transparent;
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--t2);
+  transition:all .18s ease;
+  text-transform:uppercase;
+}
+.tag-toggle input:checked + span{
+  background:rgba(212,175,55,.12);
+  color:#d4af37;
+  border-color:rgba(212,175,55,.35);
+  box-shadow:0 0 8px rgba(212,175,55,.2);
+}
+    .tag-toggle span:hover{
+  background:rgba(255,255,255,.05);
+  color:var(--t1);
+  border-color:rgba(255,255,255,.25);
+}[data-theme="light"] .tag-toggle span{
+  background:#ffffff;
+  border:1px solid #e2e8f0;
+  color:#64748b;
+}
+
+[data-theme="light"] .tag-toggle span:hover{
+  background:#f8fafc;
+  color:#0f172a;
+  border-color:#cbd5e1;
+}
+
+[data-theme="light"] .tag-toggle input:checked + span{
+  background:rgba(212,175,55,.12);
+  color:#b89224;
+  border-color:rgba(212,175,55,.4);
+}
+    
+    /* FORCE LOGIN SCREEN TO ALWAYS STAY DARK */
+#authOverlay{
+  background:
+    radial-gradient(circle at 50% 20%, rgba(212,175,55,.08), transparent 32%),
+    linear-gradient(180deg,#050506,#09090b) !important;
+}
+
+#authOverlay .auth-card{
+  background:linear-gradient(180deg,rgba(17,17,19,.96),rgba(8,8,10,.96)) !important;
+  border:1px solid rgba(212,175,55,.14) !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.75) !important;
+}
+
+#authOverlay input{
+  background:#eef3ff !important;
+  border:1px solid #dbe3ee !important;
+  color:#020617 !important;
+}
+
+#authOverlay .auth-title{
+  color:#ffffff !important;
+}
+
+#authOverlay .auth-title span{
+  color:#d4af37 !important;
+}
+
+#authOverlay .auth-sub,
+#authOverlay .lbl{
+  color:#8b93a7 !important;
+}
 </style>
 
 <!-- MAIN APP -->
@@ -840,8 +1530,13 @@ div[style*="height:220px;position:relative"] {
   <!-- SIDEBAR -->
   <div id="sidebar">
     <div class="nav-logo">
-      <div class="logo-box">FP</div>
-      <div class="logo-text">Trading Journal</div>
+      <div style="display:flex;align-items:center;gap:10px">
+
+  <div style="font-weight:700;font-size:13px;letter-spacing:.08em">
+    GOMEZ
+    <span style="color:#d4af37">TRADING</span>
+  </div>
+</div>
     </div>
     <div id="whoami" title=""></div>
 
@@ -909,7 +1604,7 @@ div[style*="height:220px;position:relative"] {
               <span class="sec-hdr">Net P&amp;L</span>
               <span id="kpiTradeCount" class="pill pill-n" style="font-size:9px">0</span>
             </div>
-            <div id="kpiPnl" class="kpi-val" style="color:var(--g)">$0.00</div>
+            <div id="kpiPnl" class="kpi-val" style="color:#d4af37">$0.00</div>
           </div>
           <div style="background:var(--gd);width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--g)">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -2083,18 +2778,59 @@ onAuthStateChanged(auth,async user=>{
   if(user){
     state.uid=user.uid;
     $('whoami').textContent=user.email;
-    $('authOverlay').classList.remove('active');
-    const appEl=$('app'); appEl.style.display='flex';
+
+    const transitionEl = $('brandTransition');
+    const statusEl = $('brandStatus');
+    const authEl = $('authOverlay');
+    const appEl = $('app');
+
+    authEl.classList.remove('active');
+    transitionEl.classList.add('active');
+
+    appEl.style.display='flex';
+    appEl.style.opacity='0';
+
+    if(statusEl) statusEl.textContent='Authenticating account';
+
+    setTimeout(()=>{
+      if(statusEl) statusEl.textContent='Syncing trade data';
+    },450);
+
     if(!state.inited){initCharts();state.inited=true;}
     $('mDate').value=todayISO;
+
     await loadUserData();
+
+    setTimeout(()=>{
+      if(statusEl) statusEl.textContent='Building dashboard';
+    },900);
+
     startSync();
+
+    setTimeout(()=>{
+      if(statusEl) statusEl.textContent='Ready';
+    },1250);
+
+    setTimeout(()=>{
+      transitionEl.classList.remove('active');
+      appEl.style.opacity='';
+      appEl.classList.add('brand-enter');
+
+      setTimeout(()=>{
+        appEl.classList.remove('brand-enter');
+      },900);
+    },1650);
+
   }else{
     $('app').style.display='none';
     $('authOverlay').classList.add('active');
+
+    const transitionEl = $('brandTransition');
+    if(transitionEl) transitionEl.classList.remove('active');
   }
 });
-
+    
+    
 $('btnLogin').onclick=()=>{
   const e=$('emailInput').value,p=$('passwordInput').value;
   if(!e||!p)return($('authError').textContent='Both fields required.');
