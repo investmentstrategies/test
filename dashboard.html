@@ -35,15 +35,6 @@
   --y:#d4af37;
   --yd:rgba(212,175,55,.12);
 }
-  --gd:rgba(0,214,122,.12);
-  --gd2:rgba(0,214,122,.06);
-  --r:#ff4d6a;
-  --rd:rgba(255,77,106,.1);
-  --a:#7c6fff;
-  --ad:rgba(124,111,255,.12);
-  --y:#f5a623;
-  --yd:rgba(245,166,35,.12);
-}
 
 /* LIGHT THEME */
 [data-theme="light"]{
@@ -508,6 +499,10 @@ body #app > div[style*="margin-left:200px"] {
     grid-template-columns: 1fr !important;
   }
 
+  #view-dash > div[style*="grid-template-columns:repeat(4,1fr)"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
  #view-dash > div[style*="grid-template-columns:1fr 300px"] {
   grid-template-columns: minmax(0,1fr) !important;
   gap: 10px !important;
@@ -885,6 +880,12 @@ div[style*="height:220px;position:relative"] {
     min-width: 0 !important;
     overflow-x: hidden !important;
   }
+
+  #view-dash *,
+  #view-playbook * {
+    box-sizing: border-box;
+  }
+}
 
   #view-dash * {
     box-sizing: border-box;
@@ -1318,6 +1319,15 @@ div[style*="height:220px;position:relative"] {
   background:#ffffff;
   color:#0f172a;
 }
+
+@media(max-width:992px){
+  #view-playbook > div[style*="grid-template-columns:1fr 340px"]{grid-template-columns:1fr !important}
+}
+
+/* Setup perf table R:R col color helper */
+.rr-good{color:var(--g);font-weight:700}
+.rr-ok{color:var(--t1);font-weight:700}
+.rr-bad{color:var(--r);font-weight:700}
     
     /* FIX LIGHT MODE BUTTONS (ANALYTICS FILTERS) */
 [data-theme="light"] .btn{
@@ -1474,8 +1484,11 @@ div[style*="height:220px;position:relative"] {
             <option value="">—</option><option>By Open</option><option>Limit</option><option>Market</option><option>Stop</option>
           </select>
         </div>
-        <div style="display:flex;align-items:flex-end;gap:16px;padding-bottom:2px">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--t2)"><input type="checkbox" id="mBreakeven"> Breakeven</label>
+        <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--b1);border-radius:7px;padding:9px 12px">
+          <div style="flex:1"><span class="lbl" style="margin-bottom:2px">Realized R:R</span><div id="mRRPreview" style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--t3)">—</div></div>
+          <div style="display:flex;align-items:flex-end;gap:16px;padding-bottom:2px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--t2)"><input type="checkbox" id="mBreakeven"> Breakeven</label>
+          </div>
         </div>
       </div>
       <!-- Tags -->
@@ -1494,7 +1507,13 @@ div[style*="height:220px;position:relative"] {
         </div>
       </div>
       <div style="margin-bottom:10px"><span class="lbl">Image URL</span><input type="url" id="mScreenshot" placeholder="https://..." style="width:100%;padding:9px 11px"></div>
-      <div style="margin-bottom:16px"><span class="lbl">Note / Journal</span><textarea id="mNote" placeholder="What happened? Why did you take this trade? What would you do differently?" style="width:100%;padding:9px 11px;resize:none;height:68px"></textarea></div>
+      <div style="margin-bottom:16px"><span class="lbl">Note / Journal</span><textarea id="mNote" placeholder="What happened? Why did you take this trade? What would you do differently?" style="width:100%;padding:9px 11px;resize:none;height:90px"></textarea></div>
+      <!-- Reflection prompts -->
+      <div id="reflectionPrompts" style="display:none;margin-bottom:16px;background:var(--gd2);border:1px solid rgba(212,175,55,.18);border-radius:9px;padding:12px 14px">
+        <div style="font-size:10px;font-weight:700;color:var(--g);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">💡 Journal prompts</div>
+        <div id="reflectionList" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+      <div id="tradeLimitWarning" style="display:none;background:var(--rd);border:1px solid rgba(255,77,106,.3);border-radius:8px;padding:10px 13px;margin-bottom:12px;font-size:12px;font-weight:600;color:var(--r)">⚠️ Daily trade limit reached — proceed with intention.</div>
       <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;justify-content:center">
         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
         Log Trade
@@ -1616,6 +1635,10 @@ div[style*="height:220px;position:relative"] {
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
         Accounts
       </button>
+      <button class="nav-item" data-view="playbook">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        Playbook
+      </button>
     </nav>
 
     <div class="sidebar-footer">
@@ -1653,7 +1676,7 @@ div[style*="height:220px;position:relative"] {
     <div id="view-dash" class="view active">
 
       <!-- KPIs -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
         <div class="card" style="padding:18px;display:flex;justify-content:space-between;align-items:center">
           <div>
             <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
@@ -1688,6 +1711,16 @@ div[style*="height:220px;position:relative"] {
               <circle cx="18" cy="18" r="16" fill="none" stroke="var(--b1)" stroke-width="4"/>
               <circle id="gaugePF" cx="18" cy="18" r="16" fill="none" stroke="var(--g)" stroke-width="4" stroke-dasharray="0,100"/>
             </svg>
+          </div>
+        </div>
+        <div class="card" style="padding:18px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="sec-hdr" style="margin-bottom:8px">Max Drawdown</div>
+            <div id="kpiMaxDD" class="kpi-val" style="font-size:22px;color:var(--r)">$0.00</div>
+            <div id="kpiCurDD" style="font-size:10px;color:var(--t3);margin-top:3px">Current: $0.00</div>
+          </div>
+          <div style="background:var(--rd);width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--r)">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
           </div>
         </div>
       </div>
@@ -1873,6 +1906,32 @@ div[style*="height:220px;position:relative"] {
             <div id="keyStatsList"></div>
           </div>
         </div>
+
+        <!-- Setup Performance Table -->
+        <div style="margin-top:14px;margin-bottom:8px"><span class="sec-hdr">Setup Performance Breakdown</span></div>
+        <div class="card" style="padding:0;overflow:hidden;margin-bottom:14px">
+          <div style="overflow-x:auto">
+            <table class="tbl" id="setupPerfTable">
+              <thead><tr>
+                <th>Setup / Model</th><th>Trades</th><th>Win Rate</th><th>Avg Win</th><th>Avg Loss</th><th>Avg R:R</th><th>Net P&amp;L</th><th>Profit Factor</th>
+              </tr></thead>
+              <tbody id="setupPerfBody"><tr><td colspan="8" style="text-align:center;padding:24px;color:var(--t3);font-size:12px">No setup data yet — fill in the Setup field when logging trades</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- R:R Distribution Chart -->
+        <div style="margin-bottom:8px"><span class="sec-hdr">Realized R:R Distribution</span></div>
+        <div class="card" style="padding:16px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-weight:600;font-size:12px">R Multiple per Trade</div>
+            <div style="display:flex;gap:16px">
+              <div><span class="sec-hdr">Avg R:R</span><div id="rrAvg" class="mono" style="font-size:14px;font-weight:700;color:var(--g)">—</div></div>
+              <div><span class="sec-hdr">Trades w/ Risk</span><div id="rrCount" class="mono" style="font-size:14px;font-weight:700;color:var(--t2)">—</div></div>
+            </div>
+          </div>
+          <div style="height:180px;position:relative"><canvas id="chartRR"></canvas></div>
+        </div>
       </div>
 
       <!-- PERFORMANCE TAB -->
@@ -1939,10 +1998,103 @@ div[style*="height:220px;position:relative"] {
       </div>
     </div><!-- end analytics view -->
 
+    <!-- ===== PLAYBOOK VIEW ===== -->
+    <div id="view-playbook" class="view">
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:16px">
+
+        <!-- Left: Setup cards -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-weight:700;font-size:15px">Setups Library</div>
+            <button id="btnAddSetup" class="btn btn-primary btn-sm">
+              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+              Add Setup
+            </button>
+          </div>
+          <div id="playbookSetupsList" style="display:flex;flex-direction:column;gap:10px"></div>
+          <div id="playbookEmpty" style="display:none;text-align:center;padding:48px 20px;color:var(--t3)">
+            <div style="font-size:32px;margin-bottom:12px">📖</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:6px">No setups yet</div>
+            <div style="font-size:11px">Add your first setup to start building your playbook</div>
+          </div>
+        </div>
+
+        <!-- Right: Trading Rules checklist + Add setup form -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <!-- Add/Edit Setup Form -->
+          <div id="setupFormCard" class="card" style="padding:18px;display:none">
+            <div style="font-weight:700;font-size:13px;margin-bottom:14px" id="setupFormTitle">New Setup</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div><span class="lbl">Setup Name</span><input type="text" id="sfName" placeholder="e.g. OB Reversal" style="width:100%;padding:9px 11px"></div>
+              <div><span class="lbl">Category</span>
+                <select id="sfCategory" style="width:100%;padding:9px 11px">
+                  <option value="Reversal">Reversal</option>
+                  <option value="Trend Follow">Trend Follow</option>
+                  <option value="Breakout">Breakout</option>
+                  <option value="Scalp">Scalp</option>
+                  <option value="News">News</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div><span class="lbl">Description</span><textarea id="sfDesc" placeholder="Ideal conditions, confluences needed, time frames..." style="width:100%;padding:9px 11px;resize:none;height:80px"></textarea></div>
+              <div><span class="lbl">Rules / Checklist (one per line)</span><textarea id="sfRules" placeholder="- Must have at least 2 confluences&#10;- Only trade in NY session&#10;- Min R:R 1:2" style="width:100%;padding:9px 11px;resize:none;height:80px"></textarea></div>
+              <div><span class="lbl">Screenshot URL (example trade)</span><input type="url" id="sfImg" placeholder="https://..." style="width:100%;padding:9px 11px"></div>
+              <div style="display:flex;gap:8px">
+                <button id="btnSaveSetup" class="btn btn-primary" style="flex:1;justify-content:center;padding:9px">Save Setup</button>
+                <button id="btnCancelSetup" class="btn btn-ghost" style="padding:9px 13px">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trading Rules Card -->
+          <div class="card" style="padding:18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div style="font-weight:700;font-size:13px">Trading Rules</div>
+              <button id="btnEditRules" class="btn btn-ghost btn-sm">Edit</button>
+            </div>
+            <div id="rulesDisplay" style="display:flex;flex-direction:column;gap:8px"></div>
+            <div id="rulesEditor" style="display:none;margin-top:10px">
+              <textarea id="rulesTextarea" placeholder="One rule per line:&#10;Never risk more than 1% per trade&#10;No trades after 3 losses in a day&#10;Always wait for session open" style="width:100%;padding:9px 11px;resize:none;height:130px;margin-bottom:8px"></textarea>
+              <div style="display:flex;gap:8px">
+                <button id="btnSaveRules" class="btn btn-primary btn-sm" style="flex:1;justify-content:center">Save Rules</button>
+                <button id="btnCancelRules" class="btn btn-ghost btn-sm">Cancel</button>
+              </div>
+            </div>
+            <div id="rulesEmpty" style="font-size:11px;color:var(--t3);text-align:center;padding:14px 0;display:none">No rules set. Click Edit to add your trading rules.</div>
+          </div>
+
+          <!-- Daily Trade Limit Card -->
+          <div class="card" style="padding:18px">
+            <div style="font-weight:700;font-size:13px;margin-bottom:12px">Daily Trade Limit</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <input type="number" id="dailyLimitInput" min="0" max="50" placeholder="0 = off" style="width:90px;padding:8px 10px">
+              <button id="btnSaveDailyLimit" class="btn btn-primary btn-sm">Set</button>
+            </div>
+            <div style="font-size:11px;color:var(--t3);line-height:1.5">Set to 0 to disable. When you reach your daily limit a warning appears in the Log Trade modal.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- end content area -->
 </div><!-- end app -->
 
 <script>
+    
+    function getThemeColors(){
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  return {
+    positive:  isLight ? '#10b981' : '#d4af37',
+    positiveBorder: isLight ? '#0ea574' : '#e8c84a',
+    negative:  isLight ? '#ef4444' : '#ff4d6a',
+    neutral:   isLight ? '#64748b' : '#a1a1aa',
+    grid:      isLight ? '#e2e8f0' : '#2a2a30',
+    text:      isLight ? '#0f172a' : '#ffffff',
+    line:      isLight ? '#10b981' : '#e8c84a',
+    lineBg:    isLight ? 'rgba(16,185,129,.10)' : 'rgba(232,200,74,.10)',
+    mcBg:      isLight ? 'rgba(16,185,129,.08)' : 'rgba(232,200,74,.08)',
+  };
+}
 window.onerror = function(msg,src,line,col,err){
   const el=document.getElementById('authError');
   if(el) el.textContent='JS Error: '+msg+' (line '+line+')';
@@ -1970,17 +2122,19 @@ function cssVar(name){
 }
 
 function themeColors(){
+  const tc = getThemeColors();
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
   return {
-    G: cssVar('--g'),
-    R: cssVar('--r'),
-    A: cssVar('--a'),
-    Y: cssVar('--y'),
-    GRID: document.documentElement.getAttribute('data-theme') === 'light' ? '#f1f5f9' : 'rgba(30,30,46,.8)',
-    TICK: document.documentElement.getAttribute('data-theme') === 'light' ? '#94a3b8' : '#3a3a52'
+    G: tc.positive,
+    R: tc.negative,
+    A: tc.positive,
+    Y: tc.positive,
+    GRID: isLight ? '#f1f5f9' : 'rgba(30,30,46,.8)',
+    TICK: isLight ? '#94a3b8' : '#3a3a52'
   };
 }
 
-const state={trades:[],uid:null,unsubTrades:null,unsubAccounts:null,calMonth:new Date(),accounts:[],filterAccId:'all',charts:{},inited:false,editId:null,analyticsDays:30,analyticsTab:'overview'};
+const state={trades:[],uid:null,unsubTrades:null,unsubAccounts:null,calMonth:new Date(),accounts:[],filterAccId:'all',charts:{},inited:false,editId:null,analyticsDays:30,analyticsTab:'overview',playbook:[],tradingRules:[],dailyLimit:0,editSetupId:null};
 
 const $=s=>{try{return document.getElementById(s.replace('#',''))||document.querySelector(s)}catch(e){return null}};
 const nf=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2});
@@ -2035,11 +2189,16 @@ async function loadUserData(){
   if(snap.exists()){
     const d=snap.data();
     state.accounts=(d.accounts||[{id:'main',name:'Main Account',size:50000}]).map(a=>({...a,size:parseFloat(a.size)||50000}));
+    state.playbook=d.playbook||[];
+    state.tradingRules=d.tradingRules||[];
+    state.dailyLimit=d.dailyLimit||0;
   }else{
     state.accounts=[{id:'main',name:'Main Account',size:50000}];
+    state.playbook=[];state.tradingRules=[];state.dailyLimit=0;
     await setDoc(uref,{email:auth.currentUser.email,accounts:state.accounts,createdAt:serverTimestamp()});
   }
   renderAccountSelects(); renderSymbolSelects();
+  renderPlaybook(); renderRules(); renderDailyLimitInput();
 }
 
 function startSync(){
@@ -2057,6 +2216,7 @@ async function saveAccountsToDB(){if(!state.uid)return;await updateDoc(doc(db,'u
 /* ─── CHARTS INIT ─── */
 function initCharts(){
   const { G, R, A, Y, GRID, TICK } = themeColors();
+  const tc = getThemeColors();
 
 const co = {
   responsive: true,
@@ -2088,7 +2248,7 @@ const co = {
 
   state.charts.line=new Chart($('#chartLine').getContext('2d'),{
     type:'line',
-    data:{labels:[],datasets:[{data:[],borderColor:G,backgroundColor:'rgba(16,185,129,.08)',fill:true,tension:.4,borderWidth:2,pointRadius:0}]},
+    data:{labels:[],datasets:[{data:[],borderColor:tc.line,backgroundColor:tc.lineBg,fill:true,tension:.4,borderWidth:2,pointRadius:0}]},
     options:{...co}
   });
 
@@ -2108,7 +2268,7 @@ const co = {
 
   state.charts.wldist=new Chart($('#chartWLDist').getContext('2d'),{
     type:'bar',
-    data:{labels:[],datasets:[{data:[],backgroundColor:G,label:'Win'},{data:[],backgroundColor:R,label:'Loss'}]},
+    data:{labels:[],datasets:[{data:[],backgroundColor:tc.positive,label:'Win'},{data:[],backgroundColor:tc.negative,label:'Loss'}]},
     options:{...co2,barPercentage:.4,plugins:{legend:{display:false}}}
   });
 
@@ -2120,15 +2280,15 @@ const co = {
 
   state.charts.doughnut=new Chart($('#chartDoughnut').getContext('2d'),{
     type:'doughnut',
-    data:{labels:['Won','Lost','BE'],datasets:[{data:[],backgroundColor:[G,R,TICK],borderWidth:0,cutout:'80%'}]},
+    data:{labels:['Won','Lost','BE'],datasets:[{data:[],backgroundColor:[tc.positive,tc.negative,TICK],borderWidth:0,cutout:'80%'}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
   });
 
   state.charts.mc=new Chart($('#chartMC').getContext('2d'),{
     type:'line',
     data:{labels:[],datasets:[
-      {data:[],borderColor:document.documentElement.getAttribute('data-theme') === 'light' ? '#0f172a' : '#fff',backgroundColor:'transparent',tension:.3,borderWidth:2,pointRadius:0},
-      {data:[],borderColor:G,backgroundColor:'rgba(16,185,129,.06)',fill:true,tension:.3,borderWidth:1.5,pointRadius:0,borderDash:[4,4]}
+      {data:[],borderColor:tc.text,backgroundColor:'transparent',tension:.3,borderWidth:2,pointRadius:0},
+      {data:[],borderColor:tc.line,backgroundColor:tc.mcBg,fill:true,tension:.3,borderWidth:1.5,pointRadius:0,borderDash:[4,4]}
     ]},
     options:{...co}
   });
@@ -2144,10 +2304,41 @@ const co = {
     data:{labels:[],datasets:[{data:[],borderRadius:4,backgroundColor:Y}]},
     options:{...co2,barPercentage:.5}
   });
+
+state.charts.rr=new Chart($('#chartRR').getContext('2d'),{
+  type:'bar',
+  data:{
+    labels:[],
+    datasets:[{
+      data:[],
+      borderRadius:4,
+      backgroundColor:tc.positive,
+      borderColor:tc.positiveBorder,
+      borderWidth:1
+    }]
+  },
+  options:{
+    ...co2,
+    barPercentage:.65,
+    scales:{
+      ...co2.scales,
+      y:{
+        ...co2.scales.y,
+        beginAtZero:true,
+        ticks:{
+          ...co2.scales.y.ticks,
+          stepSize:1,
+          callback:v=>v
+        }
+      }
+    }
+  }
+});
 }
     
     function applyThemeToCharts(){
   const { G, R, A, Y, GRID, TICK } = themeColors();
+  const tc = getThemeColors();
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
 
   Object.values(state.charts).forEach(chart=>{
@@ -2158,31 +2349,58 @@ const co = {
     if(chart.options?.scales?.y?.grid) chart.options.scales.y.grid.color = GRID;
 
     if(chart === state.charts.line){
-      chart.data.datasets[0].borderColor = G;
-      chart.data.datasets[0].backgroundColor = 'rgba(16,185,129,.08)';
+      chart.data.datasets[0].borderColor = tc.line;
+      chart.data.datasets[0].backgroundColor = tc.lineBg;
     }
 
     if(chart === state.charts.wldist){
-      chart.data.datasets[0].backgroundColor = G;
-      chart.data.datasets[1].backgroundColor = R;
+      chart.data.datasets[0].backgroundColor = tc.positive;
+      chart.data.datasets[1].backgroundColor = tc.negative;
     }
 
     if(chart === state.charts.doughnut){
-      chart.data.datasets[0].backgroundColor = [G, R, TICK];
+      chart.data.datasets[0].backgroundColor = [tc.positive, tc.negative, TICK];
     }
 
     if(chart === state.charts.mc){
-      chart.data.datasets[0].borderColor = isLight ? '#0f172a' : '#fff';
-      chart.data.datasets[1].borderColor = G;
-      chart.data.datasets[1].backgroundColor = 'rgba(16,185,129,.06)';
+      chart.data.datasets[0].borderColor = tc.text;
+      chart.data.datasets[1].borderColor = tc.line;
+      chart.data.datasets[1].backgroundColor = tc.mcBg;
     }
 
     if(chart === state.charts.execscore){
-      chart.data.datasets[0].backgroundColor = A;
+      chart.data.datasets[0].backgroundColor = tc.positive;
     }
 
     if(chart === state.charts.voledge){
-      chart.data.datasets[0].backgroundColor = Y;
+      chart.data.datasets[0].backgroundColor = tc.positive;
+    }
+
+    if(chart === state.charts.rr){
+      // Preserve positive/negative coloring per bin
+      const counts = chart.data.datasets[0].data;
+      const labels = chart.data.labels;
+      if(labels && labels.length){
+        chart.data.datasets[0].backgroundColor = labels.map(l =>
+          l && (l.includes('≤ -') || l.match(/^-\d/)) ? tc.negative + 'b8' : tc.positive
+        );
+        chart.data.datasets[0].borderColor = labels.map(l =>
+          l && (l.includes('≤ -') || l.match(/^-\d/)) ? tc.negative : tc.positiveBorder
+        );
+      } else {
+        chart.data.datasets[0].backgroundColor = tc.positive;
+        chart.data.datasets[0].borderColor = tc.positiveBorder;
+      }
+    }
+
+    // Re-color monthly, bar, dow bars based on positive/negative values
+    if(chart === state.charts.monthly || chart === state.charts.bar || chart === state.charts.dow){
+      const data = chart.data.datasets[0]?.data;
+      if(Array.isArray(data)){
+        chart.data.datasets[0].backgroundColor = data.map(v =>
+          (v >= 0) ? tc.positive : tc.negative
+        );
+      }
     }
 
     chart.update('none');
@@ -2212,12 +2430,24 @@ function render(){
   $('gaugeWR').setAttribute('stroke-dasharray',`${(wr/100)*125.6},125.6`);
   $('gaugePF').setAttribute('stroke-dasharray',`${Math.min(100,pf*10)},100`);
 
+  // Drawdown KPIs
+  {
+    const sorted=[...list].sort((a,b)=>parseDate(a.date)-parseDate(b.date));
+    let peak=0,maxDD=0,running=0;
+    sorted.forEach(t=>{running+=t.netpl;if(running>peak)peak=running;maxDD=Math.max(maxDD,peak-running)});
+    const curDD=peak-running;
+    $('kpiMaxDD').textContent=nf.format(-maxDD);
+    $('kpiCurDD').textContent=`Current: ${nf.format(-curDD)}`;
+    $('kpiMaxDD').style.color=maxDD>0?'var(--r)':'var(--t3)';
+  }
+
   renderThisWeek(list);
   renderCalendar(list);
   updateMainCharts(list);
   renderTable(list);
   updateAnalytics();
   renderBehaviorInsights(list);
+  checkDailyLimit();
 }
 
 function renderThisWeek(list){
@@ -2244,7 +2474,6 @@ function renderThisWeek(list){
     const chip=document.createElement('div');
    chip.style.cssText=`background:${dT.length?(dPnl>0?'var(--gd)':dPnl<0?'var(--rd)':'var(--ad)'):'var(--s2)'};border:1px solid ${dT.length?(dPnl>0?'rgba(0,214,122,.25)':dPnl<0?'rgba(255,77,106,.2)':'rgba(124,111,255,.2)'):'var(--b1)'};border-radius:6px;padding:5px 9px;text-align:center;position:relative;overflow:visible;${isToday?'outline:1px solid var(--g);outline-offset:0;box-shadow:none;':''}`;
     chip.innerHTML=`<div style="font-size:9px;font-weight:700;color:var(--t3)">${d}</div><div style="font-size:9px;font-weight:700;font-family:'Space Mono',monospace;color:${dT.length?(dPnl>0?'var(--g)':dPnl<0?'var(--r)':'var(--a)'):'var(--t3)'}">${dayDate.getDate()}</div>`;
-    row.appendChild(chip);
     row.appendChild(chip);
   });
 }
@@ -2289,7 +2518,7 @@ function renderCalendar(list){
 function updateMainCharts(list){
   if(!state.inited||!state.charts.line)return;
 
-  const { G, R } = themeColors();
+  const tc = getThemeColors();
 
   const map=new Map();
   list.forEach(t=>{if(t.date)map.set(t.date,(map.get(t.date)||0)+t.netpl)});
@@ -2308,10 +2537,12 @@ sorted.forEach(k=>{
   labs.push(k.substring(0,5));
   cum.push(roundedCum);
   daily.push(roundedDaily);
-  clrs.push(p >= 0 ? G : R);
+  clrs.push(p >= 0 ? tc.positive : tc.negative);
 });
   state.charts.line.data.labels=labs;
   state.charts.line.data.datasets[0].data=cum;
+  state.charts.line.data.datasets[0].borderColor=tc.line;
+  state.charts.line.data.datasets[0].backgroundColor=tc.lineBg;
   state.charts.line.update();
 
   state.charts.bar.data.labels=labs;
@@ -2372,12 +2603,16 @@ function updateAnalytics(){
   $('aMaxLossStreak').textContent=mxL;$('aCurLossStreak').textContent=`Currently on ${cL} losing trade${cL!==1?'s':''}`;
 
   // Monthly chart
-  const monthMap={};
+// Monthly chart
+const colors = getThemeColors();
+const monthMap={};
   list.forEach(t=>{const d=parseDate(t.date);if(d){const k=`${d.toLocaleString('default',{month:'short'})} '${String(d.getFullYear()).slice(2)}`;monthMap[k]=(monthMap[k]||0)+t.netpl}});
   const mKeys=Object.keys(monthMap).slice(-6);
   state.charts.monthly.data.labels=mKeys;
   state.charts.monthly.data.datasets[0].data=mKeys.map(k=>monthMap[k]);
-  state.charts.monthly.data.datasets[0].backgroundColor=mKeys.map(k=>monthMap[k]>=0?G:R);
+
+state.charts.monthly.data.datasets[0].backgroundColor =
+  mKeys.map(k => monthMap[k] >= 0 ? colors.positive : colors.negative);
   state.charts.monthly.update();
 
   // Win/Loss distribution by month
@@ -2386,7 +2621,9 @@ function updateAnalytics(){
   const wlKeys=[...new Set([...Object.keys(wMap),...Object.keys(lMap)])].slice(-6);
   state.charts.wldist.data.labels=wlKeys;
   state.charts.wldist.data.datasets[0].data=wlKeys.map(k=>wMap[k]||0);
-  state.charts.wldist.data.datasets[1].data=wlKeys.map(k=>-(lMap[k]||0));
+
+state.charts.wldist.data.datasets[0].backgroundColor = colors.positive;
+state.charts.wldist.data.datasets[1].backgroundColor = colors.negative;
   state.charts.wldist.update();
 
   // DOW chart
@@ -2394,7 +2631,9 @@ function updateAnalytics(){
   list.forEach(t=>{const d=parseDate(t.date);if(d)dowMap[d.getDay()]+=t.netpl});
   const dowVals=Object.values(dowMap);
   state.charts.dow.data.datasets[0].data=dowVals;
-  state.charts.dow.data.datasets[0].backgroundColor=dowVals.map(v=>v>=0?G:R);
+
+state.charts.dow.data.datasets[0].backgroundColor =
+  dowVals.map(v => v >= 0 ? colors.positive : colors.negative);
   state.charts.dow.update();
 
   // Doughnut
@@ -2676,6 +2915,97 @@ function updatePerfTab(list,wins,losses,bes,total){
     const wr4=s.total?Math.round(s.w/s.total*100):0;
     return`<div><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em">${tag}</span><span style="font-size:10px;color:var(--t3)">${wr4}% · ${nf.format(s.pnl)}</span></div><div class="prog"><div class="prog-fill" style="width:${wr4}%;background:${wr4>=50?'var(--g)':'var(--r)'}"></div></div></div>`;
   }).join('')||'<p style="font-size:11px;color:var(--t3)">No tagged trades yet</p>';
+
+  // Setup performance table
+  const spMap={};
+  list.forEach(t=>{
+    const key=(t.setup||'').trim();if(!key)return;
+    if(!spMap[key])spMap[key]={total:0,wins:0,losses:0,winPnl:0,lossPnl:0,grossW:0,grossL:0,rrSum:0,rrCount:0};
+    const s=spMap[key];s.total++;
+    if(t.netpl>0){s.wins++;s.winPnl+=t.netpl;s.grossW+=t.netpl}
+    else if(t.netpl<0){s.losses++;s.lossPnl+=t.netpl;s.grossL+=Math.abs(t.netpl)}
+    if(t.risk&&t.risk>0){s.rrSum+=t.netpl/t.risk;s.rrCount++}
+  });
+  const spBody=$('setupPerfBody');
+  if(spBody){
+    const rows=Object.entries(spMap).sort((a,b)=>b[1].total-a[1].total);
+    if(!rows.length){
+      spBody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--t3);font-size:12px">No setup data yet — fill in the Setup field when logging trades</td></tr>`;
+    }else{
+      spBody.innerHTML=rows.map(([name,s])=>{
+        const wr5=s.total?Math.round(s.wins/s.total*100):0;
+        const avgW=s.wins?s.winPnl/s.wins:0;
+        const avgL=s.losses?Math.abs(s.lossPnl/s.losses):0;
+        const avgRR=s.rrCount?s.rrSum/s.rrCount:null;
+        const pf2=s.grossL?s.grossW/s.grossL:s.grossW>0?10:0;
+        const net=s.winPnl+s.lossPnl;
+        return`<tr>
+          <td style="font-weight:700;font-size:12px">${name}</td>
+          <td style="font-family:'Space Mono',monospace;font-size:11px">${s.total} <span style="color:var(--t3);font-size:10px">(${s.wins}W/${s.losses}L)</span></td>
+          <td><span class="pill ${wr5>=50?'pill-g':'pill-r'}">${wr5}%</span></td>
+          <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--g)">${s.wins?nf.format(avgW):'—'}</td>
+          <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--r)">${s.losses?nf.format(-avgL):'—'}</td>
+          <td style="font-family:'Space Mono',monospace;font-size:11px;color:${avgRR>=1.5?'var(--g)':avgRR!==null&&avgRR>=1?'var(--t1)':avgRR!==null?'var(--r)':'var(--t3)'}">${avgRR!==null?avgRR.toFixed(2)+'R':'—'}</td>
+          <td style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:${net>=0?'var(--g)':'var(--r)'}">${nf.format(net)}</td>
+          <td style="font-family:'Space Mono',monospace;font-size:11px;color:${pf2>=1.5?'var(--g)':pf2>=1?'var(--t1)':'var(--r)'}">${pf2.toFixed(2)}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+// R:R distribution chart
+const rrTrades = list
+  .filter(t=>t.risk && t.risk > 0)
+  .map(t=>Math.round((t.netpl / t.risk) * 10) / 10);
+
+const rrEl = $('rrAvg');
+const rrCEl = $('rrCount');
+
+if(rrEl){
+  const avgR = rrTrades.length
+    ? rrTrades.reduce((a,r)=>a+r,0) / rrTrades.length
+    : 0;
+
+  rrEl.textContent = rrTrades.length ? avgR.toFixed(2) + 'R' : '—';
+  rrEl.style.color = avgR >= 1 ? 'var(--g)' : 'var(--r)';
+}
+
+if(rrCEl){
+  rrCEl.textContent = rrTrades.length + ' trades';
+}
+
+if(state.charts.rr){
+  const tc2 = getThemeColors();
+  const bins = [
+    { label:'≤ -2R', min:-Infinity, max:-2 },
+    { label:'-2 to -1.5R', min:-2, max:-1.5 },
+    { label:'-1.5 to -1R', min:-1.5, max:-1 },
+    { label:'-1 to -0.5R', min:-1, max:-0.5 },
+    { label:'-0.5 to 0R', min:-0.5, max:0 },
+    { label:'0 to 0.5R', min:0, max:0.5 },
+    { label:'0.5 to 1R', min:0.5, max:1 },
+    { label:'1 to 1.5R', min:1, max:1.5 },
+    { label:'1.5 to 2R', min:1.5, max:2 },
+    { label:'2 to 3R', min:2, max:3 },
+    { label:'3 to 5R', min:3, max:5 },
+    { label:'≥ 5R', min:5, max:Infinity }
+  ];
+
+  const counts = bins.map(bin =>
+    rrTrades.filter(r => r >= bin.min && r < bin.max).length
+  );
+
+  state.charts.rr.data.labels = bins.map(b=>b.label);
+  state.charts.rr.data.datasets[0].data = counts;
+  state.charts.rr.data.datasets[0].backgroundColor = bins.map(b =>
+    b.max <= 0 ? tc2.negative + 'b8' : tc2.positive
+  );
+  state.charts.rr.data.datasets[0].borderColor = bins.map(b =>
+    b.max <= 0 ? tc2.negative : tc2.positiveBorder
+  );
+
+  state.charts.rr.update();
+}
 }
 
 function updateBehavioralTab(list,longs,shorts){
@@ -2814,15 +3144,120 @@ function renderAccountsList(){
   });
 }
 
+/* ─── SAVE USER META ─── */
+async function saveUserMeta(fields){
+  if(!state.uid)return;
+  await updateDoc(doc(db,'users',state.uid),fields);
+}
+
+/* ─── REFLECTION PROMPTS ─── */
+function updateReflectionPrompts(){
+  const tags=[...$('mTagsContainer').querySelectorAll('.tag-cb:checked')].map(c=>c.value);
+  const score=parseInt($('mExecScore').value)||null;
+  const dir=$('mDirection').value;
+  const pnl=parseFloat($('mNetpl').value)||null;
+  const setup=$('mSetup').value.trim();
+  const prompts=[];
+  if(tags.includes('FOMO'))prompts.push('What was the FOMO trigger? Would you take this again with a clear head?');
+  if(tags.includes('Early Entry'))prompts.push('What signal did you act on early? What confirmation were you missing?');
+  if(score&&score<=4&&pnl&&pnl>0)prompts.push('Poor execution but still a winner — what did luck contribute vs. skill?');
+  if(score&&score<=4&&pnl&&pnl<0)prompts.push('Low exec score and a loss — what specific part of the plan broke down?');
+  if(score&&score>=8)prompts.push('High execution score — what made this trade textbook? Can you repeat it?');
+  if(setup)prompts.push(`You used the ${setup} setup — did price behave as expected? Any adjustments needed?`);
+  if(!prompts.length)prompts.push('Why did you take this trade? What was the key confluence?','What would you do differently on the next similar setup?');
+  const box=$('reflectionPrompts'),list=$('reflectionList');
+  if(!box||!list)return;
+  box.style.display='block';
+  list.innerHTML=prompts.slice(0,3).map(p=>`<div style="font-size:11px;color:var(--t2);line-height:1.5;padding:5px 0;border-bottom:1px solid rgba(212,175,55,.1);cursor:pointer" onclick="document.getElementById('mNote').value+=(document.getElementById('mNote').value?'\\n\\n':'')+this.textContent;this.style.opacity='.4'">${p}</div>`).join('');
+}
+
+/* ─── DAILY LIMIT ─── */
+function checkDailyLimit(){
+  const warning=$('tradeLimitWarning');
+  if(!warning)return;
+  if(!state.dailyLimit){warning.style.display='none';return}
+  const today=toDDMM(getISO(new Date()));
+  const todayCount=state.trades.filter(t=>t.date===today).length;
+  warning.style.display=todayCount>=state.dailyLimit?'block':'none';
+  if(todayCount>=state.dailyLimit)warning.textContent=`⚠️ Daily limit reached (${todayCount}/${state.dailyLimit} trades) — proceed with intention.`;
+}
+
+/* ─── PLAYBOOK FUNCTIONS ─── */
+function renderPlaybook(){
+  const list=$('playbookSetupsList'),empty=$('playbookEmpty');
+  if(!list)return;
+  if(!state.playbook.length){list.innerHTML='';if(empty)empty.style.display='block';return}
+  if(empty)empty.style.display='none';
+  // Merge with trade stats
+  const tradeStats={};
+  state.trades.forEach(t=>{
+    const key=(t.setup||'').trim();if(!key)return;
+    if(!tradeStats[key])tradeStats[key]={total:0,wins:0,pnl:0};
+    tradeStats[key].total++;if(t.netpl>0)tradeStats[key].wins++;tradeStats[key].pnl+=t.netpl;
+  });
+  list.innerHTML=state.playbook.map(s=>{
+    const stats=tradeStats[s.name]||{total:0,wins:0,pnl:0};
+    const wr=stats.total?Math.round(stats.wins/stats.total*100):null;
+    const catColors={'Reversal':'var(--rd)','Trend Follow':'var(--gd)','Breakout':'var(--yd)','Scalp':'var(--ad)','News':'rgba(124,111,255,.12)','Other':'var(--s2)'};
+    const catTextColors={'Reversal':'var(--r)','Trend Follow':'var(--g)','Breakout':'var(--y)','Scalp':'var(--a)','News':'#7c6fff','Other':'var(--t3)'};
+    const rules=(s.rules||[]).slice(0,3);
+    return`<div class="card" style="padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="font-weight:700;font-size:14px">${s.name}</div>
+            <span style="background:${catColors[s.category]||'var(--s2)'};color:${catTextColors[s.category]||'var(--t3)'};padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">${s.category||'Other'}</span>
+          </div>
+          ${stats.total?`<div style="display:flex;gap:14px;font-size:11px;color:var(--t3)"><span style="color:${wr>=50?'var(--g)':'var(--r)'};font-weight:700">${wr}% WR</span><span>${stats.total} trades</span><span style="color:${stats.pnl>=0?'var(--g)':'var(--r)'};font-weight:700">${nf.format(stats.pnl)}</span></div>`:'<div style="font-size:11px;color:var(--t3)">No trades logged for this setup yet</div>'}
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-icon edit-setup-btn" data-id="${s.id}" title="Edit"><svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+          <button class="btn-icon del-setup-btn" data-id="${s.id}" title="Delete" style="color:var(--r)"><svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+        </div>
+      </div>
+      ${s.description?`<div style="font-size:12px;color:var(--t2);line-height:1.55;margin-bottom:10px">${s.description}</div>`:''}
+      ${rules.length?`<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">${rules.map(r=>`<div style="font-size:11px;color:var(--t3);display:flex;gap:7px"><span style="color:var(--g);flex-shrink:0">✓</span>${r}</div>`).join('')}</div>`:''}
+      ${s.imgUrl?`<a href="${s.imgUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--a);text-decoration:none">View example chart →</a>`:''}
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.del-setup-btn').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Delete this setup?'))return;
+    state.playbook=state.playbook.filter(s=>s.id!==b.dataset.id);
+    await saveUserMeta({playbook:state.playbook});renderPlaybook();
+  });
+  list.querySelectorAll('.edit-setup-btn').forEach(b=>b.onclick=()=>{
+    const s=state.playbook.find(x=>x.id===b.dataset.id);if(!s)return;
+    state.editSetupId=s.id;
+    $('sfName').value=s.name;$('sfCategory').value=s.category||'Other';
+    $('sfDesc').value=s.description||'';$('sfRules').value=(s.rules||[]).join('\n');$('sfImg').value=s.imgUrl||'';
+    $('setupFormTitle').textContent='Edit Setup';$('setupFormCard').style.display='block';
+    $('setupFormCard').scrollIntoView({behavior:'smooth'});
+  });
+}
+
+function renderRules(){
+  const display=$('rulesDisplay'),empty=$('rulesEmpty');
+  if(!display)return;
+  if(!state.tradingRules.length){display.innerHTML='';if(empty)empty.style.display='block';return}
+  if(empty)empty.style.display='none';
+  display.innerHTML=state.tradingRules.map((r,i)=>`<div style="display:flex;gap:9px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--b1)"><span style="background:var(--gd);color:var(--g);border-radius:4px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px">${i+1}</span><span style="font-size:12px;color:var(--t2);line-height:1.5">${r}</span></div>`).join('');
+}
+
+function renderDailyLimitInput(){
+  const el=$('dailyLimitInput');if(el)el.value=state.dailyLimit||'';
+}
+
 /* ─── NAV ─── */
 function showView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.classList.remove('active'));
   const v=$(`view-${name}`);if(v)v.classList.add('active');
   const n=document.querySelector(`.nav-item[data-view="${name}"]`);if(n)n.classList.add('active');
-  const titles={dash:['Dashboard','Portfolio overview & trade calendar'],trades:['Trade Log','All executions'],analytics:['Analytics','Performance metrics and trade statistics']};
+  const titles={dash:['Dashboard','Portfolio overview & trade calendar'],trades:['Trade Log','All executions'],analytics:['Analytics','Performance metrics and trade statistics'],playbook:['Playbook','Setups library & trading rules']};
   const t=titles[name]||[name,''];
   $('pageTitle').textContent=t[0];$('pageSub').textContent=t[1];
+  if(name==='playbook'){renderPlaybook();renderRules();}
 }
 
 /* ─── BOOTSTRAP ─── */
@@ -2901,11 +3336,83 @@ $('btnSignOut').onclick=()=>signOut(auth);
 document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.addEventListener('click',()=>showView(n.dataset.view)));
 $('navAccounts').onclick=()=>{$('accountsModal').classList.add('active');renderAccountsList()};
 
+// R:R live preview in log modal
+function updateRRPreview(){
+  const pnl=parseFloat($('mNetpl').value);
+  const risk=parseFloat($('mRisk').value);
+  const el=$('mRRPreview');if(!el)return;
+  if(pnl&&risk&&risk>0){
+    const rr=pnl/risk;
+    el.textContent=rr.toFixed(2)+'R';
+    el.style.color=rr>=1.5?'var(--g)':rr>=1?'var(--t1)':'var(--r)';
+  }else{el.textContent='—';el.style.color='var(--t3)';}
+}
+const mNetplEl=$('mNetpl'),mRiskEl=$('mRisk');
+if(mNetplEl)mNetplEl.addEventListener('input',()=>{updateRRPreview();updateReflectionPrompts()});
+if(mRiskEl)mRiskEl.addEventListener('input',updateRRPreview);
+
+// Reflection prompts triggers
+['mTagsContainer','mExecScore','mDirection','mSetup'].forEach(id=>{
+  const el=$(id);if(el)el.addEventListener('change',updateReflectionPrompts);
+});
+
+// Playbook — Add Setup button
+const btnAddSetup=$('btnAddSetup');
+if(btnAddSetup)btnAddSetup.onclick=()=>{
+  state.editSetupId=null;
+  ['sfName','sfDesc','sfRules','sfImg'].forEach(id=>{const e=$(id);if(e)e.value='';});
+  $('sfCategory').value='Reversal';
+  $('setupFormTitle').textContent='New Setup';
+  $('setupFormCard').style.display='block';
+};
+const btnSaveSetup=$('btnSaveSetup');
+if(btnSaveSetup)btnSaveSetup.onclick=async()=>{
+  const name=$('sfName').value.trim();if(!name)return;
+  const setup={
+    id:state.editSetupId||'sp_'+Math.random().toString(36).substr(2,9),
+    name,category:$('sfCategory').value,
+    description:$('sfDesc').value.trim(),
+    rules:$('sfRules').value.split('\n').map(r=>r.replace(/^[-*•]\s*/,'')).filter(Boolean),
+    imgUrl:$('sfImg').value.trim()
+  };
+  if(state.editSetupId){state.playbook=state.playbook.map(s=>s.id===state.editSetupId?setup:s);}
+  else{state.playbook.push(setup);}
+  await saveUserMeta({playbook:state.playbook});
+  $('setupFormCard').style.display='none';state.editSetupId=null;renderPlaybook();
+};
+const btnCancelSetup=$('btnCancelSetup');
+if(btnCancelSetup)btnCancelSetup.onclick=()=>{$('setupFormCard').style.display='none';state.editSetupId=null;};
+
+// Trading Rules
+const btnEditRules=$('btnEditRules');
+if(btnEditRules)btnEditRules.onclick=()=>{
+  $('rulesTextarea').value=state.tradingRules.join('\n');
+  $('rulesDisplay').style.display='none';$('rulesEditor').style.display='block';$('rulesEmpty').style.display='none';
+};
+const btnSaveRules=$('btnSaveRules');
+if(btnSaveRules)btnSaveRules.onclick=async()=>{
+  state.tradingRules=$('rulesTextarea').value.split('\n').map(r=>r.trim()).filter(Boolean);
+  await saveUserMeta({tradingRules:state.tradingRules});
+  $('rulesDisplay').style.display='block';$('rulesEditor').style.display='none';renderRules();
+};
+const btnCancelRules=$('btnCancelRules');
+if(btnCancelRules)btnCancelRules.onclick=()=>{$('rulesDisplay').style.display='block';$('rulesEditor').style.display='none';};
+
+// Daily limit
+const btnSaveDailyLimit=$('btnSaveDailyLimit');
+if(btnSaveDailyLimit)btnSaveDailyLimit.onclick=async()=>{
+  state.dailyLimit=parseInt($('dailyLimitInput').value)||0;
+  await saveUserMeta({dailyLimit:state.dailyLimit});
+  checkDailyLimit();
+};
+
+// Show daily limit check when log modal opens
+$('btnOpenLogModal').onclick=()=>{checkDailyLimit();updateReflectionPrompts();$('logModal').classList.add('active');};
+
 // Modals
 $('btnCloseAccounts').onclick=()=>$('accountsModal').classList.remove('active');
 $('btnCloseNoteModal').onclick=()=>$('noteModal').classList.remove('active');
 $('noteModal').onclick=e=>{if(e.target.id==='noteModal')$('noteModal').classList.remove('active')};
-$('btnOpenLogModal').onclick=()=>$('logModal').classList.add('active');
 $('btnCloseLogModal').onclick=()=>$('logModal').classList.remove('active');
 
 // Account filter
@@ -3034,6 +3541,8 @@ $('btnThemeToggle').onclick=()=>{
   localStorage.setItem('tradingJournalTheme',newTheme);
 
   applyThemeToCharts();
+  // Re-render to update all data-driven chart colors
+  if(state.inited) render();
 };
     
 // Note modal
