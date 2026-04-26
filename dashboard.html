@@ -1367,6 +1367,60 @@ div[style*="height:220px;position:relative"] {
   color:#b89224;
   border-color:rgba(212,175,55,.4);
 }
+    
+    /* FORCE LOGIN TO ALWAYS STAY DARK BRAND STYLE */
+#authOverlay,
+[data-theme="light"] #authOverlay{
+  background:
+    radial-gradient(circle at 50% 20%, rgba(212,175,55,.08), transparent 32%),
+    linear-gradient(180deg,#050506,#09090b) !important;
+}
+
+#authOverlay .auth-card,
+[data-theme="light"] #authOverlay .auth-card{
+  background:linear-gradient(180deg,rgba(17,17,19,.96),rgba(8,8,10,.96)) !important;
+  border:1px solid rgba(212,175,55,.14) !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.75) !important;
+}
+
+#authOverlay .auth-title,
+[data-theme="light"] #authOverlay .auth-title{
+  color:#ffffff !important;
+}
+
+#authOverlay .auth-title span,
+[data-theme="light"] #authOverlay .auth-title span{
+  color:#d4af37 !important;
+}
+
+#authOverlay .auth-sub,
+#authOverlay .lbl,
+[data-theme="light"] #authOverlay .auth-sub,
+[data-theme="light"] #authOverlay .lbl{
+  color:#8b93a7 !important;
+}
+
+#authOverlay input,
+[data-theme="light"] #authOverlay input{
+  background:#eef3ff !important;
+  border:1px solid #dbe3ee !important;
+  color:#020617 !important;
+}
+
+#authOverlay .auth-actions .btn-primary,
+[data-theme="light"] #authOverlay .auth-actions .btn-primary{
+  background:linear-gradient(135deg,#e0bd49,#b89224) !important;
+  color:#050506 !important;
+  border:1px solid rgba(255,224,138,.28) !important;
+  box-shadow:0 10px 26px rgba(212,175,55,.22) !important;
+}
+
+#authOverlay .auth-actions .btn-ghost,
+[data-theme="light"] #authOverlay .auth-actions .btn-ghost{
+  background:transparent !important;
+  color:#8b93a7 !important;
+  border:1px solid #25252b !important;
+}
 </style>
 </head>
 <body>
