@@ -351,8 +351,25 @@ input[type="checkbox"]{width:14px;height:14px;accent-color:var(--g)}
 .tag-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-right:3px}
 
 /* TIME FILTER BTNS */
-.tf-btn{background:var(--s2);border:1px solid var(--b1);border-radius:6px;color:var(--t3);font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .15s}
-.tf-btn.active,.tf-btn:hover{background:var(--gd);color:var(--g);border-color:rgba(0,214,122,.3)}
+.tf-btn{
+  background:var(--s2);
+  border:1px solid var(--b1);
+  border-radius:6px;
+  color:var(--t3);
+  font-size:10px;
+  font-weight:700;
+  padding:4px 10px;
+  cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;
+  transition:all .15s;
+}
+
+.tf-btn.active,
+.tf-btn:hover{
+  background:var(--gd);
+  color:var(--g);
+  border-color:rgba(212,175,55,.35);
+}
 
 /* INSIGHT CARD */
 .insight-card{background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:12px 14px;display:flex;gap:10px}
@@ -1301,6 +1318,45 @@ div[style*="height:220px;position:relative"] {
   background:#ffffff;
   color:#0f172a;
 }
+    
+    /* FIX LIGHT MODE BUTTONS (ANALYTICS FILTERS) */
+[data-theme="light"] .btn{
+  background:#ffffff !important;
+  color:#64748b !important;
+  border:1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .btn:hover{
+  background:#f8fafc !important;
+  color:#0f172a !important;
+  border-color:#cbd5e1 !important;
+}
+
+[data-theme="light"] .btn.active{
+  background:rgba(212,175,55,.12) !important;
+  color:#b89224 !important;
+  border-color:rgba(212,175,55,.4) !important;
+  box-shadow:0 0 0 1px rgba(212,175,55,.15);
+}
+    
+    /* FIX ANALYTICS RANGE BUTTONS (EXACT) */
+[data-theme="light"] .tf-btn{
+  background:#ffffff;
+  color:#64748b;
+  border:1px solid #e2e8f0;
+}
+
+[data-theme="light"] .tf-btn:hover{
+  background:#f8fafc;
+  color:#0f172a;
+  border-color:#cbd5e1;
+}
+
+[data-theme="light"] .tf-btn.active{
+  background:rgba(212,175,55,.12);
+  color:#b89224;
+  border-color:rgba(212,175,55,.4);
+}
 </style>
 </head>
 <body>
@@ -1731,26 +1787,24 @@ div[style*="height:220px;position:relative"] {
 
     <!-- ===== ANALYTICS VIEW ===== -->
     <div id="view-analytics" class="view">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <div>
-          <div style="font-weight:700;font-size:18px">Analytics</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:2px">Performance metrics and trade statistics</div>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="tf-btn active" data-days="30">30D</button>
-          <button class="tf-btn" data-days="90">90D</button>
-          <button class="tf-btn" data-days="365">YTD</button>
-          <button class="tf-btn" data-days="0">ALL</button>
-        </div>
-      </div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap">
 
-      <!-- Analytics tabs -->
-      <div class="tabs" style="margin-bottom:18px">
-        <button class="tab active" data-atab="overview">Overview</button>
-        <button class="tab" data-atab="performance">Performance</button>
-        <button class="tab" data-atab="behavioral">Behavioral</button>
-      </div>
+  <!-- LEFT: TABS -->
+  <div class="tabs" style="margin-bottom:0">
+    <button class="tab active" data-atab="overview">Overview</button>
+    <button class="tab" data-atab="performance">Performance</button>
+    <button class="tab" data-atab="behavioral">Behavioral</button>
+  </div>
 
+  <!-- RIGHT: FILTERS -->
+  <div style="display:flex;gap:6px">
+    <button class="tf-btn active" data-days="30">30D</button>
+    <button class="tf-btn" data-days="90">90D</button>
+    <button class="tf-btn" data-days="365">YTD</button>
+    <button class="tf-btn" data-days="0">ALL</button>
+  </div>
+
+</div>
       <!-- OVERVIEW TAB -->
       <div id="atab-overview">
         <!-- Top 4 KPIs -->
@@ -2989,23 +3043,33 @@ document.addEventListener('click',e=>{
   $('noteModal').classList.add('active');
 });
 
-// Analytics time filter
-document.querySelectorAll('.tf-btn').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.tf-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  state.analyticsDays=parseInt(b.dataset.days);
-  updateAnalytics();
-}));
+document.addEventListener('DOMContentLoaded', () => {
 
-// Analytics tabs
-document.querySelectorAll('.tab[data-atab]').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.tab[data-atab]').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active');
-  state.analyticsTab=t.dataset.atab;
-  ['overview','performance','behavioral'].forEach(tab=>{
-    const el=$(`atab-${tab}`);if(el)el.style.display=tab===t.dataset.atab?'block':'none';
+  // Analytics time filter
+  document.querySelectorAll('.tf-btn').forEach(b=>{
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.tf-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      state.analyticsDays = parseInt(b.dataset.days);
+      updateAnalytics();
+    });
   });
-}));
+
+  // Analytics tabs
+  document.querySelectorAll('.tab[data-atab]').forEach(t=>{
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab[data-atab]').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      state.analyticsTab = t.dataset.atab;
+
+      ['overview','performance','behavioral'].forEach(tab=>{
+        const el = $(`atab-${tab}`);
+        if(el) el.style.display = tab === t.dataset.atab ? 'block' : 'none';
+      });
+    });
+  });
+
+});
     
     // Load saved theme
 const savedTheme=localStorage.getItem('tradingJournalTheme')||'dark';
